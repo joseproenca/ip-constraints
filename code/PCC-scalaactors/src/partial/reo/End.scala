@@ -11,17 +11,17 @@ import partial.solver.{Neg, Var, Constr}
  * To change this template use File | Settings | File Templates.
  */
 
-abstract class End(name:String, primitive:String) {
+abstract class End(name:String, primitive:Primitive) {
 
     def getName = name
 
     def getPrimitive = primitive
 
-    abstract def isConnected: Boolean
+    def isConnected: Boolean
 
-    abstract def getOther: End
+    def getOther: End
 
-    abstract def getConstraint: Constr
+    def getConstraint: Constr
 
     def getNoFlowConstraint: Constr = Neg(Var(name))
   

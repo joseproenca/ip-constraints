@@ -28,7 +28,7 @@ class Worker extends Actor {
   
   def claimingPhase(hasSol:Boolean) {
     receive {
-      case
+      case  _ => {}
     }
   }
 
