@@ -20,7 +20,7 @@ public class RunTests {
 
     static public void main(String[] args) {
 
-        final int tries = 3;
+        final int tries = 12;
 
         try {
             DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
@@ -72,7 +72,7 @@ public class RunTests {
             runMergeTree(tries, 4,2,new LazyExpansionStrategy(),3000);
             runMergeTree(tries, 5,2,new LazyExpansionStrategy(),90000);
             runMergeTree(tries, 6,2,new LazyExpansionStrategy(),90000);
-            runMergeTree(tries, 7,2,new LazyExpansionStrategy(),90000);
+            runMergeTree(tries, 7,2,new LazyExpansionStrategy(),120000);
             }
 
             if (mode < 4) {

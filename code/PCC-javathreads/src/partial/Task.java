@@ -164,7 +164,7 @@ public class Task implements Runnable {
             debugln(item+"Interrupted. Clearing out all my stuffs. *");
             debugln("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
             interrupted = true;
-            if (solved) OwnerManager.addInterruptedSol();
+            //if (solved) OwnerManager.addInterruptedSol();
         } finally {
             traversal = null;
             // stop if initial claim failed or if it was not solved and not interrupted

@@ -44,21 +44,22 @@ public class OwnerManager {
 //    // if a stolen thread got a solution!
 //    static private Set<Thread> interruptedSols = new HashSet<Thread>();
     // keeps track of the new traversal of a stolen thread.
-    static private Map<Traversal,Set<Thread>> thiefTraversal = new HashMap<Traversal, Set<Thread>>();    
+    //static private Map<Traversal,Set<Thread>> thiefTraversal = new HashMap<Traversal, Set<Thread>>();
     
 
-    public static synchronized void addInterruptedSol() {
-//        interruptedSols.add(Thread.currentThread());
-        // inneficcient inverse traversal: it's ok, since it is seldom done,
-        // and the map should not be bigger than the number of threads (small map). 
-        for (Map.Entry entry: thiefTraversal.entrySet()) {
-            for (Thread thread : (Set<Thread>) entry.getValue()) {
-                if (thread == Thread.currentThread())
-                    ((Traversal) entry.getKey()).setTryToSolve();
-                thiefTraversal.remove((Traversal)entry.getKey());
-            }
-        }
-    }
+    // NOT IN USE (to avoid errors with race conditions -- from Task interrupt block)
+//    public static synchronized void addInterruptedSol() {
+////        interruptedSols.add(Thread.currentThread());
+//        // inneficcient inverse traversal: it's ok, since it is seldom done,
+//        // and the map should not be bigger than the number of threads (small map).
+//        for (Map.Entry entry: thiefTraversal.entrySet()) {
+//            for (Thread thread : (Set<Thread>) entry.getValue()) {
+//                if (thread == Thread.currentThread())
+//                    ((Traversal) entry.getKey()).setTryToSolve();
+//                thiefTraversal.remove((Traversal)entry.getKey());
+//            }
+//        }
+//    }
 
 
     /**
@@ -222,9 +223,9 @@ public class OwnerManager {
         Set<Primitive> otherPrims = new HashSet<Primitive>();
         for (Thread t : theOthers) {
             
-            if (!thiefTraversal.containsKey(current))
-                thiefTraversal.put(current,new HashSet<Thread>());
-            thiefTraversal.get(current).add(t);
+//            if (!thiefTraversal.containsKey(current))
+//                thiefTraversal.put(current,new HashSet<Thread>());
+//            thiefTraversal.get(current).add(t);
 //            System.out.print("<stealing>");
             
             Set<End> theirs = bindings.remove(t);
@@ -282,7 +283,8 @@ public class OwnerManager {
 //                interruptedSols.remove(t);
 //            thief.remove(thread);
 //        }
-        thiefTraversal.remove(traversal);
+
+        //thiefTraversal.remove(traversal);
 
         try{
             if (!stop) go();
