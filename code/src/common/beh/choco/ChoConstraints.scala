@@ -45,6 +45,8 @@ class ChoConstraints extends common.beh.Constraints[ChoSolution,ChoConstraints] 
     for (constr <- pair._2)
       m.addConstraint(constr)
 
+    println(m.pretty())
+
     s.read(m);
 
     val solved = s.solve

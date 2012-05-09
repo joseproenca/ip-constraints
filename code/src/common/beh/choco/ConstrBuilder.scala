@@ -18,24 +18,27 @@ sealed abstract class ConstrBuilder {
   type VarMap = Map[String, IntegerVariable]
 
   def toChoco: (VarMap, ChocoConstr) = {
-    val v = optimiseEqVars(Map())
+    val v = optimiseEqVars(Map(),true)
     toChocoAux(v)
   }
 
-  private def optimiseEqVars(vars: VarMap): VarMap = this match {
+  private def optimiseEqVars(vars: VarMap,b:Boolean): VarMap = this match {
     case VarEq(n1: String, n2: String) => {
-      if (vars contains n1) 
-        vars + (n2 -> vars(n1))
+      if (!b) vars
       else {
-        val (vars2,ivar) = ConstrBuilder.getVar(vars,n2)
-        vars2 + (n1 -> ivar)
+        if (vars contains n1)
+          vars + (n2 -> vars(n1))
+        else {
+          val (vars2,ivar) = ConstrBuilder.getVar(vars,n2)
+          vars2 + (n1 -> ivar)
+        }
       }
     }
-    case Neg(c) => c.optimiseEqVars(vars)
-    case And(c1, c2)  => c2.optimiseEqVars(c1.optimiseEqVars(vars))
-    case Or(c1, c2)  => c2.optimiseEqVars(c1.optimiseEqVars(vars))
-    case Impl(c1, c2)  => c2.optimiseEqVars(c1.optimiseEqVars(vars))
-    case Equiv(c1, c2)  => c2.optimiseEqVars(c1.optimiseEqVars(vars))
+    case Neg(c) => c.optimiseEqVars(vars,!b)
+    case And(c1, c2)  => c2.optimiseEqVars(c1.optimiseEqVars(vars,b),b)
+//    case Or(c1, c2)  => c2.optimiseEqVars(c1.optimiseEqVars(vars,b),b)
+//    case Impl(c1, c2)  => c2.optimiseEqVars(c1.optimiseEqVars(vars))
+//    case Equiv(c1, c2)  => c2.optimiseEqVars(c1.optimiseEqVars(vars))
     case _ => vars
   }
   
@@ -103,7 +106,7 @@ object ConstrBuilder {
     var varmap: VarMap = Map()
     var res:Set[ChocoConstr] = Set()
     for (c <- cs)
-      varmap = c.optimiseEqVars(varmap)
+      varmap = c.optimiseEqVars(varmap,true)
     for (c <- cs) {
       val pair = c.toChocoAux(varmap)
       res += pair._2

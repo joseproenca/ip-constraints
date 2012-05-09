@@ -39,7 +39,9 @@ class ChoSolution(s: CPSolver, varMap: Map[String, IntegerVariable]) extends com
 //    }
 //    res += "-\n"
     for ((k,v) <- varMap)
-      res += k +" '"+v + "'\n"
+//      res += k +" '"+v + "'\n"
+      res += k + " -> " + s.getVar(v).getVal + "\n"
+
     for (ex <- extension)
       res += ex._1 + " -> " + ex._2 + "\n"
     res
