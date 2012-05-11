@@ -16,4 +16,7 @@ import common.beh.choco.connectors.ChoLossy
 class Lossy(deployer: OutputChannel[Any]) extends Node[ChoSolution, ChoConstraints](deployer) {
   val uid = hashCode
   val behaviour = new ChoLossy("a","b",uid)
+
+  // what ends depend on "end" - just a guess to decide when to search for a solution
+  def dependsOn(end: String) = if (end == "a") Set("b") else Set()
 }

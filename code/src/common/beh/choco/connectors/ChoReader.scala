@@ -24,8 +24,10 @@ class ChoReader(x:String,uid:Int,var size:Int) extends ChoBehaviour(List(x),uid)
   private def loadConstraints = if (size>0) flowConstr else nfConstr
 
   override def update(s:ChoSolution) {
-    if (s.hasFlow(ConstrBuilder.flowVar(x,uid))) {
+//    println("Reader: updating? (has flow?) "+s.getVal(ConstrBuilder.flowVar(x,uid)))
+    if (s hasFlow ConstrBuilder.flowVar(x, uid)) {
       size -= 1
+      println("Reader: FLOW! new size: "+size)
       constraints = loadConstraints
     }
   }

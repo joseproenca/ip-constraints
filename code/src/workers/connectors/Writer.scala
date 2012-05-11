@@ -18,6 +18,8 @@ class Writer(var n:Int,deployer: OutputChannel[Any]) extends Node[ChoSolution, C
 
   val uid = hashCode()
 
-  val behaviour = new ChoWriter("a",uid,n)
+  val behaviour = new ChoWriter("w",uid,n)
 
+  // what ends depend on "end" - just a guess to decide when to search for a solution
+  def dependsOn(end: String) = Set()
 }

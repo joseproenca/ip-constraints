@@ -11,22 +11,6 @@ import common.beh.Behaviour
  */
 
 abstract class ChoBehaviour(ends: List[String], uid: Int) extends Behaviour[ChoSolution,ChoConstraints](ends, uid) {
-//  type mytype = ChoBehaviour
-
-  //  def +(other: Behaviour[ChoConstraints]): Behaviour[ChoConstraints] = {
-  //    val res = new ChoBehaviour(ends,uid)
-  //    res.constraints = constraints ::: other.constraints
-  //    res
-  //  }
-
-//  def +(other: ChoBehaviour): ChoBehaviour = {
-//    val thisc = constraints
-//    // missing a proper handling of primitive uid's, to avoid collisions.
-//    new ChoBehaviour(ends ::: other.ends, scala.math.max(uid, other.uid) + 1) {
-//      val constraints = thisc + other.constraints
-//    }
-//  }
-
 //  def join(c1: ChoConstraints, c2: ChoConstraints) =
 //    c1 + c2
 
@@ -48,6 +32,12 @@ abstract class ChoBehaviour(ends: List[String], uid: Int) extends Behaviour[ChoS
     else c
   }
 
+  // adds to "c" the flow constraints: at least end must have dataflow
+//  def flow(c: ChoConstraints): ChoConstraints = {
+//    var endVars = List[String]()
+//    for (x <- constraints.constrBuilder.getVars)
+//  }
+
   def dataOn(end:String,s:ChoSolution): Any = {
     val data = s.getVal(ConstrBuilder.dataVar(end,uid))
     if (data.isDefined) data.get
@@ -63,7 +53,6 @@ abstract class ChoBehaviour(ends: List[String], uid: Int) extends Behaviour[ChoS
     override def hasFlow(v: String) = false
 
     override def pretty: String = {
-      //        for (IntegerVariable c:
       var res: String = ""
       for (ex <- extension)
         res += ex._1 + " -> " + ex._2

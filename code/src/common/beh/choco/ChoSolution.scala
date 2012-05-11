@@ -12,35 +12,37 @@ import scala.collection.mutable.{Map => MuMap}
  * To change this template use File | Settings | File Templates.
  */
 
-class ChoSolution(s: CPSolver, varMap: Map[String, IntegerVariable]) extends common.beh.Solution {
+class ChoSolution(val choSol: CPSolver, varMap: Map[String, IntegerVariable]) extends common.beh.Solution {
   val extension = MuMap[String, Int]()
   
   def getVal(v: String): Option[Int] = { 
     if (varMap contains v)
-      if (s contains varMap(v))
-        return Some(s.getVar(varMap(v)).getVal)
+      if (choSol contains varMap(v))
+        return Some(choSol.getVar(varMap(v)).getVal)
     extension.get(v)
   }
   
-  def hasFlow(v: String) = getVal(v) != 0
+  def hasFlow(v: String) = {
+//    println("has flow on '"+v+"'? - getVal: "+ getVal(v))
+    getVal(v) == Some(1)
+  }
 
   def extend(v:String,i:Int) { extension(v) = i }
   
   def size = varMap.size + extension.size
-  def sizeModel = s.getModel.getNbIntVars
+  def sizeModel = choSol.getModel.getNbIntVars
 
   def pretty: String = {
-    //        for (IntegerVariable c:
     var res: String = ""
-//    val it: java.util.Iterator[IntegerVariable] = s.getModel.getIntVarIterator
+    val it: java.util.Iterator[IntegerVariable] = choSol.getModel.getIntVarIterator
 //    while (it.hasNext) {
 //      val variab: IntegerVariable = it.next
-//      res += variab.getName + " -> " + s.getVar(variab).getVal + "\n";
+//      res += variab.getName + " -> " + choSol.getVar(variab).getVal + "\n";
 //    }
 //    res += "-\n"
     for ((k,v) <- varMap)
-//      res += k +" '"+v + "'\n"
-      res += k + " -> " + s.getVar(v).getVal + "\n"
+      res += k + " -> " + choSol.getVar(v).getVal + "\n"
+    //      res += k +" '"+v + "'\n"
 
     for (ex <- extension)
       res += ex._1 + " -> " + ex._2 + "\n"

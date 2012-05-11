@@ -19,7 +19,7 @@ sealed abstract class ConstrBuilder {
 
   def toChoco: (VarMap, ChocoConstr) = {
     val v = optimiseEqVars(Map(),true)
-    toChocoAux(v)
+    toChocoAux(v,true,true)
   }
 
   private def optimiseEqVars(vars: VarMap,b:Boolean): VarMap = this match {
@@ -41,7 +41,20 @@ sealed abstract class ConstrBuilder {
 //    case Equiv(c1, c2)  => c2.optimiseEqVars(c1.optimiseEqVars(vars))
     case _ => vars
   }
-  
+
+  def getVars: Iterable[String] = this match {
+    case Var(name)     => Set(name)
+    case VarEq(v1, v2) => Set(v1,v2)
+    case Neg(c)        => c.getVars
+    case And(c1, c2)   => c1.getVars ++ c2.getVars
+    case Or(c1, c2)    => c1.getVars ++ c2.getVars
+    case Impl(c1, c2)  => c1.getVars ++ c2.getVars
+    case Equiv(c1, c2) => c1.getVars ++ c2.getVars
+    case FalseC => Set()
+    case TrueC  => Set()
+  }
+
+
 //  def toChoco(vars: VarMap): (VarMap, ChocoConstr) = {
 //    val v = optimizeEqVars(vars)
 //    toChoco(v,)
@@ -50,41 +63,45 @@ sealed abstract class ConstrBuilder {
 
   
 
-  private def toChocoAux(vars: VarMap): (VarMap, ChocoConstr) = this match {
-    case Var(name: String) => {
+  private def toChocoAux(vars: VarMap,pos:Boolean,top:Boolean): (VarMap, ChocoConstr) = this match {
+    case Var(name: String) =>
       val (m, v) = ConstrBuilder.getVar(vars, name)
       (m, Choco.eq(v, 1))
-    }
-    case VarEq(n1: String, n2: String) => {
-      val (vars2, v1) = ConstrBuilder.getVar(vars,  n1)
-      val (vars3, v2) = ConstrBuilder.getVar(vars2, n2)
-      (vars3, Choco.eq(v1, v2))
-    }
-    case Neg(c: ConstrBuilder) => (vars, Choco.not(c.toChocoAux(vars) _2))
+
+    case VarEq(n1: String, n2: String) =>
+      if (pos && top) (vars,Choco.TRUE)
+      else {
+        val (vars2, v1) = ConstrBuilder.getVar(vars, n1)
+        val (vars3, v2) = ConstrBuilder.getVar(vars2, n2)
+        (vars3, Choco.eq(v1, v2))
+      }
+
+    case Neg(c: ConstrBuilder) => //(vars, Choco.not(c.toChocoAux(vars,!b)._2))
+      val (m,v) = c.toChocoAux(vars,!pos,top)
+      (m,Choco.not(v))
+
     case And(c1: ConstrBuilder, c2: ConstrBuilder) => {
-      val (m1, v1) = c1.toChocoAux(vars)
-      val (m2, v2) = c2.toChocoAux(m1)
+      val (m1, v1) = c1.toChocoAux(vars,pos,top)
+      val (m2, v2) = c2.toChocoAux(m1,pos,top)
       (m2, Choco.and(v1, v2))
     }
     case Or(c1: ConstrBuilder, c2: ConstrBuilder) => {
-      val (m1, v1) = c1.toChocoAux(vars)
-      val (m2, v2) = c2.toChocoAux(m1)
+      val (m1, v1) = c1.toChocoAux(vars,false,false)
+      val (m2, v2) = c2.toChocoAux(m1,false,false)
       (m2, Choco.or(v1, v2))
     }
     case Impl(c1: ConstrBuilder, c2: ConstrBuilder) => {
-      val (m1, v1) = c1.toChocoAux(vars)
-      val (m2, v2) = c2.toChocoAux(m1)
+      val (m1, v1) = c1.toChocoAux(vars,false,false)
+      val (m2, v2) = c2.toChocoAux(m1,false,false)
       (m2, Choco.implies(v1, v2))
     }
     case Equiv(c1: ConstrBuilder, c2: ConstrBuilder) => {
-      val (m1, v1) = c1.toChocoAux(vars)
-      val (m2, v2) = c2.toChocoAux(m1)
+      val (m1, v1) = c1.toChocoAux(vars,false,false)
+      val (m2, v2) = c2.toChocoAux(m1,false,false)
       (m2, Choco.and(Choco.implies(v1, v2), Choco.implies(v2, v1)))
     }
     case FalseC => (vars, Choco.FALSE)
     case TrueC => (vars, Choco.TRUE)
-    // TODO: complete cases
-//    case _ => (vars, Choco.TRUE)
   }
 
 
@@ -105,18 +122,20 @@ object ConstrBuilder {
   def toChoco(cs: Iterable[ConstrBuilder]): (VarMap,Iterable[ChocoConstr]) = {
     var varmap: VarMap = Map()
     var res:Set[ChocoConstr] = Set()
-    for (c <- cs)
-      varmap = c.optimiseEqVars(varmap,true)
     for (c <- cs) {
-      val pair = c.toChocoAux(varmap)
+      varmap = c.optimiseEqVars(varmap,true)
+    }
+    for (c <- cs) {
+      val pair = c.toChocoAux(varmap,true,true)
       res += pair._2
       varmap = pair._1
     }
     (varmap,res)
   }
   
-  def flowVar(x:String,uid:Int): String = uid + "$F$" +x
-  def dataVar(x:String,uid:Int): String = uid + "$D$" +x
+  def flowVar(x:String,uid:Int): String = "F$" + x + "$" + uid
+  def dataVar(x:String,uid:Int): String = "D$" + x + "$" + uid
+  def isFlowVar(x:String): Boolean = x.startsWith("F$")
 }
 
 case class Var(name: String) extends ConstrBuilder

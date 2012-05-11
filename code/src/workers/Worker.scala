@@ -3,6 +3,7 @@ package workers
 import actors.OutputChannel
 import common.beh.{Constraints, Solution}
 import choco.kernel.solver.propagation.listener.SetPropagator
+import strategies.Strategy
 
 /**
  * Created by IntelliJ IDEA.
@@ -21,10 +22,11 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
   type ActorRef = OutputChannel[Any]
 
   // state
-  var inConflict = Set[ActorRef]()       // All conflicts sent
-  var pendingConflicts = Set[ActorRef]() // conflict sent, not received
-  var pendingWorkers = Set[ActorRef]()   // conflict received, acknowledged, and waiting for their graph
+  private var inConflict = Set[ActorRef]()       // All conflicts sent
+  private var pendingConflicts = Map[ActorRef,Set[Nd]]() // conflict sent, not received
+  private var pendingWorkers = Set[ActorRef]()   // conflict received, acknowledged, and waiting for their graph
 //  var locks = Set[ActorRef](this)      // conflict won: needed to release locks
+  private var paused = false // true if no expansion exists, but it is waiting for conflicts or graphs
 
 
   def work(node: Node[S,C]): Boolean = {
@@ -34,6 +36,7 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
     val claimed = claim(nodes)
     if (!claimed._1.isEmpty) {
       cleanLocks()
+      debug("failed to start")
       false
     }
     else {
@@ -44,33 +47,40 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
   }
 
   def claim(nodes: Iterable[Nd]): (Iterable[ActorRef],Iterable[Nd]) = {
+    // TODO: drop claims from the fringe! - DONE
     var confls = Set[ActorRef]()
-    var sampleNodes = Set[Nd]()
+    var possibleNodes = Set[Nd]()
     for (n <- nodes) {
       var other: Option[ActorRef] = None
-      n.synchronized {
-        if (!n.owner.isDefined) {
-          n.owner = Some(this)
-        }
-        else
-          other = n.owner
-      }
+      n.lock.acquire()
+      //      n.synchronized {
+              if (!n.owner.isDefined) {
+                n.owner = Some(this)
+              }
+              else
+                other = n.owner
+      //      }
+      n.lock.release()
+
+
       if (!other.isDefined)
         strat register n
       else
-        if (!(confls contains other.get)) {
-          confls += other.get
-          sampleNodes += n
+      if (!(confls contains other.get)) {
+        confls += other.get
+        possibleNodes += n
+        // drop claims from the fringe to avoid claiming the same node again and again...
+        strat.fringe -= n
       }
     }
-    (confls,sampleNodes)
+    (confls,possibleNodes)
   }
 
   def cleanLocks() {
     for (nd <- strat.owned)
+      nd.owner = None
     //      if (nd.owner.isDefined)
     //        if (locks contains nd.owner.get) // maybe unecessary...
-      nd.owner = None
   }
   def swapOwner(act: ActorRef) {
     for (nd <- strat.owned)
@@ -83,26 +93,74 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
   }
 
   def success(sol:S) {
-    debug("DONE (mb restarting)\n"+sol.pretty)
+    debug("DONE\n"+sol.pretty)
     for (n <- strat.owned) {
       n.behaviour.update(sol)
-      n.init
-      n.owner = None
+      n.owner = None // cleaning locks (before any init)
     }
-    deployer ! 'DONE
+    for (n <- strat.owned)
+      n.init
+
+//    deployer ! 'DONE
   }
 
   // will not send if it is already in conflict, and syncrhonises to ensure the receiver is alive.
   def safeSendConfl(nd: Nd) {
-    if (nd.owner.isDefined)
-      if (inConflict contains nd.owner.get)
-        nd.synchronized {
-          val act = nd.owner
-          if (act.isDefined) {
-            act.get ! 'CONFLICT
-            pendingConflicts += act.get
+    // TODO: put everything in the lock, and recheck the claimed actor that could have changed - DONE
+    nd.lock.acquire()
+    val other = nd.owner
+    if (other.isDefined) {
+      // case1: owner is already me (changed by weaker worker who wanted to quit)
+      // case2: owner is weaker:
+      //  case 2.1: conflict already sent and waiting for graph -> do nothing
+      //  case 2.2: conflict already sent and graph received -> ERROR (I should have the lock already)
+      //  case 2.3: conflict is new (and weaker) -> send conflict , wait for graph
+      // case3: owner is stronger:
+      //  case 3.1: conflict sent but graph not sent (pendingConflict) -> do nothing (graph sent later)
+      //  case 3.2: conflict sent and graph sent (not pendingConflict) -> ERROR (always quit after sending graph)
+      //  case 3.3: conflict is new (and stronger) -> send conflict and graph, then quit.
+      ///////////////
+      // RETHINK: avoid using other.get.hashCode for ranking here,
+      // and decide if it is stronger or weaker only when receiving conflicts!
+      // case1: owner is me -> do nothing
+      // case2: conflict already sent and waiting for graph (pendingWorker) -> do nothing
+      // case3: conflict already sent and waiting for their conflict (pendingConflict) -> do nothing
+      // case4: conflict already sent, and not waiting for anything (merge complete) -> ERROR (owner should have changed)
+      // case5: conflict not sent yet -> send conflict, wait for reply (pendingConflict)
+      if (other.get != this) {
+        if (inConflict contains other.get) {
+          // temporary check
+          assert((pendingConflicts contains other.get) || (pendingWorkers contains other.get),"old conflict not pending!")
+          if (pendingConflicts contains other.get) {
+            pendingConflicts += other.get -> (pendingConflicts(other.get) + nd)
           }
         }
+        else {
+          debug("sent conflict! - "+other.get.hashCode())
+          other.get ! 'CONFLICT
+          inConflict += other.get
+          pendingConflicts += other.get -> Set(nd)
+        }
+      }
+      nd.lock.release()
+    }
+
+
+//    val owner = nd.owner
+//    if (owner.isDefined)
+//      if (!(inConflict contains owner.get)) {
+//        nd.lock.acquire()
+////        nd.synchronized {
+//          val act = nd.owner // this tile sync...
+//          if (act.isDefined)
+//            if (act.get.hashCode() != hashCode()) {
+//              debug("sent conflict! - "+act.get.hashCode())
+//              act.get ! 'CONFLICT
+//              pendingConflicts += act.get
+//            }
+////        }
+//         nd.lock.release()
+//      }
   }
 
   /**
@@ -114,6 +172,7 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
   def quit(reason: String) {
     if (pendingConflicts.isEmpty && pendingWorkers.isEmpty)
       this ! 'QUIT
+    else debug("WAITING!! ["+reason+"] - conflicts: "+pendingConflicts.size+", missing workers: "+pendingWorkers.size)
     loop(react {
       case 'GO   => {}
       case 'CONFLICT =>
@@ -128,7 +187,10 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
         quit(reason)
 
       case (other: Str) =>
-        strat merge other
+//        strat merge other
+        // need to free other nodes as well
+        for (nd <- other.owned)
+          nd.owner = None
         pendingWorkers -= sender
         quit(reason)
 
@@ -138,6 +200,10 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
       }
       case 'QUIT =>
         debug("quiting - "+reason)
+        if (reason.startsWith("found"))
+          deployer ! 'SOLVED
+        else
+          deployer ! 'DONE
         exit(reason)
     })
   }
@@ -145,68 +211,131 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
 
   // solve a round
   def act(): Nothing = react {
-    case 'GO =>
-      debug("go")
-      // find a local solution
-      if (strat.canSolve) {
-        val sol = strat.solve
-        if (sol.isDefined) {
-          success(sol.get)
-          quit("found a solution")
-        }
-      }
-      // find nodes to expand to
-      val next = strat.nextNodes
-      if (next.isEmpty) {
-        cleanLocks()
-        quit("no solution, no expansion")
-      }
-      // claim new nodes
-      val claimed = claim(next)
-      if (claimed._1.isEmpty)
-        nextRound()
-      // send conflicts
-      else {
-        for (othernd <- claimed._2)
-          safeSendConfl(othernd)
-        inConflict ++= claimed._1
-        nextRound()
-      }
+    case 'GO => gotGo
 
-    case 'CONFLICT =>
-      debug("got conflict")
-      // check if conflict was also sent before
-      if (!(inConflict contains sender)) {
-        inConflict += sender
-        sender ! 'CONFLICT // SAFE SEND? NO - IT HAS TO EXPECT A REPLY!
-      }
-      // I'm weaker...
-      if (sender.hashCode() > this.hashCode()) {
-        swapOwner(sender)
-        sender ! strat
-        quit("stronger message")
-      }
-      // I'm stronger! Wait for the new strategy...
-      else {
-        pendingWorkers += sender
-        act()
-      }
+    case 'CONFLICT => gotConflict
 
-    case (other: Str) =>
-      debug("got graph")
-      pendingWorkers -= sender
-      strat merge other
-      act()
+    case (other: Str) => gotGraph(other)
 
-    case 'NOCONFLICT =>
-      debug("got noconflict")
-      inConflict -= sender
-      act()
+    case 'NOCONFLICT => gotNoConflict
   }
 
 
+  private def gotGo {
+    debug("go")
+    // find a local solution
+    if (strat.canSolve) {
+      debug("solving...")
+      val sol = strat.solve
+      if (sol.isDefined) {
+        success(sol.get)
+        quit("found a solution")
+      }
+    }
+    // find nodes to expand to
+    debug("expanding...")
+    val next = strat.nextNodes
+    if (next.isEmpty) {
+      // Wait for strategies or conflicts that can unstuck the expansion
+      if (!(pendingConflicts.isEmpty && pendingWorkers.isEmpty)) {
+        debug("waiting for pending (Conflicts/Workers) - "+pendingConflicts.keys.map(_.hashCode()).mkString(", ")+" / "
+                                        +pendingWorkers.map(_.hashCode()).mkString(", "))
+        paused = true
+        act()
+      }
+      cleanLocks()
+      for (n <- strat.owned)
+        println(" - "+n.hashCode())
+      for (n <- strat.fringe)
+        println(" * "+n.hashCode())
+      quit("no solution, no expansion")
+    }
+    // claim new nodes
+    debug("claiming...")
+    val claimed = claim(next)
+    if (claimed._1.isEmpty)
+      nextRound()
+    // send conflicts
+    else {
+      debug("in conflict...")
+      for (othernd <- claimed._2)
+        safeSendConfl(othernd)
+      //        inConflict ++= claimed._1
+      nextRound()
+    }
+  }
+
+  private def gotConflict {
+    debug("got conflict")
+    val newConflict = !(inConflict contains sender)
+    pendingConflicts -= sender
+    // check if conflict was also sent before
+    if (newConflict) {
+      inConflict += sender
+      sender ! 'CONFLICT // SAFE SEND? NO - IT HAS TO EXPECT A REPLY!
+    }
+    // I'm weaker...
+    if (sender.hashCode() > this.hashCode()) {
+      swapOwner(sender)
+      rebuildFringeFromPending()
+      sender ! strat
+      quit("stronger message")
+    }
+    // I'm stronger! Wait for the new strategy...
+    else {
+//      if (newConflict)
+      pendingWorkers += sender
+      act()
+    }
+  }
+
+  private def rebuildFringeFromPending() {
+    for (ns <- pendingConflicts.values; nd <- ns)
+      if (!(strat.owned contains nd)) strat.fringe += nd
+  }
+
+  private def gotGraph(other: Str) {
+    debug("got graph")
+    pendingWorkers -= sender
+    strat merge other
+    if (paused) {
+      paused = false
+      nextRound()
+    }
+    act()
+  }
+
+  private def gotNoConflict {
+    // TODO: if a conflict is cancelled, the nodes need to be re-added to the fringe! - DONE
+    debug("got noconflict")
+    val oldPaused = paused
+    if (pendingConflicts contains sender) {
+      debug("## found pending conflicts")
+      for (nd <- pendingConflicts(sender)) {
+        if (!(strat.owned contains nd)) {
+          debug("## re-added node to fringe: "+nd.hashCode())
+          strat.fringe += nd
+          paused = false
+        }
+      }
+      if (paused != oldPaused) { // if it changed the fringe, and turned off pending
+        pendingConflicts -= sender
+        nextRound()
+      }
+//      if (!(strat.owned contains pendingConflicts(sender))) {
+//      }
+      else {
+        debug("## strategy already owned node... "+pendingConflicts(sender).hashCode())
+        pendingConflicts -= sender
+      }
+    }
+    act()
+  }
+
+
+
   def debug(msg: String) {
-    println("["+hashCode()+"] "+msg)
+    //println("["+hashCode()+"] "+msg)
   }
 
 }

@@ -17,6 +17,8 @@ class Reader (var n:Int,deployer: OutputChannel[Any]) extends Node[ChoSolution, 
 
   val uid = hashCode()
 
-  val behaviour = new ChoReader("a",uid,n)
+  val behaviour = new ChoReader("r",uid,n)
 
+  // what ends depend on "end" - just a guess to decide when to search for a solution
+  def dependsOn(end: String) = Set()
 }

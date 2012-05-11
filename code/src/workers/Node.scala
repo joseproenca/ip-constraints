@@ -22,12 +22,40 @@ abstract class Node[S<:Solution, C<:Constraints[S,C]]
 //  var neighbours = Set[OutputChannel[Any]]()
 
   // shared lock
+  val lock:scala.concurrent.Lock = new scala.concurrent.Lock()
   var owner: Option[OutputChannel[Any]] = None
 
+  // what ends depend on "end" - just a guess to decide when to search for a solution
+  def dependsOn(end: String): Set[String]
+
+
+  // Auxiliar functions
+
   def init() {
-    println("INIT? "+behaviour.isProactive)
+    //    println("INIT? ["+hashCode()+"] "+behaviour.isProactive)
     if (behaviour.isProactive) deployer ! this
   }
+
+
+
+  def connect(other:Node[S,C],ends:Set[(String,String)]) {
+    this.behaviour.connections +=
+      other -> (for ((myend,otherend) <- ends) yield (myend,otherend,other.behaviour.uid))
+    other.behaviour.connections +=
+      this -> (for ((myend,otherend) <- ends) yield (otherend,myend,this.behaviour.uid))
+    this.neighbours ::= other
+    other.neighbours ::= this
+  }
+
+  def connect(other:Node[S,C],myend:String,otherend:String) {
+    this.behaviour.connections +=
+      other -> Set((myend,otherend,other.behaviour.uid))
+    other.behaviour.connections +=
+      this -> Set((otherend,myend,this.behaviour.uid))
+    this.neighbours ::= other
+    other.neighbours ::= this
+  }
+
 
 //  def update(s:S) // to be overriden
 //  def update(s:S) {

@@ -26,6 +26,9 @@ abstract class Behaviour[S<: Solution, C <: Constraints[S,C]](val ends: List[Str
   // adds to "c" the border constraints wrt the ends shared with "from"
   def border(from:AnyRef,c:C): C
 
+  // adds to "c" the flow constraints: at least end must have dataflow
+//  def flow(c:C): C
+
   def update(s: S)
 
   def isProactive = false // default: false
