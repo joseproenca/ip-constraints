@@ -27,11 +27,15 @@ class ChoReader(x:String,uid:Int,var size:Int) extends ChoBehaviour(List(x),uid)
 //    println("Reader: updating? (has flow?) "+s.getVal(ConstrBuilder.flowVar(x,uid)))
     if (s hasFlow ConstrBuilder.flowVar(x, uid)) {
       size -= 1
-      println("Reader: FLOW! new size: "+size)
+//      println("Reader: FLOW! new size: "+size)
+      notifyflow()
       constraints = loadConstraints
     }
   }
 
   override def isProactive: Boolean = size > 0
+
+  // suggests which ends must have dataflow if "end" has also dataflow
+  def guessRequirements(end: String) = Set()
 
 }

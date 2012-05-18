@@ -40,18 +40,20 @@ class Deployer[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str], SB<:Strat
   }
   
   def act(): Nothing = react {
-    case 'DONE =>
-      workerDone()
-      act()
     case 'SOLVED =>
       counter += 1
-      println("#######"+counter+"#######")
+//      println("#######"+counter+"#######")
       workerDone()
       act()
     case node: Node[S,C] =>
 //      println("new node")
-      if (!(pendingTasks contains node))  pendingTasks enqueue node
+//      if (!(pendingTasks contains node))
+        pendingTasks enqueue node
       requestTasks()
+      act()
+    case 'DONE =>
+//      println("#####--"+counter+"--#####")
+      workerDone()
       act()
   }
 }

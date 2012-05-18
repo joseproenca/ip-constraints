@@ -66,22 +66,31 @@ object ChoBehaviour {
     new ChoBehaviour(ends,uid) {
       var constraints = c
       override def update(s:ChoSolution) { upd(s) }
+
+      // suggests which ends must have dataflow if "end" has also dataflow
+      def guessRequirements(end: String) = Set()
     }
   }
   def apply(ends:List[String],uid:Int, c:ChoConstraints): ChoBehaviour = {
     new ChoBehaviour(ends,uid) {
       var constraints = c
+      // suggests which ends must have dataflow if "end" has also dataflow
+      def guessRequirements(end: String) = Set()
     }
   }
   def apply(ends:List[String],uid:Int, c:ConstrBuilder,upd: ChoSolution => Unit): ChoBehaviour = {
     new ChoBehaviour(ends,uid) {
       var constraints = ChoConstraints(c)
       override def update(s:ChoSolution) { upd(s) }
+      // suggests which ends must have dataflow if "end" has also dataflow
+      def guessRequirements(end: String) = Set()
     }
   }
   def apply(ends:List[String],uid:Int, c:ConstrBuilder): ChoBehaviour = {
     new ChoBehaviour(ends,uid) {
       var constraints = ChoConstraints(c)
+      // suggests which ends must have dataflow if "end" has also dataflow
+      def guessRequirements(end: String) = Set()
     }
   }
 }

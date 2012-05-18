@@ -70,7 +70,7 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
         confls += other.get
         possibleNodes += n
         // drop claims from the fringe to avoid claiming the same node again and again...
-        strat.fringe -= n
+        strat.dropFromFringe(n)  // fringe -= n
       }
     }
     (confls,possibleNodes)
@@ -129,8 +129,8 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
       // case5: conflict not sent yet -> send conflict, wait for reply (pendingConflict)
       if (other.get != this) {
         if (inConflict contains other.get) {
-          // temporary check
-          assert((pendingConflicts contains other.get) || (pendingWorkers contains other.get),"old conflict not pending!")
+          // temporary check - WRONG (could be an old pending conflict that is no longer pending)
+//          assert((pendingConflicts contains other.get) || (pendingWorkers contains other.get),"old conflict not pending!")
           if (pendingConflicts contains other.get) {
             pendingConflicts += other.get -> (pendingConflicts(other.get) + nd)
           }
@@ -200,6 +200,7 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
       }
       case 'QUIT =>
         debug("quiting - "+reason)
+//        println("quiting - "+reason)
         if (reason.startsWith("found"))
           deployer ! 'SOLVED
         else
@@ -226,6 +227,7 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
     // find a local solution
     if (strat.canSolve) {
       debug("solving...")
+      mark('.')
       val sol = strat.solve
       if (sol.isDefined) {
         success(sol.get)
@@ -257,7 +259,7 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
       nextRound()
     // send conflicts
     else {
-      debug("in conflict...")
+      debug("in conflict... - "+claimed._2.mkString("[",",","]"))
       for (othernd <- claimed._2)
         safeSendConfl(othernd)
       //        inConflict ++= claimed._1
@@ -279,6 +281,7 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
       swapOwner(sender)
       rebuildFringeFromPending()
       sender ! strat
+      mark('*')
       quit("stronger message")
     }
     // I'm stronger! Wait for the new strategy...
@@ -290,8 +293,9 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
   }
 
   private def rebuildFringeFromPending() {
-    for (ns <- pendingConflicts.values; nd <- ns)
-      if (!(strat.owned contains nd)) strat.fringe += nd
+    strat.restore2fringe
+//    for (ns <- pendingConflicts.values; nd <- ns)
+//      if (!(strat.owned contains nd)) strat add2fringe nd
   }
 
   private def gotGraph(other: Str) {
@@ -314,7 +318,7 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
       for (nd <- pendingConflicts(sender)) {
         if (!(strat.owned contains nd)) {
           debug("## re-added node to fringe: "+nd.hashCode())
-          strat.fringe += nd
+          strat restore2fringe nd
           paused = false
         }
       }
@@ -335,7 +339,11 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
 
 
   def debug(msg: String) {
-    //println("["+hashCode()+"] "+msg)
+//    println("["+hashCode()+"] "+msg)
+  }
+
+  def mark(msg: Char) {
+    print(msg)
   }
 
 }

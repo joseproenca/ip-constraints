@@ -20,6 +20,6 @@ class Writer(var n:Int,deployer: OutputChannel[Any]) extends Node[ChoSolution, C
 
   val behaviour = new ChoWriter("w",uid,n)
 
-  // what ends depend on "end" - just a guess to decide when to search for a solution
-  def dependsOn(end: String) = Set()
+  // suggests which ends must have dataflow if "end" has also dataflow
+  def guessRequirements(nd: Node[ChoSolution, ChoConstraints]) = Set()
 }

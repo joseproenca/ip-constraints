@@ -12,11 +12,12 @@ import workers.Node
  * To change this template use File | Settings | File Templates.
  */
 
-abstract class Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
+trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
   type Nd = Node[S,C]
 
   val owned = scala.collection.mutable.Set[Nd]()
   val fringe = scala.collection.mutable.Set[Nd]()
+  var droppedFringe = Set[Nd]()
 
   // abstract methods //
 
@@ -83,6 +84,21 @@ abstract class Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
   private def extendFringe(nd:Iterable[Nd]) {
     for (n <- nd)
       if (!(owned contains n)) fringe += n
+  }
+
+  def dropFromFringe(nd:Nd) {
+    fringe -= nd
+    droppedFringe += nd
+  }
+
+  def restore2fringe(nd:Nd) {
+    droppedFringe -= nd
+    fringe += nd
+  }
+
+  def restore2fringe {
+    fringe ++= droppedFringe
+    droppedFringe = Set()
   }
 
 }

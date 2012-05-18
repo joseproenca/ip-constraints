@@ -18,15 +18,20 @@ abstract class Node[S<:Solution, C<:Constraints[S,C]]
   // abstract method:
   val behaviour: Behaviour[S, C]
 
-  var neighbours = List[Node[S,C]]() // order indicates possible preference
+  var neighbours = List[Node[S,C]]() // order MUST be the same as the order of ends in behaviour
 //  var neighbours = Set[OutputChannel[Any]]()
 
   // shared lock
   val lock:scala.concurrent.Lock = new scala.concurrent.Lock()
   var owner: Option[OutputChannel[Any]] = None
 
-  // what ends depend on "end" - just a guess to decide when to search for a solution
-  def dependsOn(end: String): Set[String]
+//  // what ends depend on "end" - just a guess to decide when to search for a solution
+//  def dependsOn(end: String): Set[String]
+
+  // suggests which ends must have dataflow if "end" has also dataflow
+  // - used as an heuristics in the traversal, to know where to traverse first,
+  // -                                         and know what to collect before solving constraints
+  def guessRequirements(nd:Node[S,C]): Set[Node[S,C]]
 
 
   // Auxiliar functions

@@ -37,4 +37,16 @@ abstract class Behaviour[S<: Solution, C <: Constraints[S,C]](val ends: List[Str
 
   // def dependsOn(ends:List[String],s:Solution)
   def dataOn(end:String,s:S) : Any
+
+
+  // Adding observers
+  var listeners: List[ () => Unit ] = Nil
+
+  def listen(listener: () => Unit) {
+    listeners ::= listener
+  }
+
+  def notifyflow() { for (l <- listeners) l() }
+
+
 }

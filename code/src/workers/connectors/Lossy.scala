@@ -17,6 +17,12 @@ class Lossy(deployer: OutputChannel[Any]) extends Node[ChoSolution, ChoConstrain
   val uid = hashCode
   val behaviour = new ChoLossy("a","b",uid)
 
-  // what ends depend on "end" - just a guess to decide when to search for a solution
-  def dependsOn(end: String) = if (end == "a") Set("b") else Set()
+//  // what ends depend on "end" - just a guess to decide when to search for a solution
+//  def dependsOn(end: String) = if (end == "a") Set("b") else Set()
+
+  // suggests which ends must have dataflow if "end" has also dataflow
+  // "b" requires "a", but not vice-versa!
+  def guessRequirements(nd: Node[ChoSolution, ChoConstraints]) =
+    if (neighbours.tail.head == nd) Set(neighbours.head)
+    else Set(neighbours.head)
 }
