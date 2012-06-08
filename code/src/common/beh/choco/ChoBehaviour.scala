@@ -17,7 +17,7 @@ abstract class ChoBehaviour(ends: List[String], uid: Int) extends Behaviour[ChoS
   def sync(from:AnyRef,c:ChoConstraints) = {
     if (connections contains from) {
       val connConstr = for ((end,oend,ouid) <- connections(from))
-      yield VarEq(ConstrBuilder.flowVar(oend,ouid),ConstrBuilder.flowVar(end,uid))
+        yield VarEq(Utils.flowVar(oend,ouid),Utils.flowVar(end,uid))
       c ++ connConstr
     }
     else c
@@ -26,7 +26,7 @@ abstract class ChoBehaviour(ends: List[String], uid: Int) extends Behaviour[ChoS
   def border(from:AnyRef,c:ChoConstraints) = {
     if (connections contains from) {
       val connConstr = for ((end,_,_) <- connections(from))
-        yield Neg(Var(ConstrBuilder.flowVar(end,uid)))
+        yield Neg(Var(Utils.flowVar(end,uid)))
       c ++ connConstr
     }
     else c
@@ -35,11 +35,11 @@ abstract class ChoBehaviour(ends: List[String], uid: Int) extends Behaviour[ChoS
   // adds to "c" the flow constraints: at least end must have dataflow
 //  def flow(c: ChoConstraints): ChoConstraints = {
 //    var endVars = List[String]()
-//    for (x <- constraints.constrBuilder.getVars)
+//    for (x <- constraints.Utils.getVars)
 //  }
 
   def dataOn(end:String,s:ChoSolution): Any = {
-    val data = s.getVal(ConstrBuilder.dataVar(end,uid))
+    val data = s.getVal(Utils.dataVar(end,uid))
     if (data.isDefined) data.get
     else 0
   }

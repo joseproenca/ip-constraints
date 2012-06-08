@@ -14,8 +14,12 @@ import choco.kernel.model.constraints.{Constraint => ChocoConstr}
 
 
 sealed abstract class ConstrBuilder {
-
   type VarMap = Map[String, IntegerVariable]
+
+  def ->(c:ConstrBuilder) = Impl(this,c)
+  def <->(c:ConstrBuilder) = Equiv(this,c)
+  def and(c:ConstrBuilder) = And(this,c)
+  def or(c:ConstrBuilder) = Or(this,c)
 
   def toChoco: (VarMap, ChocoConstr) = {
     val v = optimiseEqVars(Map(),true)
@@ -50,6 +54,8 @@ sealed abstract class ConstrBuilder {
     case Or(c1, c2)    => c1.getVars ++ c2.getVars
     case Impl(c1, c2)  => c1.getVars ++ c2.getVars
     case Equiv(c1, c2) => c1.getVars ++ c2.getVars
+    case FlowPred(p, v) => Set(v)
+    case DataAssgn(v, d)=> Set(v)
     case FalseC => Set()
     case TrueC  => Set()
   }
@@ -100,6 +106,16 @@ sealed abstract class ConstrBuilder {
       val (m2, v2) = c2.toChocoAux(m1,false,false)
       (m2, Choco.and(Choco.implies(v1, v2), Choco.implies(v2, v1)))
     }
+    case FlowPred(p: (IntegerVariable => ChocoConstr), v: String) => {
+      val (vars2, v1) = ConstrBuilder.getVar(vars, v)
+      val c = p(v1)
+      (vars2,c)
+    }
+    case DataAssgn(v: String, d:Int) => {
+      val (vars2, v1) = ConstrBuilder.getVar(vars, v)
+      val c = Choco.eq(v1,d)
+      (vars2,c)
+    }
     case FalseC => (vars, Choco.FALSE)
     case TrueC => (vars, Choco.TRUE)
   }
@@ -113,8 +129,12 @@ object ConstrBuilder {
   def getVar(m: VarMap, name: String): (VarMap, IntegerVariable) = {
     if (m contains name)
       (m, m(name))
-    else {
+    else if (Utils.isFlowVar(name)) {
       val v = Choco.makeBooleanVar(name)
+      (m + (name -> v), v)
+    }
+    else {
+      val v = Choco.makeIntVar(name)
       (m + (name -> v), v)
     }
   }
@@ -132,10 +152,6 @@ object ConstrBuilder {
     }
     (varmap,res)
   }
-  
-  def flowVar(x:String,uid:Int): String = "F$" + x + "$" + uid
-  def dataVar(x:String,uid:Int): String = "D$" + x + "$" + uid
-  def isFlowVar(x:String): Boolean = x.startsWith("F$")
 }
 
 case class Var(name: String) extends ConstrBuilder
@@ -151,6 +167,10 @@ case class Or(c1: ConstrBuilder, c2: ConstrBuilder) extends ConstrBuilder
 case class Impl(c1: ConstrBuilder, c2: ConstrBuilder) extends ConstrBuilder
 
 case class Equiv(c1: ConstrBuilder, c2: ConstrBuilder) extends ConstrBuilder
+
+case class FlowPred(p: IntegerVariable => ChocoConstr, v: String) extends ConstrBuilder
+
+case class DataAssgn(v: String, d: Int) extends ConstrBuilder
 
 case object FalseC extends ConstrBuilder
 case object TrueC  extends ConstrBuilder

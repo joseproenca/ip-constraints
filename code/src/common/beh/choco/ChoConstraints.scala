@@ -39,7 +39,7 @@ class ChoConstraints extends common.beh.Constraints[ChoSolution,ChoConstraints] 
     // Add flow constraints
     var flowvars = Set[IntegerVariable]()
     for (x <- m.getIntVarIterator) {
-      if (ConstrBuilder.isFlowVar(x.getName)) flowvars += x
+      if (Utils.isFlowVar(x.getName)) flowvars += x
     }
     if (!(flowvars.isEmpty)) {
       var c = Choco.eq(flowvars.head,1)
@@ -48,9 +48,9 @@ class ChoConstraints extends common.beh.Constraints[ChoSolution,ChoConstraints] 
       m.addConstraint(c)
     }
 
-//    println(m.pretty())
+    println(m.pretty())
 
-    s.read(m);
+    s.read(m)
 
     val solved = s.solve
 
@@ -89,7 +89,12 @@ object ChoConstraints {
     res.impose(c)
     res
   }
-//  def apply(cs: List[Constraint]): ChoConstraints = {
+  def apply(cs: List[ConstrBuilder]): ChoConstraints = {
+    val res = new ChoConstraints
+    for (c <- cs) res.impose(c)
+    res
+  }
+  //  def apply(cs: List[Constraint]): ChoConstraints = {
 //    val res = new ChoConstraints
 //    res.constraints = cs
 //    res

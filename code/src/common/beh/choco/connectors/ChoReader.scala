@@ -16,7 +16,7 @@ class ChoReader(x:String,uid:Int,var size:Int) extends ChoBehaviour(List(x),uid)
 //  val flowConstr = ChoConstraints(Var(ConstrBuilder.flowVar(x,uid)))
 //  val nfConstr = ChoConstraints(FalseC)
   val flowConstr = ChoConstraints(TrueC)
-  val nfConstr = ChoConstraints(Neg(Var(ConstrBuilder.flowVar(x,uid))))
+  val nfConstr = ChoConstraints(Neg(Var(Utils.flowVar(x,uid))))
 
 
   var constraints = loadConstraints
@@ -25,7 +25,7 @@ class ChoReader(x:String,uid:Int,var size:Int) extends ChoBehaviour(List(x),uid)
 
   override def update(s:ChoSolution) {
 //    println("Reader: updating? (has flow?) "+s.getVal(ConstrBuilder.flowVar(x,uid)))
-    if (s hasFlow ConstrBuilder.flowVar(x, uid)) {
+    if (s hasFlow Utils.flowVar(x, uid)) {
       size -= 1
 //      println("Reader: FLOW! new size: "+size)
       notifyflow()
