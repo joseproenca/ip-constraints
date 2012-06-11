@@ -21,12 +21,12 @@ import Utils.flowVar
 class ChoFilter(x: String, y: String, uid: Int, p: IntegerVariable => Constraint) extends ChoDataBehaviour(List(x, y), uid) {
   var constraints = ChoConstraints(List(
     // y -> x
-    Var(flowVar(y,uid)) -> Var(flowVar(x,uid)),
+    Var(flowVar(y,uid)) --> Var(flowVar(x,uid)),
     // y -> ^x = ^y /\ P(^y)
-    Var(flowVar(y,uid)) -> VarEq(dataVar(x,uid),dataVar(y,uid)),
-    Var(flowVar(y,uid)) -> FlowPred(p,dataVar(y,uid)),
+    Var(flowVar(y,uid)) --> VarEq(dataVar(x,uid),dataVar(y,uid)),
+    Var(flowVar(y,uid)) --> FlowPred(p,dataVar(y,uid)),
     // (x /\ P (^x)) -> y
-    (Var(flowVar(x,uid)) and FlowPred(p,dataVar(x,uid))) -> Var(flowVar(y,uid))
+    (Var(flowVar(x,uid)) and FlowPred(p,dataVar(x,uid))) --> Var(flowVar(y,uid))
   ))
 
   // suggests which ends must have dataflow if "end" has also dataflow

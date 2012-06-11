@@ -23,7 +23,6 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
     for (c <- commands) da = da + c.da
 
     val afv = commands.map(_.afv(da)).foldRight[Set[String]](Set())(_++_)
-    val fv = commands.map(_.fv).foldRight[Set[String]](Set())(_++_)
     var i = 1
     var vars = MutMap[String,Int]()
     for (v <- afv) {
@@ -31,11 +30,13 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
       i += 1
     }
 //    // DEBUGGING
+//    val fv = commands.map(_.fv).foldRight[Set[String]](Set())(_++_)
 //    println("fv: "+fv.mkString(","))
 //    println("afv: "+afv.mkString(","))
 //    println("DA: "+da.pp)
 //    for (v <- fv)
-//      println("var "+v+" - domain: "+da.domain(v).mkString(","))
+//      if (!da.domain(v).isEmpty)
+//        println("var "+v+" - domain: "+da.domain(v).mkString(","))
 
     val cnf = commands.map(_.toCNF(vars,da)).foldRight[CNF.Core](List())((x:CNF.Core,y:CNF.Core) => x ::: y)
     (cnf,vars)
@@ -51,6 +52,8 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
     // invert mapping of assignments!
     for ((_,m) <- pevals; (v1,v2) <- m)
       vareqs += v2 -> (vareqs(v2) + v1)
+
+    // from here: extend the data with information from ':='
 
     var initData = Map[String,Int]()
     for ((m,_) <- pevals)
@@ -116,8 +119,8 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
       }
     } catch {
       case (e: ContradictionException) =>
-        println("adding contraditory clause...")
-        println("Not satisfiable...")
+//        println("adding contraditory clause...")
+//        println("Not satisfiable...")
         None
       //	      e.printStackTrace()
       case (e: TimeoutException) =>

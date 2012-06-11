@@ -1,7 +1,7 @@
 package common.beh.choco.dataconnectors
 
 import common.beh.choco._
-import common.beh.choco.Utils._
+import common.beh.Utils._
 
 
 /**
@@ -17,7 +17,7 @@ class ChoWriter(x: String, uid: Int, var data: List[Int]) extends ChoDataBehavio
   //  val flowConstr = ChoConstraints(Var(ConstrBuilder.flowVar(x,uid)))
   //  val nfConstr = ChoConstraints(FalseC)
 //  val flowConstr = ChoConstraints(TrueC)
-  val nfConstr = ChoConstraints(Neg(Var(Utils.flowVar(x, uid))))
+  val nfConstr = ChoConstraints(Neg(Var(flowVar(x, uid))))
 
   var constraints = loadConstraints
 
@@ -25,7 +25,7 @@ class ChoWriter(x: String, uid: Int, var data: List[Int]) extends ChoDataBehavio
                                   else nfConstr
 
   override def update(s: ChoSolution) {
-    if (s.hasFlow(Utils.flowVar(x, uid))) {
+    if (s.hasFlow(flowVar(x, uid))) {
       //      println("Writer: FLOW! new size: "+size)
       notifyflow()
       constraints = loadConstraints

@@ -1,6 +1,6 @@
 package common.beh.guardedcommands.connectors
 
-import common.beh.choco.Utils._
+import common.beh.Utils._
 import common.beh.guardedcommands._
 
 /**

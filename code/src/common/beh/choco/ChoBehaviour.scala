@@ -1,6 +1,7 @@
 package common.beh.choco
 
-import common.beh.Behaviour
+import common.beh.{Utils, Behaviour}
+
 
 /**
  * Created by IntelliJ IDEA.

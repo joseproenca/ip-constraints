@@ -6,6 +6,7 @@ import choco.kernel.common.logging.{Verbosity, ChocoLogging}
 import scala.collection.JavaConversions._
 import choco.Choco
 import choco.kernel.model.variables.integer.IntegerVariable
+import common.beh.Utils
 
 /**
  * Created by IntelliJ IDEA.
@@ -48,7 +49,7 @@ class ChoConstraints extends common.beh.Constraints[ChoSolution,ChoConstraints] 
       m.addConstraint(c)
     }
 
-    println(m.pretty())
+//    println(m.pretty())
 
     s.read(m)
 

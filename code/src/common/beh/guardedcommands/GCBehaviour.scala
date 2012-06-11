@@ -1,7 +1,7 @@
 package common.beh.guardedcommands
 
 import common.beh.Behaviour
-import common.beh.choco.Utils._
+import common.beh.Utils._
 
 /**
  * Created with IntelliJ IDEA.

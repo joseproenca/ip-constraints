@@ -1,7 +1,7 @@
 package common.beh.choco.dataconnectors
 
 import common.beh.choco._
-import common.beh.choco.Utils.{dataVar,flowVar}
+import common.beh.Utils.{dataVar,flowVar}
 
 /**
  * Created with IntelliJ IDEA.
@@ -17,7 +17,7 @@ class ChoReader(x: String, uid: Int, var size: Int) extends ChoDataBehaviour(Lis
   //  val flowConstr = ChoConstraints(Var(ConstrBuilder.flowVar(x,uid)))
   //  val nfConstr = ChoConstraints(FalseC)
   val flowConstr = ChoConstraints(TrueC)
-  val nfConstr = ChoConstraints(Neg(Var(Utils.flowVar(x, uid))))
+  val nfConstr = ChoConstraints(Neg(Var(flowVar(x, uid))))
 
 
   var constraints = loadConstraints

@@ -1,7 +1,7 @@
 package common.beh.choco.dataconnectors
 
 import common.beh.choco._
-import common.beh.choco.Utils._
+import common.beh.Utils._
 
 
 /**

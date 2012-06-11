@@ -2,7 +2,7 @@ package common.beh.guardedcommands
 
 import common.beh.choco.dataconnectors.Predicate
 import collection.mutable.{Set => MutSet, Map => MutMap}
-import common.beh.choco.Utils._
+import common.beh.Utils._
 
 /**
  * Created with IntelliJ IDEA.
@@ -17,15 +17,17 @@ case class GuardedCom(g:Guard, st: Statement) {
   def da:DomainAbst = g.da + st.da
   def afv(dom: DomainAbst) :Set[String] = {
     var res = Set[String]()
-//    val dx = da // PROBLEM: da of the single command, not of the full expression
+//    val dx = da // PROBLEM: da of the single command, not of the full expression  - solved
     for (v <- fv) {
       if (!isFlowVar(v)) {
         val dv = dom.domain(v) // v -> Set(P1,P2,P3)
         for (p <- dv)
           res += predVar(v,p)
       }
-      else
+      else {
+//        println("Adding flow var "+v)
         res += v
+      }
     }
     res
   }

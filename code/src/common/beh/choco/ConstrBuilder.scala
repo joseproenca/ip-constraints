@@ -3,6 +3,7 @@ package common.beh.choco
 import choco.kernel.model.variables.integer.IntegerVariable
 import choco.Choco
 import choco.kernel.model.constraints.{Constraint => ChocoConstr}
+import common.beh.Utils
 
 /**
  * Created by IntelliJ IDEA.
@@ -16,7 +17,7 @@ import choco.kernel.model.constraints.{Constraint => ChocoConstr}
 sealed abstract class ConstrBuilder {
   type VarMap = Map[String, IntegerVariable]
 
-  def ->(c:ConstrBuilder) = Impl(this,c)
+  def -->(c:ConstrBuilder) = Impl(this,c)
   def <->(c:ConstrBuilder) = Equiv(this,c)
   def and(c:ConstrBuilder) = And(this,c)
   def or(c:ConstrBuilder) = Or(this,c)

@@ -41,6 +41,11 @@ class ChoSolution(val choSol: CPSolver, varMap: Map[String, IntegerVariable]) ex
 //    }
 //    res += "-\n"
     // ERROR if varMap has has IntegerVariables that are not in the solution....
+
+//    for ((k:String,v:IntegerVariable) <- varMap.toList.sortBy((x:(String,IntegerVariable)) => x))
+//          res += k + " -> " + choSol.getVar(v).getVal + "\n"
+
+
     for ((k,v) <- varMap)
       res += k + " -> " + choSol.getVar(v).getVal + "\n"
     //      res += k +" '"+v + "'\n"
