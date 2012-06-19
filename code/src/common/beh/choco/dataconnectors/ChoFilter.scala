@@ -5,8 +5,7 @@ import common.beh.choco.ChoConstraints
 import common.beh.choco.Var
 import choco.kernel.model.variables.integer.IntegerVariable
 import choco.kernel.model.constraints.Constraint
-import Utils.dataVar
-import Utils.flowVar
+import common.beh.Utils._
 
 
 /**

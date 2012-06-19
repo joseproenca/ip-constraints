@@ -23,6 +23,12 @@ class GT(i:Int) extends Predicate {
   override def toString = "[>"+i+"]"
 }
 
+class LT(i:Int) extends Predicate {
+  val choPred = Choco.lt(_:IntegerVariable,i)
+  val funPred = i > (_:Int)
+  override def toString = "[<"+i+"]"
+}
+
 class Even extends Predicate {
   val choPred = (x:IntegerVariable) => Choco.eq(Choco.mod(x,2),0)
   val funPred = (x:Int) => x % 2 == 0

@@ -21,8 +21,9 @@ class ChoWriter(x: String, uid: Int, var data: List[Int]) extends ChoDataBehavio
 
   var constraints = loadConstraints
 
-  protected def loadConstraints = if (!data.isEmpty) ChoConstraints(DataAssgn(dataVar(x,uid),data.head))
-                                  else nfConstr
+  protected def loadConstraints =
+    if (!data.isEmpty) ChoConstraints(Var(flowVar(x,uid)) --> DataAssgn(dataVar(x,uid),data.head))
+    else nfConstr
 
   override def update(s: ChoSolution) {
     if (s.hasFlow(flowVar(x, uid))) {

@@ -72,21 +72,33 @@ object GCSchedules extends App {
 //  val schedule = genSched(0,false) ++ new GCWriter("x",0,List(500)).constraints  // off, morning - turn on
 //  val schedule = genSched(0,false) ++ new GCWriter("x",0,List(1400)).constraints // off, evening - no sol
 
-  val problem = genScheds(100 to 200, "time",0,true) ++ // some will display
-    genScheds(500 to 600, "time",0,false) ++            // and some will turn on
-    new GCWriter("time",0,List(500)).constraints        // (it is morning)
+  val problem = genScheds(100 to 120, "time",0,true) ++ // some will display
+    genScheds(500 to 520, "time",0,false) ++            // and some will turn on
+    new GCWriter("time",0,List(500)).constraints ++
+//      GuardedCommands(True --> DataAssgn(dataVar("time",0),430)) ++
+      GuardedCommands(True --> SGuard(Var(flowVar("time",0))))       // (it is morning)
 
 
 
   val time = System.currentTimeMillis()
-//  val time = System.nanoTime()
+  //  val time = System.nanoTime()
   val res = problem.solve
   val spent = System.currentTimeMillis() - time
 
-  if (res.isDefined) println("solved in "+spent+" ms.")
-  else println("no solution (in "+spent+" ms)")
-  //  if (res.isDefined) println(res.get.pretty)
-//  if (res.isDefined) println("partial eval: "+problem.partialEval(res.get))
+  if (res.isDefined) println("SAT4J   solved in "+spent+" ms.")
+  else println("SAT4J - no solution (in "+spent+" ms)")
+
+//  val time2 = System.currentTimeMillis()
+//  val res2 = problem.solveChocoSat
+//  val spent2 = System.currentTimeMillis() - time2
+//
+//  if (res2.isDefined) println("CHO/SAT solved in "+spent2+" ms.")
+//  else println("CHO/SAT - no solution (in "+spent2+" ms)")
+
+  if (res.isDefined) println("sol: "+res.get.pretty)
+  else println("no sol")
+  if (res.isDefined) {
+  }
 
 
 

@@ -59,11 +59,11 @@ class ChoConstraints extends common.beh.Constraints[ChoSolution,ChoConstraints] 
     else  None
   }
 
-  def ++= (cs:ChoConstraints) {
+  def impose(cs:ChoConstraints) {
     for (cb <- cs.constrBuilders)
       impose(cb) // need to avoid creating different constraint variables for variables with the same name
   }
-  def ++= (cs:Iterable[ConstrBuilder]) {
+  def impose(cs:Iterable[ConstrBuilder]) {
     for (cb <- cs)
       impose(cb) // need to avoid creating different constraint variables for variables with the same name
   }
@@ -71,13 +71,13 @@ class ChoConstraints extends common.beh.Constraints[ChoSolution,ChoConstraints] 
   def ++ (other:ChoConstraints): ChoConstraints = {
     val cs = new ChoConstraints
     cs.constrBuilders = constrBuilders
-    cs ++= other
+    cs impose other
     cs
   }
   def ++ (other:Iterable[ConstrBuilder]): ChoConstraints = {
     val cs = new ChoConstraints
     cs.constrBuilders = constrBuilders
-    cs ++= other
+    cs impose other
     cs
   }
 }
@@ -87,12 +87,12 @@ class ChoConstraints extends common.beh.Constraints[ChoSolution,ChoConstraints] 
 object ChoConstraints {
   def apply(c: ConstrBuilder): ChoConstraints = {
     val res = new ChoConstraints
-    res.impose(c)
+    res impose c
     res
   }
-  def apply(cs: List[ConstrBuilder]): ChoConstraints = {
+  def apply(cs: Iterable[ConstrBuilder]): ChoConstraints = {
     val res = new ChoConstraints
-    for (c <- cs) res.impose(c)
+    for (c <- cs) res impose c
     res
   }
   //  def apply(cs: List[Constraint]): ChoConstraints = {

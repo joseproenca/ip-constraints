@@ -2,7 +2,9 @@ package common.beh.guardedcommands
 
 import common.beh.choco.dataconnectors.Predicate
 import collection.mutable.{Set => MutSet, Map => MutMap}
+import collection.immutable.{Set => ImSet}
 import common.beh.Utils._
+import common.beh.choco.{TrueC, ConstrBuilder}
 
 /**
  * Created with IntelliJ IDEA.
@@ -39,10 +41,14 @@ case class GuardedCom(g:Guard, st: Statement) {
     list
   }
 
-  def partialEval(sol:GCSolution): (Map[String,Int], Map[String,String]) = {
+  def toConstrBuilder(da: DomainAbst): ConstrBuilder = {
+    g.toConstrBuilder --> st.toConstrBuilder(da)
+  }
+
+  def partialEval(sol:GCBoolSolution): PEval = { //(Map[String,Int], Map[String,String]) = {
     if (g.eval(sol))
       st.partialEval(sol)
-    else (Map(),Map())
+    else new PEval(Map(),Map())
   }
 }
 
@@ -109,7 +115,18 @@ abstract sealed class Guard {
     case Neg(Neg(a)) => a.toCNF(vars,da)
   }
 
-  def eval(sol: GCSolution): Boolean = this match {
+  def toConstrBuilder: ConstrBuilder = this match {
+    case Var(name) => common.beh.choco.Var(name)
+    case Pred(p, v) => common.beh.choco.Var(predVar(v,p))//common.beh.choco.FlowPred(p.choPred,v)
+    case And(g1, g2) => g1.toConstrBuilder and g2.toConstrBuilder
+    case Or(g1, g2) =>  g1.toConstrBuilder or  g2.toConstrBuilder
+    case Neg(g) => common.beh.choco.Neg(g.toConstrBuilder)
+    case Impl(g1, g2) => g1.toConstrBuilder --> g2.toConstrBuilder
+    case Equiv(g1, g2) => g1.toConstrBuilder <-> g2.toConstrBuilder
+    case True => common.beh.choco.TrueC
+  }
+
+  def eval(sol: GCBoolSolution): Boolean = this match {
     case Var(name) => sol(name)
     case Pred(p, v) => sol(predVar(v,p))
     case And(g1, g2) => g1.eval(sol) && g1.eval(sol)
@@ -169,15 +186,42 @@ abstract sealed class Statement {
     case Seq(s::ss) => s.toCNF(vars,da) ++ Seq(ss).toCNF(vars,da)
   }
 
-  def partialEval(sol: GCSolution): (Map[String,Int], Map[String,String]) = this match {
-    case SGuard(g) => (Map(),Map())
-    case DataAssgn(v, d) => (Map(v -> d),Map())
-    case VarAssgn(v1, v2) => (Map(),Map(v1 -> v2))
-    case Seq(Nil) => (Map(),Map())
+  def toConstrBuilder(da: DomainAbst): ConstrBuilder = this match {
+    case SGuard(g) => g.toConstrBuilder
+    case DataAssgn(v, d) => //common.beh.choco.DataAssgn(v,d)
+      var res:ConstrBuilder = TrueC
+      val dom = da.domain(v)
+      for (pred <- dom)
+        if (pred.funPred(d))
+          res = res and common.beh.choco.Var(predVar(v,pred))
+        else
+          res = res and common.beh.choco.Neg(common.beh.choco.Var(predVar(v,pred)))
+      //      println("got array "+res.mkString("[",",","]"))
+      res
+    case VarAssgn(v1, v2) =>
+      val (d1,d2) = (da.domain(v1),da.domain(v2))
+      var res: ConstrBuilder= TrueC
+      for (pred <- d1)
+        if (d2 contains pred) {
+          val t = common.beh.choco.VarEq(predVar(v1,pred),predVar(v2,pred))
+                  //(common.beh.choco.Var(predVar(v1,pred)) <-> common.beh.choco.Var(predVar(v2,pred)))
+          res = res and t
+        }
+      res
+    case Seq(Nil) => common.beh.choco.TrueC
+    case Seq(s::ss) => s.toConstrBuilder(da) and Seq(ss).toConstrBuilder(da)
+  }
+
+  def partialEval(sol: GCBoolSolution): PEval = this match {
+    case SGuard(g) => new PEval(Map(),Map())
+    case DataAssgn(v, d) => new PEval(Map(v -> d),Map())
+    case VarAssgn(v1, v2) => new PEval(Map(),Map(v1 -> ImSet(v2)))
+    case Seq(Nil) => new PEval(Map(),Map())
     case Seq(s::ss) =>
       val x1 = s.partialEval(sol)
       val x2 = Seq(ss).partialEval(sol)
-      (x1._1 ++ x2._1, x1._2 ++ x2._2)
+      x1 ++ x2
+      //(x1._1 ++ x2._1, x1._2 ++ x2._2)
   }
 
 }

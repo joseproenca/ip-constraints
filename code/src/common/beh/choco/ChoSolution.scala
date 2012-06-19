@@ -27,6 +27,15 @@ class ChoSolution(val choSol: CPSolver, varMap: Map[String, IntegerVariable]) ex
     getVal(v) == Some(1)
   }
 
+  def sol2map: Map[String, Boolean] = {
+    var res = Map[String,Boolean]()
+    for ((k,v) <- varMap)
+      res += k  -> (choSol.getVar(v).getVal == 1)
+    for (ex <- extension)
+      res += ex._1  ->  (ex._2 == 1)
+    res
+  }
+
   def extend(v:String,i:Int) { extension(v) = i }
   
   def size = varMap.size + extension.size

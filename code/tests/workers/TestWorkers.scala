@@ -2,6 +2,7 @@ package workers
 
 import org.scalatest.FunSpec
 import common.beh.choco.{ChoConstraints, ChoSolution}
+import strategies.{CompleteStrategyBuilder, StrategyBuilder, CompleteStrategy}
 
 /**
  * Created with IntelliJ IDEA.
@@ -28,6 +29,9 @@ class TestWorkers extends FunSpec {
     val lossy = new connectors.Lossy(deployer)
 
     // link nodes
+
+//    wr.connect()
+
     wr.behaviour.connections +=
       lossy -> Set((wr.behaviour.ends.head,lossy.behaviour.ends.head,lossy.behaviour.uid))
     wr.neighbours ::= lossy

@@ -18,9 +18,10 @@ class GCWriter(x: String, uid: Int, var data: List[Int]) extends GCBehaviour(Lis
 
   var constraints = loadConstraints
 
-  protected def loadConstraints =
-    if (!data.isEmpty) GuardedCommands(True --> DataAssgn(dataVar(x,uid),data.head))
+  protected def loadConstraints = {
+    if (!data.isEmpty) GuardedCommands(Var(flowVar(x,uid)) --> DataAssgn(dataVar(x,uid),data.head))
     else nfConstr
+  }
 
   override def update(s: GCSolution) {
     if (s.hasFlow(flowVar(x, uid))) {

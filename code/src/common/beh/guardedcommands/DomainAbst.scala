@@ -14,7 +14,7 @@ import common.beh.choco.dataconnectors.{Predicate,Even,GT}
 class DomainAbst {
   var greater: Map[String,Set[String]] = Map() // eg, x -> yz --- y > x, z > x
   var less: Map[String,Set[String]] = Map()
-  var max: List[String] = List()
+  var max: Set[String] = Set()
   var inv: Map[String,Set[Predicate]] = Map().withDefaultValue(Set()) // eg, x -> PQR
 
   // NOT USED in the end...
@@ -36,7 +36,7 @@ class DomainAbst {
     if (!(greater contains big)) {
       for (set <- less.get(small); v <- set)
         max filter (v ==)
-      max ::= big
+      max += big
     }
   }
 
@@ -70,7 +70,7 @@ class DomainAbst {
       if (res.inv contains k) res.inv += k -> (res.inv(k) ++ v)
       else res.inv += k -> v
 
-    res.max = (max ::: other.max) filterNot (res.greater contains _)
+    res.max = (max ++ other.max) filterNot (res.greater contains _)
     res
   }
 
@@ -99,7 +99,7 @@ object DomainAbst {
     val res = new DomainAbst()
     res.greater = Map(bigsmall._2 -> Set(bigsmall._1))
     res.less = Map(bigsmall._1 -> Set(bigsmall._2))
-    res.max = List(bigsmall._1)
+    res.max = Set(bigsmall._1)
     res
   }
   def apply(v: String, pred:Predicate): DomainAbst = {
