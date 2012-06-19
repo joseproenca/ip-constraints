@@ -24,30 +24,6 @@ object GCSpouts extends App {
   val lfive = new LT(5)
   val gtwo= new GT(2)
 
-//  def genSched(i:Int,on: Boolean): GuardedCommands = {
-//
-//    //    new GCWriter("x",i,List(500)).constraints ++
-//    val res =
-//      new GCExRouter("x","a","b",i).constraints ++
-//        new GCFilter("a","e",i,Neg(Pred(evening,dataVar("a",i)))).constraints ++
-//        new GCFilter("a","f",i,Pred(evening,dataVar("a",i))).constraints ++
-//        new GCFilter("b","g",i,Pred(morning,dataVar("b",i))).constraints ++
-//        new GCMerger("e","g","m",i).constraints ++
-//        new GCSDrain("a","c",i).constraints ++
-//        new GCSDrain("b","d",i).constraints ++
-//        new GCSDrain("g","b",i).constraints ++
-//        new GCSync("e","disp",i).constraints ++
-//        new GCSync("f","off",i).constraints ++
-//        new GCSync("g","on",i).constraints ++
-//        GuardedCommands(True --> SGuard(Var(flowVar("x",i))))
-//
-//    if (on) res ++
-//      new GCSyncFifo("m","c",Some(0),i).constraints ++
-//      new GCFifo("f","d",None,i).constraints
-//    else res ++
-//      new GCSyncFifo("m","c",None,i).constraints ++
-//      new GCFifo("f","d",Some(0),i).constraints
-//  }
 
 
   def genFilters(times: Int): GuardedCommands = {

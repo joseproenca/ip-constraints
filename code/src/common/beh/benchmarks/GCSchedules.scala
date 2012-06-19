@@ -19,6 +19,11 @@ class GCSchedules // needed for the App below to exist
 
 object GCSchedules extends App {
 
+  val n = if (!args.isEmpty) Integer.parseInt(args(0))
+          else               10
+  val choco = if (args.size > 1) args(1) startsWith "c"
+              else               false
+
   val morning = new Morning
   val evening  = new Evening
 
@@ -72,21 +77,37 @@ object GCSchedules extends App {
 //  val schedule = genSched(0,false) ++ new GCWriter("x",0,List(500)).constraints  // off, morning - turn on
 //  val schedule = genSched(0,false) ++ new GCWriter("x",0,List(1400)).constraints // off, evening - no sol
 
-  val problem = genScheds(100 to 120, "time",0,true) ++ // some will display
-    genScheds(500 to 520, "time",0,false) ++            // and some will turn on
-    new GCWriter("time",0,List(500)).constraints ++
-//      GuardedCommands(True --> DataAssgn(dataVar("time",0),430)) ++
-      GuardedCommands(True --> SGuard(Var(flowVar("time",0))))       // (it is morning)
+  val n2 = n / 2
+
+  val problem = genScheds(1 to n2, "time",0,true) ++   // some will display
+    genScheds(n2+1 to n, "time",0,false) ++            // and some will turn on
+    new GCWriter("time",0,List(500)).constraints ++    // (it is morning)
+    GuardedCommands(True --> SGuard(Var(flowVar("time",0)))) // require some dataflow
+
+  if (choco) {
+    val time = System.currentTimeMillis()
+    val res = problem.solveChocoSat
+    val spent = System.currentTimeMillis() - time
+
+    if (res.isDefined) println("PAC solved in "+spent+" ms.")
+    else println("PAC - no solution (in "+spent+" ms)")
+
+//    if (res.isDefined) print(spent+" ")
+//    else print("- ")
+  }
+  else {
+    val time = System.currentTimeMillis()
+    val res = problem.solve
+    val spent = System.currentTimeMillis() - time
+
+        if (res.isDefined) println("PAS solved in "+spent+" ms.")
+        else println("PAS - no solution (in "+spent+" ms)")
+
+//    if (res.isDefined) print(spent+" ")
+//    else print("- ")
+  }
 
 
-
-  val time = System.currentTimeMillis()
-  //  val time = System.nanoTime()
-  val res = problem.solve
-  val spent = System.currentTimeMillis() - time
-
-  if (res.isDefined) println("SAT4J   solved in "+spent+" ms.")
-  else println("SAT4J - no solution (in "+spent+" ms)")
 
 //  val time2 = System.currentTimeMillis()
 //  val res2 = problem.solveChocoSat
@@ -95,10 +116,8 @@ object GCSchedules extends App {
 //  if (res2.isDefined) println("CHO/SAT solved in "+spent2+" ms.")
 //  else println("CHO/SAT - no solution (in "+spent2+" ms)")
 
-  if (res.isDefined) println("sol: "+res.get.pretty)
-  else println("no sol")
-  if (res.isDefined) {
-  }
+//  if (res.isDefined) println("sol: "+res.get.pretty)
+//  else println("no sol")
 
 
 

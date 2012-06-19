@@ -19,6 +19,9 @@ import scala.Some
 
 class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
 
+  var log = System.out
+//  val log = new java.io.PrintStream(new java.io.FileOutputStream("/dev/null"))
+
   var commands = Set[GuardedCom]()
   var da = DomainAbst()
 
@@ -216,34 +219,40 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
 
   def solve : Option[GCSolution] = {
     // solveDomain; toCNF; solveBool?; [partialEval; quotient; dataAssign(done?); solveData(done?); incrementAndSolve?]
+    val time = System.currentTimeMillis()
     val cnf = toCNF
 //    println("cnf: "+cnf)
 //    println("GC: "+commands.mkString(","))
     val optSolBool = solveBool(cnf._1,cnf._2)
+//    log.println("[SAT solve] "+(System.currentTimeMillis()-time))
     if (!optSolBool.isDefined)
       return None
 //    println("INIT GUESS:\n"+optSolBool.get.pretty)
 
-    loopPartialEval(partialEval(optSolBool.get),cnf,optSolBool.get)
+    val res = loopPartialEval(partialEval(optSolBool.get),cnf,optSolBool.get,time)
+//    log.println("[all solve] "+(System.currentTimeMillis()-time))
+    res
   }
 
   //private var conter
-  private def loopPartialEval(pEval: PEval,cnf: (CNF.Core,MutMap[String,Int]), solBool: GCBoolSolution): Option[GCSolution] = {
-    println("#> solved  pEval             - ")//+pEval)
+  private def loopPartialEval(pEval: PEval,cnf: (CNF.Core,MutMap[String,Int]), solBool: GCBoolSolution,time: Long): Option[GCSolution] = {
+//    println("#> solved  pEval             - ")//+pEval)
     pEval.quotient()
-    println("#> calculated quotient       - ")//+pEval)
+//    println("#> calculated quotient       - ")//+pEval)
+//    log.println("[quotient] "+(System.currentTimeMillis()-time))
     pEval.applyDataAssgn(solBool)
-    println("#> solved simple data assign - ")//+pEval)
+//    println("#> solved simple data assign - ")//+pEval)
+//    log.println("[apply data] "+(System.currentTimeMillis()-time))
     if (pEval.isFinished) return Some(pEval.getSol(solBool))
     pEval.solveSimpleData(solBool,da)
-    println("#> solved domain elements    - ")//+pEval)
+//    println("#> solved domain elements    - ")//+pEval)
     if (pEval.isFinished) return Some(pEval.getSol(solBool))
     val (optSol2,newcnf) = incrementAndSolve(cnf._1,cnf._2,solBool,pEval)
-    println("#> incremented and solved new constr.")//+newcnf)
+//    println("#> incremented and solved new constr.")//+newcnf)
     if (!optSol2.isDefined) return None
 
-    println("#> restarting loop...") //        - "+optSol2.get.pretty)
-    loopPartialEval(partialEval(optSol2.get),newcnf,optSol2.get)
+//    println("#> restarting loop...") //        - "+optSol2.get.pretty)
+    loopPartialEval(partialEval(optSol2.get),newcnf,optSol2.get,time)
   }
 
   def solveBool: Option[GCBoolSolution] = {
@@ -312,15 +321,19 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
 
   def solveChocoSat : Option[GCSolution] = {
     // solveDomain; toCNF; solveBool?; [partialEval; quotient; dataAssign(done?); solveData(done?); incrementAndSolve?]
+    val time = System.currentTimeMillis()
     val builders = toConstrBuilders
 //    println("#> solving abst using choco SAT cnf.") // - "+da.pp)
 //    println("builder: "+builders)
     val optSolBool = solveChocoBool(builders)
+//    log.println("[Cho/SAT solve] "+(System.currentTimeMillis()-time))
     if (!optSolBool.isDefined)
       return None
 //    println("INIT GUESS:\n"+optSolBool.get.pretty)
 
-    loopPartialEvalCho(partialEval(optSolBool.get),builders,optSolBool.get)
+    val res = loopPartialEvalCho(partialEval(optSolBool.get),builders,optSolBool.get)
+//    log.println("[all solve]     "+(System.currentTimeMillis()-time))
+    res
   }
 
   private def loopPartialEvalCho(pEval: PEval,builders: Iterable[ConstrBuilder], solBool: GCBoolSolution): Option[GCSolution] = {
@@ -344,11 +357,6 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
 
   def toConstrBuilders : Iterable[ConstrBuilder] = {
     solveDomain()
-
-//    var builders: ConstrBuilder = common.beh.choco.TrueC
-//    for (com <- commands)
-//      builder = builder and com.toConstrBuilder(da)
-//    builder
 
     for (com <- commands)
       yield com.toConstrBuilder(da)

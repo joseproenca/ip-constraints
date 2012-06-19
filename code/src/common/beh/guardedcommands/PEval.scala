@@ -28,9 +28,6 @@ class PEval(var data: Map[String,Int], var rest: Map[String,GenSet[String]]) {
   // ASSUME: instance freshly created with partialEval
   def quotient() { //: Map[String,MutSet[String]] = {
 
-    class Wrapper(var set: MutSet[String])
-
-
     var res = Map[String,Wrapper]()
 
     // for all attributions x := {y}
@@ -38,35 +35,41 @@ class PEval(var data: Map[String,Int], var rest: Map[String,GenSet[String]]) {
       //case 1: x and y have already a group - MERGE
       if ((res contains x) && (res contains y)) {
 //        print("## 1 ## ")
-        if (res(x).set != res(y).set) {
-          for (yv <- res(y).set) {
-            res(x).set.add(yv) // ++= res(y).set
-            res(yv).set = res(x).set
-          }
+        val xl = res(x).leaf
+        val yl = res(y).leaf
+        if (xl.set != yl.set) {
+          xl.set ++= yl.set
+          yl.next = Some(xl)
+//          for (yv <- res(y).set) {
+//            res(x).set.add(yv) // ++= res(y).set
+//            res(yv).set = res(x).set
+//          }
         }
       }
       //case 2: x has a group, but not y - add y to the group!
       else if (res contains x) {
 //        print("## 2 ## ")
-        res(x).set.add(y)
-        res += y -> res(x)
+        val lf = res(x).leaf
+        lf.set.add(y)
+        res += y -> lf
       }
       //case 3: y has a group, but not x
       else if (res contains y) {
 //        print("## 3 ## ")
-        res(y).set.add(x)
-        res += x -> res(y)
+        val lf = res(y).leaf
+        lf.set.add(x)
+        res += x -> lf
       }
       //case 4: new group with "x" and "y"
       else {
 //        print("## 4 ## ")
-        res += x -> new Wrapper(MutSet[String](x,y))
+        res += x -> new Wrapper(MutSet[String](x,y),None)
         res += y -> res(x)
       }
-//      println("- "+(for ((a,b) <- res) yield b.set).toSet)
+//      println("- "+(for ((a,b) <- res) yield b.leaf.set).toSet)
     }
 
-    rest = for ((a,b) <- res) yield a -> b.set
+    rest = for ((a,b) <- res) yield a -> b.leaf.set
   }
 
 
@@ -153,4 +156,7 @@ class PEval(var data: Map[String,Int], var rest: Map[String,GenSet[String]]) {
   override def toString = (data,rest).toString()
 }
 
+private class Wrapper(var set: MutSet[String],var next: Option[Wrapper]) {
+  def leaf: Wrapper = if (next.isDefined) next.get.leaf else this
+}
 

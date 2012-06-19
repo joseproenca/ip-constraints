@@ -18,6 +18,10 @@ class ChoSchedules
 
 object ChoSchedules extends App {
 
+  val n = if (!args.isEmpty) Integer.parseInt(args(0))
+          else               2
+
+
   def genSched(i:Int,on: Boolean): ChoConstraints = {
     val morning = new Morning
     val evening  = new Evening
@@ -68,21 +72,26 @@ object ChoSchedules extends App {
 //    val schedule = genSched(0,false) ++ new ChoWriter("x",0,List(500)).constraints  // off, morning - turn on
 //    val schedule = genSched(0,false) ++ new ChoWriter("x",0,List(1400)).constraints // off, evening - no sol
 
-  val problem = genScheds(100 to 180, "time",0,true) ++ // some will display
-    genScheds(500 to 580, "time",0,false) ++            // and some will turn on
+  val n2: Int = n / 2
+  val problem = genScheds(1 to n2, "time",0,true) ++ // some will display
+    genScheds(n2+1 to n, "time",0,false) ++            // and some will turn on
     new ChoWriter("time",0,List(500)).constraints       // (it is morning)
 
 
 
+
   val time = System.currentTimeMillis()
-  //  val time = System.nanoTime()
   val res = problem.solve
   val spent = System.currentTimeMillis() - time
 
-  if (res.isDefined) println("solved in "+spent+" ms.")
-  else println("no solution (in "+spent+" ms)")
+//  if (res.isDefined) println("CHOCO solved in "+spent+" ms. - "+n+"/"+n2)
+//  else println("no solution (in "+spent+" ms)")
+
 //  if (res.isDefined) println(res.get.pretty)
 //  if (res.isDefined) println("partial eval: "+schedule.partialEval(res.get))
+
+  if (res.isDefined) print(spent+" ")
+  else print("- ")
 
 
 
