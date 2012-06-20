@@ -18,6 +18,8 @@ class ChoSchedules
 
 object ChoSchedules extends App {
 
+  Warmup.go
+
   val n = if (!args.isEmpty) Integer.parseInt(args(0))
           else               2
 
@@ -78,21 +80,17 @@ object ChoSchedules extends App {
     new ChoWriter("time",0,List(500)).constraints       // (it is morning)
 
 
-
-
   val time = System.currentTimeMillis()
   val res = problem.solve
   val spent = System.currentTimeMillis() - time
 
-//  if (res.isDefined) println("CHOCO solved in "+spent+" ms. - "+n+"/"+n2)
+  print(spent)
+
+  //  if (res.isDefined) println("CHOCO solved in "+spent+" ms. - "+n+"/"+n2)
 //  else println("no solution (in "+spent+" ms)")
 
 //  if (res.isDefined) println(res.get.pretty)
 //  if (res.isDefined) println("partial eval: "+schedule.partialEval(res.get))
-
-  if (res.isDefined) print(spent+" ")
-  else print("- ")
-
 
 
   class Morning extends Predicate {

@@ -21,10 +21,14 @@ class GCPrimes // needed for the App below to exist
 
 object GCPrimes extends App {
 
+  Warmup.go
+
   val n = if (!args.isEmpty) Integer.parseInt(args(0))
           else               20
   val choco = if (args.size > 1) args(1) startsWith "c"
               else               false
+  val justInit = if (args.size > 2) args(2) startsWith "i"
+                 else               false
 
   val primes: Array[Int] = Array(
       2,    3,     5,     7,    11,    13,    17,    19,    23,    29
@@ -95,6 +99,7 @@ object GCPrimes extends App {
   val problem = genFilters(n) ++ genSpout ++
     GuardedCommands(True --> SGuard(Var(flowVar("x0",0)))) // require some dataflow
 
+  if (justInit) problem.justInit = true
 //  println(problem.commands.mkString(","))
 
   if (choco) {
@@ -102,24 +107,28 @@ object GCPrimes extends App {
     val res = problem.solveChocoSat
     val spent = System.currentTimeMillis() - time
 
-    if (res.isDefined) println("PAC solved in "+spent+" ms.")
-    else println("PAC - no solution (in "+spent+" ms)")
+    print(spent)
 
-    //    if (res.isDefined) print(spent+" ")
-    //    else print("- ")
+//    if (res.isDefined) println("PAC solved in "+spent+" ms.")
+//    else println("PAC - no solution (in "+spent+" ms)")
+
+//    if (res.isDefined) print(spent+" ")
+//    else print("- ")
   }
   else {
     val time = System.currentTimeMillis()
     val res = problem.solve
     val spent = System.currentTimeMillis() - time
 
-//    println(res.get.pretty)
+    print(spent)
 
-    if (res.isDefined) println("PAS solved in "+spent+" ms.")
-    else println("PAS - no solution (in "+spent+" ms)")
+    //    println(res.get.pretty)
 
-    //    if (res.isDefined) print(spent+" ")
-    //    else print("- ")
+//    if (res.isDefined) println("PAS solved in "+spent+" ms.")
+//    else println("PAS - no solution (in "+spent+" ms)")
+
+//    if (res.isDefined) print(spent+" ")
+//    else print("- ")
   }
 
 

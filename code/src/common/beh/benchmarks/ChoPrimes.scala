@@ -20,6 +20,8 @@ class ChoPrimes
 
 object ChoPrimes extends App {
 
+  Warmup.go
+
   val n = if (!args.isEmpty) Integer.parseInt(args(0))
           else               20
 
@@ -98,8 +100,10 @@ object ChoPrimes extends App {
   val res = problem.solve
   val spent = System.currentTimeMillis() - time
 
-    if (res.isDefined) println("CHOCO solved in "+spent+" ms. - "+n)
-    else println("no solution (in "+spent+" ms)")
+  print(spent)
+
+//    if (res.isDefined) println("CHOCO solved in "+spent+" ms. - "+n)
+//    else println("no solution (in "+spent+" ms)")
 
 //    if (res.isDefined) println(res.get.pretty)
   //  if (res.isDefined) println("partial eval: "+schedule.partialEval(res.get))

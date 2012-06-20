@@ -13,7 +13,7 @@ import common.beh.Solution
 class GCSolution(val boolSol: Solution, var varMap: Map[String, Int]) extends Solution {
   def hasFlow(end: String) =
     boolSol hasFlow end
-    //if (boolSol contains end) varMap(end) else false
+  //if (boolSol contains end) varMap(end) else false
 
   def pretty: String = {
     var res = boolSol.pretty

@@ -21,6 +21,7 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
 
   var log = System.out
 //  val log = new java.io.PrintStream(new java.io.FileOutputStream("/dev/null"))
+  var justInit = false
 
   var commands = Set[GuardedCom]()
   var da = DomainAbst()
@@ -229,6 +230,10 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
       return None
 //    println("INIT GUESS:\n"+optSolBool.get.pretty)
 
+    if (justInit) {
+      return Some(new GCSolution(optSolBool.get,Map[String, Int]()))
+    }
+
     val res = loopPartialEval(partialEval(optSolBool.get),cnf,optSolBool.get,time)
 //    log.println("[all solve] "+(System.currentTimeMillis()-time))
     res
@@ -330,6 +335,8 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
     if (!optSolBool.isDefined)
       return None
 //    println("INIT GUESS:\n"+optSolBool.get.pretty)
+
+    if (justInit) return Some(new GCSolution(optSolBool.get,Map[String, Int]()))
 
     val res = loopPartialEvalCho(partialEval(optSolBool.get),builders,optSolBool.get)
 //    log.println("[all solve]     "+(System.currentTimeMillis()-time))

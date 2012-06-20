@@ -19,10 +19,14 @@ class GCSchedules // needed for the App below to exist
 
 object GCSchedules extends App {
 
+  Warmup.go
+
   val n = if (!args.isEmpty) Integer.parseInt(args(0))
           else               10
   val choco = if (args.size > 1) args(1) startsWith "c"
               else               false
+  val justInit = if (args.size > 2) args(2) startsWith "i"
+                 else               false
 
   val morning = new Morning
   val evening  = new Evening
@@ -84,13 +88,17 @@ object GCSchedules extends App {
     new GCWriter("time",0,List(500)).constraints ++    // (it is morning)
     GuardedCommands(True --> SGuard(Var(flowVar("time",0)))) // require some dataflow
 
+  if (justInit) problem.justInit = true
+
   if (choco) {
     val time = System.currentTimeMillis()
     val res = problem.solveChocoSat
     val spent = System.currentTimeMillis() - time
 
-    if (res.isDefined) println("PAC solved in "+spent+" ms.")
-    else println("PAC - no solution (in "+spent+" ms)")
+    print(spent)
+
+//    if (res.isDefined) println("PAC solved in "+spent+" ms.")
+//    else println("PAC - no solution (in "+spent+" ms)")
 
 //    if (res.isDefined) print(spent+" ")
 //    else print("- ")
@@ -100,8 +108,10 @@ object GCSchedules extends App {
     val res = problem.solve
     val spent = System.currentTimeMillis() - time
 
-        if (res.isDefined) println("PAS solved in "+spent+" ms.")
-        else println("PAS - no solution (in "+spent+" ms)")
+    print(spent)
+
+//    if (res.isDefined) println("PAS solved in "+spent+" ms.")
+//    else println("PAS - no solution (in "+spent+" ms)")
 
 //    if (res.isDefined) print(spent+" ")
 //    else print("- ")
