@@ -12,7 +12,7 @@ import common.beh.Utils._
  * To change this template use File | Settings | File Templates.
  */
 
-class ChoWriter(x: String, uid: Int, var data: List[Int]) extends ChoDataBehaviour(List(x), uid) {
+class ChoWriter(val x: String, uid: Int, var data: List[Int]) extends ChoDataBehaviour(List(x), uid) {
 
   //  val flowConstr = ChoConstraints(Var(ConstrBuilder.flowVar(x,uid)))
   //  val nfConstr = ChoConstraints(FalseC)

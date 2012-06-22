@@ -241,16 +241,16 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
 
   //private var conter
   private def loopPartialEval(pEval: PEval,cnf: (CNF.Core,MutMap[String,Int]), solBool: GCBoolSolution,time: Long): Option[GCSolution] = {
-//    println("#> solved  pEval             - ")//+pEval)
+//    println("#> solved  pEval             - "+pEval)
     pEval.quotient()
-//    println("#> calculated quotient       - ")//+pEval)
+//    println("#> calculated quotient       - "+pEval)
 //    log.println("[quotient] "+(System.currentTimeMillis()-time))
     pEval.applyDataAssgn(solBool)
-//    println("#> solved simple data assign - ")//+pEval)
+//    println("#> solved simple data assign - "+pEval)
 //    log.println("[apply data] "+(System.currentTimeMillis()-time))
     if (pEval.isFinished) return Some(pEval.getSol(solBool))
     pEval.solveSimpleData(solBool,da)
-//    println("#> solved domain elements    - ")//+pEval)
+//    println("#> solved domain elements    - "+pEval)
     if (pEval.isFinished) return Some(pEval.getSol(solBool))
     val (optSol2,newcnf) = incrementAndSolve(cnf._1,cnf._2,solBool,pEval)
 //    println("#> incremented and solved new constr.")//+newcnf)
@@ -328,7 +328,7 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
     // solveDomain; toCNF; solveBool?; [partialEval; quotient; dataAssign(done?); solveData(done?); incrementAndSolve?]
     val time = System.currentTimeMillis()
     val builders = toConstrBuilders
-//    println("#> solving abst using choco SAT cnf.") // - "+da.pp)
+//    println("#> solving abst using choco SAT cnf - "+da.pp)
 //    println("builder: "+builders)
     val optSolBool = solveChocoBool(builders)
 //    log.println("[Cho/SAT solve] "+(System.currentTimeMillis()-time))

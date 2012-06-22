@@ -134,6 +134,10 @@ object ConstrBuilder {
       val v = Choco.makeBooleanVar(name)
       (m + (name -> v), v)
     }
+    else if (Utils.isPredVar(name)) {
+      val v = Choco.makeBooleanVar(name)
+      (m + (name -> v), v)
+    }
     else {
       val v = Choco.makeIntVar(name)
       (m + (name -> v), v)

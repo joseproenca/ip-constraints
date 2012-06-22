@@ -20,4 +20,6 @@ object Utils {
   def flow2data(x: String): String = "D" + x.tail
 
   def isFlowVar(x: String): Boolean = x.startsWith("F$")
+
+  def isPredVar(x: String): Boolean = x.contains('_')
 }

@@ -170,6 +170,7 @@ object GCLoanRequest extends App {
     val sd = Choco.makeIntVar("d2_s")
     val ad = Choco.makeIntVar("d2_d")
     val pd = Choco.makeIntVar("d2_p")
+
     val choPred = (x:IntegerVariable) => //throw new Exception("choPred not implemented")
       Choco.and(
         Choco.implies(Choco.eq(x,1),Choco.and(

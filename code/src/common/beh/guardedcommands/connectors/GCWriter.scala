@@ -12,7 +12,7 @@ import common.beh.guardedcommands._
  * To change this template use File | Settings | File Templates.
  */
 
-class GCWriter(x: String, uid: Int, var data: List[Int]) extends GCBehaviour(List(x), uid) {
+class GCWriter(val x: String, uid: Int, var data: List[Int]) extends GCBehaviour(List(x), uid) {
   //  val flowConstr = ChoConstraints(TrueC)
   val nfConstr = GuardedCommands(True --> SGuard(Neg((Var(flowVar(x, uid))))))
 
