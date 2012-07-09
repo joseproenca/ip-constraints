@@ -1,4 +1,4 @@
-package common.beh.guardedcommands.connectors
+package common.beh.guardedcommands.dataconnectors
 
 import common.beh.guardedcommands._
 import common.beh.Utils._
@@ -23,10 +23,13 @@ class GCIMerger(a: String, b: String, c: String, uid: Int) extends GCBehaviour(L
 
   var constraints = GuardedCommands(Set(
     cv --> SGuard(av or bv),
-    (av or bv) --> SGuard(cv),
+    (av or bv) --> SGuard(cv)
+  ))
+
+  if (useData) constraints ++= Set(
     (av and bv and abv)      --> VarAssgn(dataVar(c,uid),dataVar(a,uid)),
     (av and bv and Neg(abv)) --> VarAssgn(dataVar(c,uid),dataVar(b,uid)),
     (av and Neg(bv)) --> VarAssgn(dataVar(c,uid),dataVar(a,uid)),
     (bv and Neg(av)) --> VarAssgn(dataVar(c,uid),dataVar(b,uid))
-  ))
+  )
 }

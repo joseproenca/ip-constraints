@@ -1,6 +1,7 @@
 package common.beh.guardedcommands
 
-import common.beh.choco.dataconnectors.{Predicate,Even,GT}
+import common.beh.{Predicate,Even,GT,Function}
+import common.beh.Utils._
 
 
 /**
@@ -16,6 +17,7 @@ class DomainAbst {
   var less: Map[String,Set[String]] = Map()
   var max: Set[String] = Set()
   var inv: Map[String,Set[Predicate]] = Map().withDefaultValue(Set()) // eg, x -> PQR
+  var fun: Map[String,List[Function]] = Map().withDefaultValue(List()) // eg, x -> fgh
 
   // NOT USED in the end...
   @deprecated
@@ -46,11 +48,42 @@ class DomainAbst {
     inv += v -> (inv(v) + pred)
   }
 
-  def domain(x:String): Set[Predicate] = {
-    var res = inv(x)
-    if (less contains x)
-      for (smaller <- less(x))
+  /**
+   * Calculates the predicates and functions that should be calculated for each end.
+   * TODO: Test function.
+   * @param x name of the variable representing the end - of shape "F$..."
+   * @return a set of predicates that must be evaluated, and a list of functions that must be applied before
+   */
+  def domain(x:String): Set[(Predicate,List[Function])] = {
+    // 1 - start with current predicates
+    var res = inv(x) map ((_,List[Function]())) //for (p <- inv(x)) yield (p,fun(x))
+    if (less contains x) {
+      // 2 - add domain of following paths
+      for (smaller <- less(x)) {
+//        for ((p,fs) <- domain(smaller))
+//          res(
         res ++= domain(smaller)
+      }
+      // 3 - add functions to all paths
+      if (fun contains x)
+        res = for ((p,fs) <- res) yield (p,fs ::: fun(x))
+    }
+    res
+  }
+
+  /**
+   * Calculates which sequences of functions precede end "x".
+   * NOTE: assumption that only source ends of a connector can define data!
+   * TODO: test function
+   * @param x name of the variable representing the end - of shape "F$..."
+   * @return a set of sequences of functions that will be applied
+   */
+  def pre(x: String): Set[List[Function]] = {
+    var res = Set[List[Function]]()
+    if (greater contains x)
+      for (larger <- greater(x))
+        res ++= (for (fs <- pre(larger)) yield fs ::: fun(x))
+    else res ++= List()
     res
   }
 
@@ -59,6 +92,7 @@ class DomainAbst {
     res.less = less
     res.greater = greater
     res.inv = inv
+    res.fun = fun
 
     for ((k,v) <- other.less)
       if (res.less contains k) res.less += k -> (res.less(k) ++ v)
@@ -67,10 +101,14 @@ class DomainAbst {
       if (res.greater contains k) res.greater += k -> (res.greater(k) ++ v)
       else res.greater += k -> v
     for ((k,v) <- other.inv)
-      if (res.inv contains k) res.inv += k -> (res.inv(k) ++ v)
-      else res.inv += k -> v
+      res.inv += k -> (res.inv(k) ++ v)
+//      if (res.inv contains k) res.inv += k -> (res.inv(k) ++ v)
+//      else res.inv += k -> v
+    for ((k,v) <- other.fun)
+      res.fun += k -> (res.fun(k) ::: v)
 
     res.max = (max ++ other.max) filterNot (res.greater contains _)
+//    println("--- adding da-fun "+fun+" to "+other.fun+" - result: "+res.fun)
     res
   }
 
@@ -79,13 +117,15 @@ class DomainAbst {
   def pp: String = {
     var res = ""
     for ((x,ys) <- greater; y <- ys)
-      res += (y + " > " + x+", ")
+      res += (ppFlowVar(y) + " > " + ppFlowVar(x)+", ")
     if (!greater.isEmpty) res += "\n"
     for ((x,ys) <- less; y <- ys)
-      res += (y + " < " + x+", ")
+      res += (ppFlowVar(y) + " < " + ppFlowVar(x)+", ")
     if (!less.isEmpty) res += "\n"
     for ((v,ps) <- inv)
-      res += (v + ": " + ps.mkString(",")+"\n")
+      res += (ppFlowVar(v) + ": " + ps.mkString(",")+"\n")
+    for ((v,fs) <- fun)
+      res += (ppFlowVar(v) + ": " + fs.mkString(",")+"\n")
     res += "maxs: "+max.mkString(", ")
     res
   }
@@ -105,6 +145,12 @@ object DomainAbst {
   def apply(v: String, pred:Predicate): DomainAbst = {
     val res = new DomainAbst()
     res.inv = Map(v -> Set(pred))
+    res
+  }
+  def apply(v: String, fun:Function): DomainAbst = {
+    val res = new DomainAbst()
+    res.fun = Map(v -> List(fun))
+//    println("--- adding function to domain. New funs: "+res.fun)
     res
   }
 }

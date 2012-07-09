@@ -14,6 +14,10 @@ import common.beh.choco.Var
  */
 
 class ChoIMerger(x:String,y:String,z:String,uid:Int) extends ChoDataBehaviour(List(x,y),uid) {
+
+  useData = true
+  useCC3 = false
+
   val (xv,yv,zv) = (Var(flowVar(x,uid)) , Var(flowVar(y,uid)), Var(flowVar(z,uid)))
 
   var constraints = ChoConstraints(List(

@@ -1,6 +1,6 @@
 package common.beh.guardedcommands
 
-import common.beh.Behaviour
+import common.beh.{Utils, Behaviour}
 import common.beh.Utils._
 
 /**
@@ -12,7 +12,10 @@ import common.beh.Utils._
  */
 
 abstract class GCBehaviour(ends: List[String], uid: Int) extends Behaviour[GCSolution,GuardedCommands](ends,uid) {
+  useData = true // data by default
+
   // adds to "c" the sync constraints wrt the ends shared with "from"
+  // TODO: fix based on useData or not.
   def sync(from: AnyRef, c: GuardedCommands) = {
     if (connections contains from) {
       val glue = for ((end,oend,ouid) <- connections(from))
@@ -25,7 +28,11 @@ abstract class GCBehaviour(ends: List[String], uid: Int) extends Behaviour[GCSol
     else c
   }
 
-  def dataOn(end: String, s: GCSolution) = null
+  def dataOn(end: String, s: GCSolution): Any = {
+    val data = s.varMap.get(Utils.dataVar(end,uid))
+    if (data.isDefined) data.get
+    else 0
+  }
 
   def noSol = null
 

@@ -12,15 +12,19 @@ import common.beh.choco.{Neg, ChoConstraints, Var, ChoBehaviour}
  */
 
 class ChoExRouter(x:String,y:String,z:String,uid:Int) extends ChoBehaviour(List(x,y),uid) {
+
+  useData = false
+  useCC3 = false
+
   val (xv,yv,zv) = (Var(flowVar(x,uid)) , Var(flowVar(y,uid)), Var(flowVar(z,uid)))
 
-  var constraints = ChoConstraints((xv <-> (yv or zv)) and Neg(yv and zv))
+  var constraints = ChoConstraints(List((xv <-> (yv or zv)) , Neg(yv and zv)))
 
   // suggests which ends must have dataflow if "end" has also dataflow
-  def guessRequirements(end: String) = end match {
-    case `x` => Set(y) // priority to y
-    case `y` => Set(x)
-    case `z` => Set(x)
-    case _ => Set()
-  }
+//  def guessRequirements(end: String) = end match {
+//    case `x` => Set(y) // priority to y
+//    case `y` => Set(x)
+//    case `z` => Set(x)
+//    case _ => Set()
+//  }
 }

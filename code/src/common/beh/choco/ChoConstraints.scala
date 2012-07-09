@@ -25,6 +25,48 @@ class ChoConstraints extends common.beh.Constraints[ChoSolution,ChoConstraints] 
     constrBuilders ::= c
   }
 
+  def minimise(v: String): Option[ChoSolution] = {
+    ChocoLogging.setVerbosity(Verbosity.OFF)
+
+    val s = new CPSolver
+
+    val m: CPModel = new CPModel
+
+    val pair = ConstrBuilder.toChoco(constrBuilders)
+    val varMap = pair._1
+    for (constr <- pair._2)
+      m.addConstraint(constr)
+
+    // Add flow constraints
+    var flowvars = Set[IntegerVariable]()
+    for (x <- m.getIntVarIterator) {
+      if (Utils.isFlowVar(x.getName)) flowvars += x
+    }
+    if (!(flowvars.isEmpty)) {
+      var c = Choco.eq(flowvars.head,1)
+      for (v <- flowvars.tail)
+        c = Choco.or(Choco.eq(v,1),c)
+      m.addConstraint(c)
+    }
+
+    //    println(m.pretty())
+
+    s.read(m)
+
+
+//    for ((k,v) <- varMap)
+//      res += k + " -> " + choSol.getVar(v).getVal + "\n"
+
+    var solved = false
+    if (varMap contains v)
+      solved = s.minimize(s.getVar(varMap(v)),true)
+    else println("Var not found in minimisation. VarMap: "+varMap.mkString(","))
+
+    if (solved) Some(new ChoSolution(s,varMap))
+    else  None
+
+  }
+
   def solve: Option[ChoSolution] = {
     ChocoLogging.setVerbosity(Verbosity.OFF)
 
@@ -79,6 +121,10 @@ class ChoConstraints extends common.beh.Constraints[ChoSolution,ChoConstraints] 
     cs.constrBuilders = constrBuilders
     cs impose other
     cs
+  }
+
+  override def toString = {
+    constrBuilders.mkString("[",", ","]")
   }
 }
   

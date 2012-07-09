@@ -1,6 +1,7 @@
 package common.beh.guardedcommands
 
 import common.beh.Solution
+import common.beh.Utils.ppVar
 
 /**
  * Created with IntelliJ IDEA.
@@ -18,7 +19,7 @@ class GCSolution(val boolSol: Solution, var varMap: Map[String, Int]) extends So
   def pretty: String = {
     var res = boolSol.pretty
     for ((v:String,k:Int) <- varMap.toList.sortBy((x:(String,Int)) => x))
-      res += v + " -> "+k+"\n"
+      res += ppVar(v) + " -> "+k+"\n"
     res
   }
 

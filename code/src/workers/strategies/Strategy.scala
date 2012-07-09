@@ -58,7 +58,7 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
   private def neighbourConstr(node:Nd, basec:C): C = {
     var c = basec
 //    var i = included
-    for (n <- node.neighbours) {
+    for ((end,ns) <- node.invConnections; n <- ns) {
 //      i += n
       // node connected to n!
       if (owned contains n) c = node.behaviour.sync(n,c)
@@ -71,18 +71,18 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
   def register(nds:Iterable[Nd]) {
     owned ++= nds
     fringe --= nds
-    for (nd <- nds)
-      extendFringe(nd.neighbours)
+    for (nd <- nds; (_,nbs) <- nd.invConnections; nb <- nbs)
+      extendFringe(nb)
   }
 
   def register(nd:Nd) {
     owned += nd
     fringe -= nd
-    extendFringe(nd.neighbours)
+    for ((_,ns) <- nd.invConnections; n <- ns) extendFringe(n)
   }
 
-  private def extendFringe(nd:Iterable[Nd]) {
-    for (n <- nd)
+  private def extendFringe(n:Nd) {
+//    for (n <- nd)
       if (!(owned contains n)) fringe += n
   }
 

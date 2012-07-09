@@ -1,4 +1,4 @@
-package common.beh.choco.dataconnectors
+package common.beh.choco.connectors
 
 import common.beh.Utils._
 import common.beh.choco._
@@ -7,40 +7,35 @@ import common.beh.choco._
  * Created with IntelliJ IDEA.
  * User: jose
  * Date: 11/06/12
- * Time: 18:28
+ * Time: 18:21
  * To change this template use File | Settings | File Templates.
  */
 
-class ChoSyncFifo(a: String, b: String, var data: Option[Int], uid: Int) extends ChoDataBehaviour(List(a,b), uid) {
+class ChoFifoB(b: String, var data: Option[Int], uid: Int) extends ChoDataBehaviour(List(b), uid) {
 
-  useData = true
+  useData = false
   useCC3 = false
 
-  val av = Var(flowVar(a,uid))
-  val bv = Var(flowVar(b,uid))
+  val bv = Var(flowVar(b, uid))
 
   val emptyFifo = ChoConstraints(Neg(bv))
-  def fullFifo = ChoConstraints(List(
-    av --> bv,
-    bv --> DataAssgn(dataVar(b,uid),data.get)
-  ))
 
+  def fullFifo = ChoConstraints(TrueC)
 
   var constraints = loadConstraints
 
   protected def loadConstraints = if (data.isDefined) fullFifo else emptyFifo
 
   override def update(s: ChoSolution) {
-    if (s.hasFlow(flowVar(a, uid))) {
-      //      println("Writer: FLOW! new size: "+size)
+    if (s.hasFlow(flowVar(b, uid))) {
       notifyflow()
-      data = s.getVal(flowVar(a,uid))
-      constraints = loadConstraints
+      data = None
+      constraints = emptyFifo
     }
   }
 
   override def isProactive: Boolean = data.isDefined
 
   // suggests which ends must have dataflow if "end" has also dataflow
-  def guessRequirements(end: String) = Set()
+  //  def guessRequirements(end: String) = Set()
 }

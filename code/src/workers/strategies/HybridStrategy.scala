@@ -2,8 +2,6 @@ package workers.strategies
 
 import common.beh.{Solution, Constraints}
 import common.beh.choco.{ChoConstraints, ChoSolution}
-import collection.mutable.Queue
-import collection.mutable.Stack
 
 // UNDER CONSTRUCTION
 
@@ -22,10 +20,11 @@ class HybridStrategy[S <: Solution, C <: Constraints[S, C]] extends Strategy[S,C
 
   // Find the initial nodes based on a prefered node "n".
   def initNodes(n: Nd): Set[Nd] = {
+    val nbs = n.getNeighbours()
     // set all neigbours as priority! (and fringe), even before owning anything.
-    fringe ++= n.neighbours
+    fringe ++= nbs
 //    priorityQueue ++= n.neighbours
-    priorityQueue :::= n.neighbours
+    priorityQueue :::= nbs.toList
     Set(n)
   }
 
@@ -76,7 +75,7 @@ class HybridStrategy[S <: Solution, C <: Constraints[S, C]] extends Strategy[S,C
 //        priorityQueue.dequeue()
         priorityQueue = priorityQueue.tail
 
-    for (neighb <- nd.neighbours) {
+    for ((_,neighbs) <- nd.invConnections; neighb <- neighbs) {
       if (owned contains neighb) {
         val deps = nd.guessRequirements(neighb)
         for (dep <- deps)

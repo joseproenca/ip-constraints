@@ -12,15 +12,14 @@ import common.beh.Utils._
  * To change this template use File | Settings | File Templates.
  */
 
-class ChoLossy(x: String, y: String, uid: Int) extends ChoDataBehaviour(List(x, y), uid) {
-  //  var constraints = ChoConstraints(And(
-  //    Impl(Var(ConstrBuilder.flowVar(y,uid)), Var(ConstrBuilder.flowVar(x,uid))),
-  //    (Var(ConstrBuilder.flowVar(x,uid)))
-    //  ))
-  var constraints = ChoConstraints(List(
-    Impl(Var(flowVar(y, uid)), Var(flowVar(x, uid))),
+class ChoLossy(x: String, y: String, uid: Int) extends connectors.ChoLossy(x, y, uid) {
+
+  useData = true
+  useCC3 = false
+
+  constraints impose (
     VarEq(dataVar(x,uid),dataVar(y,uid))
-  ))
+  )
 
   // suggests which ends must have dataflow if "end" has also dataflow
   //  def guessRequirements(end: String) = if (end == x) Set(y) else Set(x)

@@ -1,12 +1,12 @@
 package common.beh.benchmarks
 
 import common.beh.Utils._
-import common.beh.guardedcommands.connectors._
-import common.beh.choco.dataconnectors.{LT, GT, Predicate}
+import common.beh.guardedcommands.dataconnectors._
+import common.beh.{LT, GT, Predicate}
 
 //import common.beh.guardedcommands.GuardedCommands
 import common.beh.guardedcommands._
-import choco.kernel.model.variables.integer.IntegerVariable
+import choco.kernel.model.variables.integer.IntegerExpressionVariable
 import choco.Choco
 
 /**
@@ -29,8 +29,8 @@ object GCSpouts extends App {
   def genFilters(times: Int): GuardedCommands = {
     var res = new GuardedCommands()
     for (i <- 0 to (times-1)) {
-      res ++= new GCFilter("a","b",i,Pred(gtwo,dataVar("a",i))).constraints ++
-              new GCFilter("b","c",i,Neg(Pred(lfive,dataVar("b",i)))).constraints
+      res ++= new GCFilter("a","b",i,Pred(dataVar("a",i),gtwo)).constraints ++
+              new GCFilter("b","c",i,Neg(Pred(dataVar("b",i),lfive))).constraints
       // manual replicator from (startVar.startUid) to (x,i)
     }
     res ++= new GCReader("c",times-1,1).constraints
@@ -39,7 +39,7 @@ object GCSpouts extends App {
 
   def genSpout(): GuardedCommands = {
     new GCSpout("x","a",0).constraints ++
-      new GCFilter("x","reader",0,(Pred(lfive,dataVar("x",0)))).constraints ++
+      new GCFilter("x","reader",0,(Pred(dataVar("x",0),lfive))).constraints ++
       new GCReader("reader",0,1).constraints
   }
 
@@ -91,13 +91,13 @@ object GCSpouts extends App {
 
   class Morning extends Predicate {
     // from 7am to 10am
-    val choPred = (x:IntegerVariable) => Choco.and(Choco.geq(x,420),Choco.leq(x,600))
+    val choPred = (x:IntegerExpressionVariable) => Choco.and(Choco.geq(x,420),Choco.leq(x,600))
     val funPred = (x:Int) => (x >= 40) && (x <= 600)
     override def toString = "Morning"
   }
   class Evening extends Predicate {
     // from 7pm to midnight
-    val choPred = (x:IntegerVariable) => Choco.and(Choco.geq(x,1140),Choco.leq(x,1440))
+    val choPred = (x:IntegerExpressionVariable) => Choco.and(Choco.geq(x,1140),Choco.leq(x,1440))
     val funPred = (x:Int) => (x >= 1140) && (x <= 1440)
     override def toString = "Evening"
   }

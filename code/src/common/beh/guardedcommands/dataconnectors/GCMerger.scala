@@ -1,4 +1,4 @@
-package common.beh.guardedcommands.connectors
+package common.beh.guardedcommands.dataconnectors
 
 import common.beh.Utils._
 import common.beh.guardedcommands._

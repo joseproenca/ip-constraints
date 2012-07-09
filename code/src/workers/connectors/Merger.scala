@@ -3,7 +3,7 @@ package workers.connectors
 import actors.OutputChannel
 import workers.Node
 import common.beh.choco.{ChoConstraints, ChoSolution}
-import common.beh.choco.connectors.{ChoMerger, ChoLossy}
+import common.beh.choco.connectors.ChoMerger
 import scala.Predef._
 
 /**
@@ -20,7 +20,17 @@ class Merger (deployer: OutputChannel[Any]) extends Node[ChoSolution, ChoConstra
 
 
   // suggests which ends must have dataflow if "end" has also dataflow
-  def guessRequirements(nd: Node[ChoSolution, ChoConstraints]) =
-    if (neighbours.head == nd || neighbours.tail.head == nd) Set(neighbours.tail.tail.head)
-    else Set(neighbours.head) // priority to first end.
+  def guessRequirements(nd: Node[ChoSolution, ChoConstraints]): Set[Node[ChoSolution,ChoConstraints]] =
+    if (behaviour.connections contains nd) { // if the node nd is actually connected to nd
+      for ((myend,_,_) <- behaviour.connections(nd)) {// set of ends
+        if (myend == "a" || myend == "b") return invConnections("c")
+        else if (myend == "c") return invConnections("a")
+      }
+      Set()
+    }
+    else Set()
+
+
+  //    if (neighbours.head == nd || neighbours.tail.head == nd) Set(neighbours.tail.tail.head)
+//    else Set(neighbours.head) // priority to first end.
 }

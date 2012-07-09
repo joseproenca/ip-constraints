@@ -1,6 +1,6 @@
 package common.beh.choco
 
-import choco.kernel.model.variables.integer.IntegerVariable
+import choco.kernel.model.variables.integer.{IntegerExpressionVariable, IntegerVariable}
 import choco.Choco
 import choco.kernel.model.constraints.{Constraint => ChocoConstr}
 import common.beh.Utils
@@ -57,6 +57,7 @@ sealed abstract class ConstrBuilder {
     case Equiv(c1, c2) => c1.getVars ++ c2.getVars
     case FlowPred(p, v) => Set(v)
     case DataAssgn(v, d)=> Set(v)
+    case FunAssgn(v1, v2, f) => Set(v1,v2)
     case FalseC => Set()
     case TrueC  => Set()
   }
@@ -117,6 +118,12 @@ sealed abstract class ConstrBuilder {
       val c = Choco.eq(v1,d)
       (vars2,c)
     }
+    case FunAssgn(v1, v2, f) => {
+      val (vars2, nv1) = ConstrBuilder.getVar(vars , v1)
+      val (vars3, nv2) = ConstrBuilder.getVar(vars2, v2)
+      val c = Choco.eq(nv1, f(nv2))
+      (vars3,c)
+    }
     case FalseC => (vars, Choco.FALSE)
     case TrueC => (vars, Choco.TRUE)
   }
@@ -176,6 +183,8 @@ case class Equiv(c1: ConstrBuilder, c2: ConstrBuilder) extends ConstrBuilder
 case class FlowPred(p: IntegerVariable => ChocoConstr, v: String) extends ConstrBuilder
 
 case class DataAssgn(v: String, d: Int) extends ConstrBuilder
+
+case class FunAssgn(v1: String, v2: String, f: IntegerVariable => IntegerExpressionVariable) extends ConstrBuilder
 
 case object FalseC extends ConstrBuilder
 case object TrueC  extends ConstrBuilder

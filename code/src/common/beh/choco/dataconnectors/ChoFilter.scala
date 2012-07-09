@@ -18,6 +18,10 @@ import common.beh.Utils._
 
 
 class ChoFilter(x: String, y: String, uid: Int, p: IntegerVariable => Constraint) extends ChoDataBehaviour(List(x, y), uid) {
+
+  useData = true
+  useCC3 = false
+
   var constraints = ChoConstraints(List(
     // y -> x
     Var(flowVar(y,uid)) --> Var(flowVar(x,uid)),

@@ -11,19 +11,14 @@ import common.beh.choco._
  * To change this template use File | Settings | File Templates.
  */
 
-class ChoFifo(a: String, b: String, var data: Option[Int], uid: Int) extends ChoDataBehaviour(List(a,b), uid) {
-  val av = Var(flowVar(a,uid))
-  val bv = Var(flowVar(b,uid))
+class ChoFifo(a: String, b: String, dt: Option[Int], uid: Int) extends connectors.ChoFifo(a,b, dt, uid) {
 
-  val emptyFifo = ChoConstraints(Neg(bv))
-  def fullFifo = ChoConstraints(List(
-    Neg(av),
+  useData = true
+  useCC3 = false
+
+  override def fullFifo = super.fullFifo ++ ChoConstraints(
     bv --> DataAssgn(dataVar(b,uid),data.get)
-  ))
-
-  var constraints = loadConstraints
-
-  protected def loadConstraints = if (data.isDefined) fullFifo else emptyFifo
+  )
 
   override def update(s: ChoSolution) {
     if (s.hasFlow(flowVar(a, uid))) {
@@ -32,10 +27,11 @@ class ChoFifo(a: String, b: String, var data: Option[Int], uid: Int) extends Cho
       data = s.getVal(flowVar(a,uid))
       constraints = loadConstraints
     }
+    if (s.hasFlow(flowVar(b, uid))) {
+      notifyflow()
+      data = None
+      constraints = loadConstraints
+    }
   }
 
-  override def isProactive: Boolean = data.isDefined
-
-  // suggests which ends must have dataflow if "end" has also dataflow
-  def guessRequirements(end: String) = Set()
 }

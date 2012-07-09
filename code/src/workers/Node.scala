@@ -15,10 +15,16 @@ import actors.OutputChannel
 abstract class Node[S<:Solution, C<:Constraints[S,C]]
     (deployer: OutputChannel[Any]) {
 
+
+
   // abstract method:
   val behaviour: Behaviour[S, C]
 
-  var neighbours = List[Node[S,C]]() // order MUST be the same as the order of ends in behaviour
+  var invConnections: Map[String, Set[Node[S,C]]] = Map() withDefaultValue(Set[Node[S,C]]())
+
+  def getNeighbours(): Iterable[Node[S,C]] = invConnections.values.flatten
+
+  //  var neighbours = List[Node[S,C]]() // order MUST be the same as the order of ends in behaviour
 //  var neighbours = Set[OutputChannel[Any]]()
 
   // shared lock
@@ -48,8 +54,16 @@ abstract class Node[S<:Solution, C<:Constraints[S,C]]
       other -> (for ((myend,otherend) <- ends) yield (myend,otherend,other.behaviour.uid))
     other.behaviour.connections +=
       this -> (for ((myend,otherend) <- ends) yield (otherend,myend,this.behaviour.uid))
-    this.neighbours ::= other
-    other.neighbours ::= this
+
+    for ((myend,otherend) <- ends) {
+//      val myendNodes: Set[Node[S,C]] = this.invConnections(myend)
+      val newMyEndNodes:Set[Node[S,C]] = this.invConnections(myend) ++ Set(other)
+      val newOtherEndNodes:Set[Node[S,C]] = other.invConnections(otherend) ++ Set(this)
+      this.invConnections  += myend -> newMyEndNodes //(this.invConnections(myend) ++ Set(other))
+      other.invConnections += otherend -> newOtherEndNodes
+    }
+//    this.neighbours ::= other
+//    other.neighbours ::= this
   }
 
   def connect(other:Node[S,C],myend:String,otherend:String) {
@@ -57,8 +71,14 @@ abstract class Node[S<:Solution, C<:Constraints[S,C]]
       other -> Set((myend,otherend,other.behaviour.uid))
     other.behaviour.connections +=
       this -> Set((otherend,myend,this.behaviour.uid))
-    this.neighbours ::= other
-    other.neighbours ::= this
+
+    //      val myendNodes: Set[Node[S,C]] = this.invConnections(myend)
+    val newMyEndNodes:Set[Node[S,C]] = this.invConnections(myend) ++ Set(other)
+    val newOtherEndNodes:Set[Node[S,C]] = other.invConnections(otherend) ++ Set(this)
+    this.invConnections  += myend -> newMyEndNodes //(this.invConnections(myend) ++ Set(other))
+    other.invConnections += otherend -> newOtherEndNodes
+    //    this.neighbours ::= other
+//    other.neighbours ::= this
   }
 
 

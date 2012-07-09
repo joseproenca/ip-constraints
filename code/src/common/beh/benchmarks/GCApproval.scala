@@ -1,10 +1,10 @@
 package common.beh.benchmarks
 
 import common.beh.guardedcommands._
-import common.beh.guardedcommands.connectors._
+import common.beh.guardedcommands.dataconnectors._
 import scala.math.pow
-import common.beh.choco.dataconnectors.Predicate
-import choco.kernel.model.variables.integer.IntegerVariable
+import common.beh.Predicate
+import choco.kernel.model.variables.integer.IntegerExpressionVariable
 import choco.Choco
 import common.beh.Utils._
 import common.beh.guardedcommands.Pred
@@ -43,12 +43,12 @@ object GCApproval extends App {
     (id,f1,f2,f3)
   }
 
-  def choF3(n:IntegerVariable) = Choco.mod(n,21)
+  def choF3(n:IntegerExpressionVariable) = Choco.mod(n,21)
 
-  def choF2(n:IntegerVariable) =
+  def choF2(n:IntegerExpressionVariable) =
     Choco.mod(Choco.div(Choco.minus(n,choF3(n)),21),21)
 
-  def choF1(n:IntegerVariable) =
+  def choF1(n:IntegerExpressionVariable) =
     Choco.mod(Choco.div(Choco.minus(Choco.minus(n,choF3(n)),Choco.mult(choF2(n),21)),441),21)
 
 
@@ -77,17 +77,34 @@ object GCApproval extends App {
     }
 //    println("size / n.of srcs: "+size+"/"+srcs.size)
 //    println("clients: "+genClients(size.toInt).map(_.x))
-
-    for (wr <- genClients(size.toInt)) {
-      srcs match {
-        case hd::tl =>
-          res ++= (wr.constraints ++ new GCSync(wr.x,hd,0).constraints)
-          srcs = tl
-        case Nil => {}
-      }
-    }
-//    println("res: "+res.commands.mkString(","))
     res
+  }
+
+
+  def genMergers2(size:Int): GuardedCommands= {
+      val height = scala.math.log(size) / scala.math.log(2)
+      var srcs = List("x")
+      var res = GuardedCommands()
+      for (level <- 1 to height.toInt) {
+        var newsrcs = List[String]()
+        for (x <- srcs) {
+          res = res ++ new GCMerger(x+1,x+2,x,0).constraints
+          newsrcs :::= List(x+1,x+2)
+        }
+        srcs = newsrcs
+      }
+
+
+      for (wr <- genClients(size.toInt)) {
+        srcs match {
+          case hd::tl =>
+            res ++= (wr.constraints ++ new GCSync(wr.x,hd,0).constraints)
+            srcs = tl
+          case Nil => {}
+        }
+      }
+//    println("res: "+res.commands.mkString(","))
+      res
   }
 
   val approve = new Approve()
@@ -96,10 +113,10 @@ object GCApproval extends App {
   val problem = genMergers(n) ++
 //    new GCExRouter("x","app","y",0).constraints ++
 //    new GCExRouter("y","den","neither",0).constraints ++
-    new GCFilter("x","app-ok",0,Pred(approve,dataVar("x",0))).constraints ++
-    new GCFilter("x","den-ok",0,Pred(deny,dataVar("x",0))).constraints ++
+    new GCFilter("x","app-ok",0,Pred(dataVar("x",0),approve)).constraints ++
+    new GCFilter("x","den-ok",0,Pred(dataVar("x",0),deny)).constraints ++
     new GCFilter("x","neither-ok",0,
-      Neg(Pred(approve,dataVar("x",0))) and Neg(Pred(deny,dataVar("x",0)))).constraints ++
+      Neg(Pred(dataVar("x",0),approve)) and Neg(Pred(dataVar("x",0),deny))).constraints ++
     GuardedCommands(True --> SGuard(Var(flowVar("x",0)))) // flow on one of the clients
 
   if (justInit) problem.justInit = true
@@ -142,7 +159,7 @@ object GCApproval extends App {
 /// PREDICATES
 
 class Approve extends Predicate {
-  val choPred = (x:IntegerVariable) =>
+  val choPred = (x:IntegerExpressionVariable) =>
     Choco.leq(140,Choco.sum(
       Choco.mult(GCApproval.choF1(x),2),
       Choco.mult(GCApproval.choF2(x),3),
@@ -158,7 +175,7 @@ class Approve extends Predicate {
 }
 
 class Deny extends Predicate {
-  val choPred = (x:IntegerVariable) =>
+  val choPred = (x:IntegerExpressionVariable) =>
     Choco.geq(90,Choco.sum(
       Choco.mult(GCApproval.choF1(x),2),
       Choco.mult(GCApproval.choF2(x),3),

@@ -14,6 +14,9 @@ import common.beh.choco.VarEq
 
 class ChoSSpout(a:String,b:String,uid:Int) extends ChoDataBehaviour(List(a,b),uid) {
 
+  useData = true
+  useCC3 = false
+
   var constraints = ChoConstraints(
     VarEq(flowVar(a,uid),flowVar(b,uid))
   )

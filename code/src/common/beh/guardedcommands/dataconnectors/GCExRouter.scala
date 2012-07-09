@@ -1,4 +1,4 @@
-package common.beh.guardedcommands.connectors
+package common.beh.guardedcommands.dataconnectors
 
 import common.beh.Utils._
 import common.beh.guardedcommands._
@@ -19,8 +19,14 @@ class GCExRouter(a: String, b: String, c: String, uid: Int) extends GCBehaviour(
   var constraints = GuardedCommands(Set(
     av --> SGuard(bv or cv),
     (bv or cv) --> SGuard(av),
-    True --> SGuard(Neg(bv and cv)),
+    True --> SGuard(Neg(bv and cv))
+  ))
+
+  if (useData) constraints ++= Set(
     bv --> VarAssgn(dataVar(b,uid),dataVar(a,uid)),
     cv --> VarAssgn(dataVar(c,uid),dataVar(a,uid))
-  ))
+  )
+
+  if (useCC3) throw new Exception("CC3 not implemented")
+
 }

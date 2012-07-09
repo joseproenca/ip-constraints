@@ -37,13 +37,13 @@ class ChoSolution(val choSol: CPSolver, varMap: Map[String, IntegerVariable]) ex
   }
 
   def extend(v:String,i:Int) { extension(v) = i }
-  
+
   def size = varMap.size + extension.size
   def sizeModel = choSol.getModel.getNbIntVars
 
   def pretty: String = {
     var res: String = ""
-    val it: java.util.Iterator[IntegerVariable] = choSol.getModel.getIntVarIterator
+//    val it: java.util.Iterator[IntegerVariable] = choSol.getModel.getIntVarIterator
 //    while (it.hasNext) {
 //      val variab: IntegerVariable = it.next
 //      res += variab.getName + " -> " + choSol.getVar(variab).getVal + "\n";
@@ -55,12 +55,21 @@ class ChoSolution(val choSol: CPSolver, varMap: Map[String, IntegerVariable]) ex
 //          res += k + " -> " + choSol.getVar(v).getVal + "\n"
 
 
-    for ((k,v) <- varMap)
-      res += k + " -> " + choSol.getVar(v).getVal + "\n"
+    for ((k,v) <- varMap.toList.sortBy((x:(String,IntegerVariable)) => x._1))
+      if (choSol.contains(v))
+        res += common.beh.Utils.ppVar(k) + " -> " + choSol.getVar(v).getVal + "\n"
+      else
+        res += common.beh.Utils.ppVar(k) + " -> NOFLOW\n"
     //      res += k +" '"+v + "'\n"
 
     for (ex <- extension)
       res += ex._1 + " -> " + ex._2 + "\n"
     res
   }
+
+  def apply(v:String): Int =
+    getVal(v) match {
+      case Some(x) => x
+      case None => 0
+    }
 }

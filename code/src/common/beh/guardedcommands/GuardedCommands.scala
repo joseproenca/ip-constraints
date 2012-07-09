@@ -25,30 +25,54 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
 
   var commands = Set[GuardedCom]()
   var da = DomainAbst()
+  var solvedDomain = false
+  //  var someVars: Option[MutMap[String,Int]] = None
 
 
+  /**
+   * Collect the domain of every guarded command in field 'da'.
+   * Used by 'collectVars'.
+   */
   def solveDomain() {
-    for (c <- commands) da = da + c.da
+    if (!solvedDomain) {
+      for (c <- commands) da = da + c.da
+      solvedDomain = true
+    }
   }
 
-  def toCNF: (CNF.Core,MutMap[String,Int]) = {
+  /**
+   * Should be performed only once per guarded command.
+   * Possible optimization: collect vars upon creation
+   *   - ignored since lots of temporary domains are calculated.
+   * @return Map from var names to their unique id number from 1 to size(map) - to be used by a SAT solver.
+   */
+  def collectVars: MutMap[String, Int] = {
+//    if (someVars.isDefined) return someVars.get
+
     solveDomain()
 
-    val afv = commands.map(_.afv(da)).foldRight[Set[String]](Set())(_++_)
+    val afv = commands.map(_.afv(da)).foldRight[Set[String]](Set())(_ ++ _)
     var i = 1
-    var vars = MutMap[String,Int]()
+    var vars = MutMap[String, Int]()
     for (v <- afv) {
+//      println(" ** "+v)
       vars(v) = i
       i += 1
     }
 
-    // build mapping of predicates
-//    val fv = commands.map(_.fv).foldRight[Set[String]](Set())(_++_)
-//    for (v <- fv)
-//      if (!da.domain(v).isEmpty)
-//        preds += v -> domain
-//            println("var "+v+" - domain: "+da.domain(v).mkString(","))
+    // TODO: optimize constraints: search for eq vars and assign the same var (int)!
 
+//    someVars = Some(vars)
+    vars
+  }
+
+
+  /**
+   * Collects the SAT problem for the abstract problem. Uses 'collectVars' (and indirectly 'solveDomain').
+   * @return  The CNF problem for the abstract problem.
+   */
+  def toCNF: (CNF.Core,MutMap[String,Int]) = {
+    var vars: MutMap[String, Int] = collectVars
 
 //    // DEBUGGING
 //    val fv = commands.map(_.fv).foldRight[Set[String]](Set())(_++_)
@@ -60,125 +84,54 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
 //        println("var "+v+" - domain: "+da.domain(v).mkString(","))
 
 
-
     val cnf = commands.map(_.toCNF(vars,da)).foldRight[CNF.Core](List())((x:CNF.Core,y:CNF.Core) => x ::: y)
     (cnf,vars)
   }
 
-  //type PEval = (Map[String,Int], Map[String,String])
 
+  /**
+   * Calculates a partial evaluation based on a solution to its abstract problem.
+   * @param sol Solution to this' abstract problem
+   * @return A partial evaluation - initially only a set of (var and data) assignments and function applications.
+   */
   def partialEval(sol:GCBoolSolution): PEval = { //(Map[String,Int], Map[String,Set[String]]) = {
     val pevals = commands.map(_.partialEval(sol)) // list of pairs of maps
-    val peval = pevals.foldRight[PEval](new PEval(Map(),Map()))((x:PEval,y:PEval) => x++y)//(x._1++y._1, x._2++y._2))
+    val peval = pevals.foldRight[PEval](new PEval(Map(),Map(),Map()))((x:PEval,y:PEval) => x++y)//(x._1++y._1, x._2++y._2))
     peval
   }
 
-//  def quotient(peval: PEval): Map[String,MutSet[String]] = {
-//
-//    class Wrapper(var set: MutSet[String])
-//
-//
-//    var res = Map[String,Wrapper]()
-//
-//    for ((x,y) <- peval._2) {
-//      if ((res contains x) && (res contains y)) {
-//        for (yv <- res(y).set) res(x).set.add(yv) // ++= res(y).set
-//        res(y).set = res(x).set
-//      }
-//      else if (res contains x) {
-//        res(x).set.add(y)
-//        res += y -> res(x)
-//      }
-//      else if (res contains y) {
-//        res(y).set.add(x)
-//        res += x -> res(y)
-//      }
-//      else {
-//        res += x -> new Wrapper(MutSet[String](x,y))
-//        res += y -> res(x)
-//      }
-////      println("added "+(x,y)+" - "+(for ((a,s) <- res) yield a + " +> "+s.set.mkString("{",",","}") ))
-//    }
-//
-//    for ((a,b) <- res) yield a -> b.set
-//  }
 
-//  def applyDataAssgn(sol:GCBoolSolution): (Map[String,Int], Set[MutSet[String]]) = { // Map[String,MutSet[String]]) = {
-//    val peval = partialEval(sol)
-//    var partition = peval.quotient() //quotient(peval)
-//    var res = Map[String,Int]()
-//
-//    for ((x,int) <- peval._1) {
-//      if (partition contains x) {
-//        for (v <- partition(x)) {
-//          res += v -> int
-//          partition -= v
-//        }
-//      }
-//      else
-//        res += x -> int
-//    }
-//
-//    // extend partition with variables with dataflow, not in the leftovers of the partition
-//    for ((v,bool) <- sol.varMap)
-//      if (isFlowVar(v) && bool)
-//        if (!(res contains flow2data(v)) && !(partition contains flow2data(v)))
-//            partition += v -> MutSet(v)
-//
-//    // drop indexes of the partition
-//    (res,partition.values.toSet)
-//  }
-
-//  def solveSimpleData(sol:GCSolution, sdelta: Map[String,Int], srest: Set[MutSet[String]]) : (Map[String,Int], Set[MutSet[String]]) = {
-//    var rest = srest
-//    var delta = sdelta
-//    for (group <- srest) {
-//      var preds = Set[ConstrBuilder]()
-//      for (v <- group) {
-//        if (da.max contains v)
-//          for (pred <- da.domain(v)) {
-//            val pvar = predVar(v,pred)
-//            preds += (if (sol(pvar)) FlowPred(pred.choPred,"x")
-//                      else common.beh.choco.Neg(FlowPred(pred.choPred,"x")))
-//          }
-//      }
-////      preds ++= da.domain(v)
-//      println("solving group "+group.mkString("{",",","}")+
-//              " by adding to predicates "+preds.mkString("{",",","}"))
-//      if (preds.isEmpty) {
-//        for (v <- group) delta += v -> 0
-//        rest -= group
-//      }
-//      else {
-//        val c = new ChoConstraints()
-//        c impose preds //(for (p <- preds) yield FlowPred(p.choPred,"x"))
-//        val sol = c.solve
-//        if (sol.isDefined) {
-//          rest -= group
-//          for (v <- group) delta += v -> sol.get.getVal("x").get
-////                  print(sol.get.pretty)
-////                  println("solved solution for group "+group.mkString("{",",","}"))
-//        }
-//
-//      }
-//    }
-//    (delta,rest)
-//  }
-
+  /**
+   * For each group of equal variables (by v1 := v2) that had no data assignment,
+   * assumes that it has no solution (and hence the abstract solution was wrong).
+   * This method uses the previous solution to increment the abstract problem, and
+   * solves the new abstract problem.
+   * Only groups that do not depend in any function are considered.
+   * @param cnf The current abstract problem
+   * @param vars The variable mapping between var names and their ids in the cnf
+   * @param sol The previous solution - what should be negated to avoid being again a (wrong) solution.
+   * @param pEval The current partial evaluation - with the equal groups that remain to be solved.
+   * @return Triple (nested pair) with a solution for an extended abstract problem, this problem,
+   *         and the mapping of var names to ids.
+   * */
   def incrementAndSolve(cnf: CNF.Core,
                         vars: MutMap[String,Int],
                         sol: GCBoolSolution,
                         pEval: PEval) : (Option[GCBoolSolution],(CNF.Core,MutMap[String,Int])) = {
-    //                        sdelta: Map[String,Int],
-    //                        srest: Set[MutSet[String]]) : Option[GCBoolSolution] = {// (Map[String,Int], Set[MutSet[String]]) = {
     // for each remaining group, negate it in the constraints
     var newCnf = cnf
     for (group <- pEval.flattenRest) {
       var avoid = List[Int]()
-      for (v <- group) {
+      // check if data is calculated by another group + function
+      var funDependent = false
+      for (modvars <- pEval.funcs.values; (v,_) <- modvars)
+        if (group contains v) funDependent = true
+
+      // collect bad solution for each remaining group with no functional dependency
+      if (!funDependent) for (v <- group) {
         if (da.max contains v) {
-          for (pred <- da.domain(v)) {
-            val pvar = predVar(v,pred)
+          for ((pred,fs) <- da.domain(v)) {
+            val pvar = predVar(v,pred,fs)
             avoid ::= (if (sol(pvar)) vars(pvar) * (-1)
             else vars(pvar))
           }
@@ -191,31 +144,6 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
     (solveBool(newCnf,vars),(newCnf,vars))
   }
 
-
-//    // from here: extend the data with information from ':='
-//
-//    var vareqs = Map[String,Set[String]]().withDefaultValue(Set[String]())
-//    // invert mapping of assignments!
-//    for ((_,m) <- pevals; (v1,v2) <- m)
-//      vareqs += v2 -> (vareqs(v2) + v1)
-//
-//
-//    var initData = Map[String,Int]()
-//    for ((m,_) <- pevals)
-//      initData ++= m
-//
-//    var newData = initData
-//    while (!newData.isEmpty) {
-//      val (s,d) = newData.head
-//      newData = newData.tail
-//      if (vareqs contains s)
-//        for (v2 <- vareqs(s)) {
-//          newData += v2 -> d
-//          initData += v2 -> d
-//        }
-//    }
-//    (initData,vareqs)
-//  }
 
 
   def solve : Option[GCSolution] = {
@@ -239,7 +167,7 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
     res
   }
 
-  //private var conter
+  //private var counter
   private def loopPartialEval(pEval: PEval,cnf: (CNF.Core,MutMap[String,Int]), solBool: GCBoolSolution,time: Long): Option[GCSolution] = {
 //    println("#> solved  pEval             - "+pEval)
     pEval.quotient()
@@ -321,13 +249,50 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
     }
   }
 
-  ////////////////////////
-  // USING CHOCO FOR SAT
+  /**
+   *  Returns a solution for determined and closed connectors
+   * @return Data solution from the abstract predicates with a simple data propagation traversal, if the simple
+   *         propagation returns a complete solution.
+   */
+  def quickDataSolve : Option[GCSolution] = {
+    val cnf = toCNF
+    val optSolBool = solveBool(cnf._1,cnf._2)
+    if (!optSolBool.isDefined)
+      return None
+
+    val pEval = partialEval(optSolBool.get)
+    val done = pEval.freshTraversal()
+
+    if (done)
+      Some(pEval.getSol(optSolBool.get))
+    else
+      None
+  }
+
+  /////////////////////////
+  // USING CHOCO FOR SMT //
+  /////////////////////////
+
+  def solveChoco : Option[ChoSolution] = {
+    val choConstr = ChoConstraints(toConstBuilders)
+    choConstr.solve
+  }
+
+  def toConstBuilders:Iterable[ConstrBuilder] = {
+    for (com <- commands)
+      yield com.toConstrBuilder
+  }
+
+
+
+  /////////////////////////
+  // USING CHOCO FOR SAT //
+  /////////////////////////
 
   def solveChocoSat : Option[GCSolution] = {
     // solveDomain; toCNF; solveBool?; [partialEval; quotient; dataAssign(done?); solveData(done?); incrementAndSolve?]
     val time = System.currentTimeMillis()
-    val builders = toConstrBuilders
+    val builders = toBoolConstrBuilders
 //    println("#> solving abst using choco SAT cnf - "+da.pp)
 //    println("builder: "+builders)
     val optSolBool = solveChocoBool(builders)
@@ -362,13 +327,22 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
   }
 
 
-  def toConstrBuilders : Iterable[ConstrBuilder] = {
+  /**
+   * Calculate the choco integer constraints for the abstract (SAT) problem.
+   * @return A constraint builder for choco constraints.
+   */
+  def toBoolConstrBuilders : Iterable[ConstrBuilder] = {
     solveDomain()
 
     for (com <- commands)
-      yield com.toConstrBuilder(da)
+      yield com.toBoolConstrBuilder(da)
   }
 
+  /**
+   * Same as "solveBool" but using choco constraints (from constraint builders).
+   * @param builders The SAT problem as a choco constraint (from a constraint builder)
+   * @return Solution for an abstract problem (using choco constraints).
+   */
   def solveChocoBool(builders: Iterable[ConstrBuilder]) : Option[GCBoolSolution] = {
     val choSol = ChoConstraints(builders).solve
     for (s <- choSol) yield new GCBoolSolution(s.sol2map)
@@ -385,9 +359,10 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
     for (group <- pEval.flattenRest) {
       var avoid: ConstrBuilder = FalseC //List[Int]()
       for (v <- group) {
+        // TODO: Check if FUNCTIONS need to be considered.
         if (da.max contains v) {
-          for (pred <- da.domain(v)) {
-            val pvar = predVar(v,pred)
+          for ((pred,fs) <- da.domain(v)) {
+            val pvar = predVar(v,pred,fs)
             avoid = avoid or (if (sol.hasFlow(pvar)) common.beh.choco.Neg(common.beh.choco.Var(pvar))
                               else common.beh.choco.Var(pvar))
           }
@@ -411,6 +386,13 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
     val thiscommands = commands
     new GuardedCommands(){
       commands = thiscommands ++ others
+    }
+  }
+
+  def +(other: GuardedCom): GuardedCommands = {
+    val thiscommands = commands
+    new GuardedCommands(){
+      commands = thiscommands + other
     }
   }
 }

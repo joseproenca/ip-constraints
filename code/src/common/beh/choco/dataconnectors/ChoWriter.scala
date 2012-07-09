@@ -12,16 +12,12 @@ import common.beh.Utils._
  * To change this template use File | Settings | File Templates.
  */
 
-class ChoWriter(val x: String, uid: Int, var data: List[Int]) extends ChoDataBehaviour(List(x), uid) {
+class ChoWriter(val x: String, uid: Int, var data: List[Int]) extends connectors.ChoWriter(x, uid, data.size) {
 
-  //  val flowConstr = ChoConstraints(Var(ConstrBuilder.flowVar(x,uid)))
-  //  val nfConstr = ChoConstraints(FalseC)
-//  val flowConstr = ChoConstraints(TrueC)
-  val nfConstr = ChoConstraints(Neg(Var(flowVar(x, uid))))
+  useData = true
+  useCC3 = false
 
-  var constraints = loadConstraints
-
-  protected def loadConstraints =
+  override protected def loadConstraints =
     if (!data.isEmpty) ChoConstraints(Var(flowVar(x,uid)) --> DataAssgn(dataVar(x,uid),data.head))
     else nfConstr
 
@@ -36,6 +32,4 @@ class ChoWriter(val x: String, uid: Int, var data: List[Int]) extends ChoDataBeh
 
   override def isProactive: Boolean = !data.isEmpty
 
-  // suggests which ends must have dataflow if "end" has also dataflow
-  def guessRequirements(end: String) = Set()
 }

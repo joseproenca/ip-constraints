@@ -1,4 +1,4 @@
-package common.beh.guardedcommands.connectors
+package common.beh.guardedcommands.dataconnectors
 
 import common.beh.Utils._
 import common.beh.guardedcommands._
@@ -19,7 +19,11 @@ class GCWriter(val x: String, uid: Int, var data: List[Int]) extends GCBehaviour
   var constraints = loadConstraints
 
   protected def loadConstraints = {
-    if (!data.isEmpty) GuardedCommands(Var(flowVar(x,uid)) --> DataAssgn(dataVar(x,uid),data.head))
+    if (!data.isEmpty) {
+      if(useData) GuardedCommands(Var(flowVar(x,uid)) --> DataAssgn(dataVar(x,uid),data.head))
+      else if (useCC3) throw new Exception("CC3 not implemented")
+      else GuardedCommands()
+    }
     else nfConstr
   }
 

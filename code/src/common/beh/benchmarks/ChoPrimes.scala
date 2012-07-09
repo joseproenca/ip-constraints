@@ -3,9 +3,10 @@ package common.beh.benchmarks
 import common.beh.choco.dataconnectors._
 import common.beh.choco._
 import common.beh.Utils._
-import choco.kernel.model.variables.integer.IntegerVariable
+import choco.kernel.model.variables.integer.{IntegerExpressionVariable, IntegerVariable}
 import choco.Choco
 import common.beh.choco.ChoConstraints
+import common.beh.{GT, Predicate}
 
 
 /**
@@ -81,9 +82,11 @@ object ChoPrimes extends App {
   def genFilters(size: Int): ChoConstraints = {
     var constr = new ChoSDrain("x","x"+size,0).constraints ++
       new ChoFilter("x","x0",0,new GT(1).choPred).constraints
+//      new ChoSync("x","x0",0).constraints
 //        Pred(new GT(1),dataVar("x",0))).constraints
     for (i <- 0 to (size-1)) constr = constr ++
-      new ChoFilter("x"+i,"x"+(i+1),0,(x:IntegerVariable) => Choco.not(new Divides(i).choPred(x))).constraints
+          new ChoFilter("x"+i,"x"+(i+1),0,(x:IntegerVariable) => Choco.not(new Divides(i).choPred(x))).constraints
+//      new ChoSync("x"+i,"x"+(i+1),0).constraints
     constr
   }
 
@@ -113,7 +116,7 @@ object ChoPrimes extends App {
 
 
   class Divides(n:Int) extends Predicate {
-    val choPred = (x:IntegerVariable) => Choco.eq(Choco.mod(x,primes(n)),0)
+    val choPred = (x:IntegerExpressionVariable) => Choco.eq(Choco.mod(x,primes(n)),0)
     val funPred = (x:Int) => x % primes(n) == 0
     override def toString = "Divides-"+primes(n)
   }

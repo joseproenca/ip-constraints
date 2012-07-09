@@ -14,7 +14,10 @@ import common.beh.Utils
 // So far Readers and Writers are equal
 class ChoReader(x:String,uid:Int,var size:Int) extends ChoBehaviour(List(x),uid) {
 
-//  val flowConstr = ChoConstraints(Var(ConstrBuilder.flowVar(x,uid)))
+  useData = false
+  useCC3 = false
+
+  //  val flowConstr = ChoConstraints(Var(ConstrBuilder.flowVar(x,uid)))
 //  val nfConstr = ChoConstraints(FalseC)
   val flowConstr = ChoConstraints(TrueC)
   val nfConstr = ChoConstraints(Neg(Var(Utils.flowVar(x,uid))))

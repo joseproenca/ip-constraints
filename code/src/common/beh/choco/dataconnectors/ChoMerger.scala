@@ -11,21 +11,21 @@ import common.beh.choco._
  * To change this template use File | Settings | File Templates.
  */
 
-class ChoMerger(x:String,y:String,z:String,uid:Int) extends ChoDataBehaviour(List(x,y),uid) {
-  val (xv,yv,zv) = (Var(flowVar(x,uid)) , Var(flowVar(y,uid)), Var(flowVar(z,uid)))
+class ChoMerger(x:String,y:String,z:String,uid:Int) extends connectors.ChoMerger(x,y,z,uid) {
 
-  var constraints = ChoConstraints(List(
-    (zv <-> (xv or yv)),
-    Neg(xv and yv),
+  useData = true
+  useCC3 = false
+
+  constraints impose List(
     xv --> VarEq(dataVar(x,uid),dataVar(z,uid)),
     yv --> VarEq(dataVar(y,uid),dataVar(z,uid))
-  ))
+  )
 
   // suggests which ends must have dataflow if "end" has also dataflow
-  def guessRequirements(end: String) = end match {
-    case `x` => Set(z)
-    case `y` => Set(z)
-    case `z` => Set(x) // priority to x
-    case _ => Set()
-  }
+//  def guessRequirements(end: String) = end match {
+//    case `x` => Set(z)
+//    case `y` => Set(z)
+//    case `z` => Set(x) // priority to x
+//    case _ => Set()
+//  }
 }

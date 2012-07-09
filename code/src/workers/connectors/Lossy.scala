@@ -22,7 +22,15 @@ class Lossy(deployer: OutputChannel[Any]) extends Node[ChoSolution, ChoConstrain
 
   // suggests which ends must have dataflow if "end" has also dataflow
   // "b" requires "a", but not vice-versa!
-  def guessRequirements(nd: Node[ChoSolution, ChoConstraints]) =
-    if (neighbours.tail.head == nd) Set(neighbours.head)
-    else Set(neighbours.head)
+  def guessRequirements(nd: Node[ChoSolution, ChoConstraints]): Set[Node[ChoSolution,ChoConstraints]] =
+    if (behaviour.connections contains nd) { // if the node nd is actually connected to nd
+      for ((myend,_,_) <- behaviour.connections(nd)) {// set of ends
+        if (myend == "a") return invConnections("b")
+        else if (myend == "b") return invConnections("a")
+      }
+      Set()
+    }
+    else Set()
+//    if (neighbours.tail.head == nd) Set(neighbours.head)
+//    else Set(neighbours.head)
 }

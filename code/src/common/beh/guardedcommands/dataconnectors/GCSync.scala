@@ -1,4 +1,4 @@
-package common.beh.guardedcommands.connectors
+package common.beh.guardedcommands.dataconnectors
 
 import common.beh.Utils._
 import common.beh.guardedcommands._
@@ -15,8 +15,12 @@ class GCSync(a: String, b: String, uid: Int) extends GCBehaviour(List(a,b), uid)
   val av = Var(flowVar(a,uid))
   val bv = Var(flowVar(b,uid))
 
-  var constraints = GuardedCommands(Set(
-    True --> SGuard(av <-> bv),
+  var constraints = GuardedCommands(
+    True --> SGuard(av <-> bv)
+  )
+
+  if (useData) constraints +=
     av --> VarAssgn(dataVar(b,uid), dataVar(a,uid))
-  ))
+
+  if (useCC3) throw new Exception("CC3 not implemented")
 }

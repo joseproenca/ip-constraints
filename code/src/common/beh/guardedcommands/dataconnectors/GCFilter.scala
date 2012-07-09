@@ -1,4 +1,4 @@
-package common.beh.guardedcommands.connectors
+package common.beh.guardedcommands.dataconnectors
 
 import common.beh.Utils._
 import common.beh.guardedcommands._
@@ -25,4 +25,7 @@ class GCFilter(a: String, b: String, uid: Int,g: Guard) extends GCBehaviour(List
     (av and g) --> SGuard(bv)
   ))
 
+  if (!useData) throw new Exception("Filter requires 'useData' option")
+
+  if (useCC3) throw new Exception("CC3 not implemented")
 }

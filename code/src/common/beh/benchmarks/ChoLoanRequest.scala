@@ -2,9 +2,10 @@ package common.beh.benchmarks
 
 import common.beh.choco.dataconnectors._
 import common.beh.Utils._
-import choco.kernel.model.variables.integer.IntegerVariable
+import choco.kernel.model.variables.integer.IntegerExpressionVariable
 import choco.Choco
 import common.beh.choco.{ChoSolution, Var, ChoConstraints}
+import common.beh.Predicate
 
 /**
  * Created with IntelliJ IDEA.
@@ -129,7 +130,7 @@ object ChoLoanRequest extends App {
   //    else print("- ")
 
   class Authorised extends Predicate {
-    val choPred = (x:IntegerVariable) => Choco.or(Choco.eq(x,1),Choco.eq(x,2))
+    val choPred = (x:IntegerExpressionVariable) => Choco.or(Choco.eq(x,1),Choco.eq(x,2))
     val funPred = (x:Int) => (x == 1) || (x == 2)
     override def toString = "Authorised"
   }
@@ -140,7 +141,7 @@ object ChoLoanRequest extends App {
     val sd = Choco.makeIntVar("d_s")
     val ad = Choco.makeIntVar("d_d")
     val pd = Choco.makeIntVar("d_p")
-    val choPred = (x:IntegerVariable) => //throw new Exception("choPred not implemented")
+    val choPred = (x:IntegerExpressionVariable) => //throw new Exception("choPred not implemented")
       Choco.and(
         Choco.implies(Choco.eq(x,1),Choco.and(
           Choco.eq(sd,1100), Choco.eq(ad,10000), Choco.eq(pd,2) )),
@@ -167,7 +168,7 @@ object ChoLoanRequest extends App {
     val sd = Choco.makeIntVar("d2_s")
     val ad = Choco.makeIntVar("d2_d")
     val pd = Choco.makeIntVar("d2_p")
-    val choPred = (x:IntegerVariable) => //throw new Exception("choPred not implemented")
+    val choPred = (x:IntegerExpressionVariable) => //throw new Exception("choPred not implemented")
       Choco.and(
         Choco.implies(Choco.eq(x,1),Choco.and(
           Choco.eq(sd,1100), Choco.eq(ad,10000), Choco.eq(pd,2) )),

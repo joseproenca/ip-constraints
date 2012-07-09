@@ -3,6 +3,7 @@ package common.beh.benchmarks
 import common.beh.choco.{Var, ChoConstraints}
 import common.beh.choco.dataconnectors._
 import common.beh.Utils._
+import common.beh.{LT, GT}
 
 /**
  * Created with IntelliJ IDEA.

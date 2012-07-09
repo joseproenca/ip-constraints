@@ -13,7 +13,13 @@ abstract class Behaviour[S<: Solution, C <: Constraints[S,C]](val ends: List[Str
 //  val ends: List[String]
 //  val uid: Int
   var constraints: C
-  
+
+  var useData = false
+  var useCC3 = false
+
+  def compat(other: Behaviour[S,C]) =
+    useData == other.useData && useCC3 == other.useCC3
+
   var connections: Map[AnyRef,Set[(String,String,Int)]] = Map() // neighbours to pairs of sync'd ends
 
 //  def +(other:mytype): mytype

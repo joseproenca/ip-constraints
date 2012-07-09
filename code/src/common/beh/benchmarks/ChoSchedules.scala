@@ -1,10 +1,11 @@
 package common.beh.benchmarks
 
 import common.beh.choco.dataconnectors._
-import choco.kernel.model.variables.integer.IntegerVariable
+import choco.kernel.model.variables.integer.{IntegerExpressionVariable, IntegerVariable}
 import choco.Choco
 import common.beh.Utils._
 import common.beh.choco.{VarEq, Var, ChoConstraints}
+import common.beh.Predicate
 
 /**
  * Created with IntelliJ IDEA.
@@ -95,13 +96,13 @@ object ChoSchedules extends App {
 
   class Morning extends Predicate {
     // from 7am to 10am
-    val choPred = (x:IntegerVariable) => Choco.and(Choco.geq(x,420),Choco.leq(x,600))
+    val choPred = (x:IntegerExpressionVariable) => Choco.and(Choco.geq(x,420),Choco.leq(x,600))
     val funPred = (x:Int) => (x >= 40) && (x <= 600)
     override def toString = "Morning"
   }
   class Evening extends Predicate {
     // from 7pm to midnight
-    val choPred = (x:IntegerVariable) => Choco.and(Choco.geq(x,1140),Choco.leq(x,1440))
+    val choPred = (x:IntegerExpressionVariable) => Choco.and(Choco.geq(x,1140),Choco.leq(x,1440))
     val funPred = (x:Int) => (x >= 1140) && (x <= 1440)
     override def toString = "Evening"
   }

@@ -1,6 +1,5 @@
 package common.beh.choco.connectors
 
-import common.beh.choco._
 
 /**
  * Created with IntelliJ IDEA.
@@ -11,6 +10,9 @@ import common.beh.choco._
  */
 
 class ChoReaderPassive(x:String,uid:Int,sizee:Int) extends ChoReader(x,uid,sizee) {
+
+  useData = false
+  useCC3 = false
 
   override def isProactive: Boolean = false
 

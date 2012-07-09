@@ -17,8 +17,10 @@ abstract class ChoBehaviour(ends: List[String], uid: Int) extends Behaviour[ChoS
 
   def sync(from:AnyRef,c:ChoConstraints) = {
     if (connections contains from) {
-      val connConstr = for ((end,oend,ouid) <- connections(from))
+      var connConstr = for ((end,oend,ouid) <- connections(from))
         yield VarEq(Utils.flowVar(oend,ouid),Utils.flowVar(end,uid))
+      if (useData) connConstr ++= (for ((end,oend,ouid) <- connections(from))
+        yield VarEq(Utils.dataVar(oend,ouid),Utils.dataVar(end,uid)))
       c ++ connConstr
     }
     else c

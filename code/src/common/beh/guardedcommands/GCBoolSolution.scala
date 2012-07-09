@@ -17,7 +17,7 @@ class GCBoolSolution(var varMap: Map[String, Boolean]) extends Solution {
   def pretty: String = {
     var res = ""
     for ((v:String,k:Boolean) <- varMap.toList.sortBy((x:(String,Boolean)) => x))
-      res += v + " -> "+k+"\n"
+      res += common.beh.Utils.ppVar(v) + " -> "+k+"\n"
     res
   }
 
