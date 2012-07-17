@@ -1,6 +1,6 @@
 package common.beh.guardedcommands.dataconnectors
 
-import common.beh.Function
+import common.beh.IntFunction
 import common.beh.guardedcommands._
 import common.beh.Utils._
 import common.beh.guardedcommands.SGuard
@@ -14,7 +14,7 @@ import common.beh.guardedcommands.Var
  * To change this template use File | Settings | File Templates.
  */
 
-class GCTransf (a: String, b: String, uid: Int, f: Function) extends GCBehaviour(List(a,b), uid) {
+class GCTransf (a: String, b: String, uid: Int, f: IntFunction) extends GCBehaviour(List(a,b), uid) {
   val av = Var(flowVar(a,uid))
   val bv = Var(flowVar(b,uid))
 

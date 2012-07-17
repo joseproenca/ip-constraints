@@ -4,8 +4,9 @@ import collection.mutable.{Set => MutSet}
 import collection.{Set => GenSet}
 import common.beh.Utils._
 import common.beh.choco.{ChoConstraints, FlowPred, ConstrBuilder}
-import common.beh.Function
+import common.beh.{IntFunction, IntPredicate}
 import choco.kernel.model.variables.integer.IntegerExpressionVariable
+import common.beh.choco.genericconstraints.UnFunction
 
 /**
  * Created with IntelliJ IDEA.
@@ -16,9 +17,9 @@ import choco.kernel.model.variables.integer.IntegerExpressionVariable
  */
 
 class PEval(
-             var data: Map[String,Int],
+             var data: Map[String,Any],
              var rest: Map[String,GenSet[String]],
-             var funcs: Map[String,GenSet[(String,Function)]]) {
+             var funcs: Map[String,GenSet[(String,UnFunction)]]) {
 
   def ++(other: PEval): PEval = {
     return new PEval(
@@ -59,7 +60,7 @@ class PEval(
 //          rest -= hd
         }
         if (funcs contains hd) for ((y,f) <- funcs(hd)) {
-          data += y -> f.funFun(data(hd))
+          data += y -> f.calculate(data(hd))
           next += y
           continue = true
         }
@@ -158,7 +159,7 @@ class PEval(
           // go through all elements of that group
           for ((v,f) <- funcs(x)) {
             // add new data, and drop it from the known groups
-            data += v -> f.funFun(data(x))
+            data += v -> f.calculate(data(x))
             next += v
             funcs -= x
             continue = true
@@ -178,6 +179,11 @@ class PEval(
   }
 
 
+  /**
+   * Searches for valid inhabitants of the domain of a variable.
+   * @param sol
+   * @param da
+   */
   def solveSimpleData(sol:GCBoolSolution, da: DomainAbst) {
 //    println("^^^^ solving simple data copy ^^^^")
 //    println(this)
@@ -200,6 +206,7 @@ class PEval(
         if (group contains v2) dependent = true
 
       if (!dependent) {
+        var genpred = false
 
 //        println("     searching for max vars in group "+group.mkString(","))
         var preds = Set[ConstrBuilder]()
@@ -210,21 +217,29 @@ class PEval(
 //            println("     max var found: "+v+" - adding predicates from its domain.")
             for ((pred,fs) <- da.domain(v)) {
               // build pred(f1(f2(...(x)))
-              def comp(functions: List[Function]): IntegerExpressionVariable => IntegerExpressionVariable  = functions match {
+              def comp(functions: List[IntFunction]): IntegerExpressionVariable => IntegerExpressionVariable  = functions match {
                 case Nil => (x:IntegerExpressionVariable) => x
                 case (hd::tl) => (x:IntegerExpressionVariable) => hd.choFun(comp(tl)(x))
               }
               // ATTENTION: order of functions was not double-checked.
-              val flowpred = FlowPred((x:IntegerExpressionVariable) => pred.choPred(comp(fs)(x)),"x")
+              if (pred.isInstanceOf[IntPredicate] && fs.isInstanceOf[List[IntFunction]]) {
+                val flowpred = FlowPred((x:IntegerExpressionVariable) =>
+                  pred.asInstanceOf[IntPredicate].choPred(comp(fs.asInstanceOf[List[IntFunction]])(x)),"x")
 
-              preds += (if (sol(predVar(v,pred,fs))) flowpred
-                        else common.beh.choco.Neg(flowpred))
+                preds += (if (sol(predVar(v,pred,fs))) flowpred
+                          else common.beh.choco.Neg(flowpred))
+              }
+              else
+                genpred = true
             }
           }
         }
 
+        if (genpred) {
+          // no data can be inferred - group will be negated later (same as no solution)
+        }
         // If no such P(V) is found for this group, give value 0 (no constraints)
-        if (preds.isEmpty) {
+        else if (preds.isEmpty) {
 //          println("     no domain constraints found. Giving '0' to the group.")
           for (v <- group) {
             data += v -> 0
@@ -265,7 +280,7 @@ class PEval(
       for (newd <- newdata)          // for every variable with new data assigned to it
         if (funcs contains newd)
           for ((v,f) <- funcs(newd)) { // with dependent variables v (after applying f)
-            var vd = f.funFun(data(newd))
+            var vd = f.calculate(data(newd))
             again = true
             if (rest contains v)
               for (vs <- rest(v)) {

@@ -1,7 +1,6 @@
 package dreams.connectors
 
 import dreams.Actor
-import common.beh.{Constraints, Solution}
 import common.beh.choco._
 import connectors.ChoWriter
 

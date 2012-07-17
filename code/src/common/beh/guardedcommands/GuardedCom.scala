@@ -1,10 +1,11 @@
 package common.beh.guardedcommands
 
-import common.beh.{Predicate,Function}
+import common.beh.{IntPredicate, IntFunction}
 import collection.mutable.{Set => MutSet, Map => MutMap}
 import collection.immutable.{Set => ImSet}
 import common.beh.Utils._
-import common.beh.choco.{TrueC, ConstrBuilder}
+import common.beh.choco.{LazyPred, TrueC, ConstrBuilder}
+import common.beh.choco.genericconstraints.{UnFunction, UnPredicate}
 
 /**
  * Created with IntelliJ IDEA.
@@ -56,7 +57,7 @@ case class GuardedCom(g:Guard, st: Statement) {
     else new PEval(Map(),Map(),Map())
   }
 
-  override def toString(): String = g + " --> " + st
+  override def toString = g + " --> " + st
 
 }
 
@@ -77,6 +78,7 @@ abstract sealed class Guard {
 
   def fv: Set[String] = this match {
     case Var(name) => Set(name)
+    case IntPred(v, p) => Set(v)
     case Pred(v, p) => Set(v)
     case And(g1, g2) => g1.fv ++ g2.fv
     case Or(g1, g2) => g1.fv ++ g2.fv
@@ -88,6 +90,7 @@ abstract sealed class Guard {
 
   def da: DomainAbst = this match {
     case Var(name) =>  DomainAbst()
+    case IntPred(v, p) => DomainAbst(v,p)
     case Pred(v, p) => DomainAbst(v,p)
     case And(g1, g2) => g1.da + g2.da
     case Or(g1, g2) => g1.da + g2.da
@@ -113,11 +116,13 @@ abstract sealed class Guard {
     case Neg(Or(e1,e2)) => (Neg(e1) and Neg(e2)).toCNF(vars,da)
     case Var(a) => List(Array(vars(a)))
     case Neg(Var(a)) => List(Array(vars(a)*(-1)))
-    case Pred(v, p) => Var(predVar(v,p,List())).toCNF(vars,da)
+    case IntPred(v, p) => Var(predVar(v,p,List())).toCNF(vars,da)
 //      if (da.domain(v) contains p) Var(predVar(v,p)).toCNF(vars,da)
 //      else List(Array())
-    case Neg(Pred(v, p)) => List(Array(vars(predVar(v,p,List()))*(-1)))
+    case Neg(IntPred(v, p)) => List(Array(vars(predVar(v,p,List()))*(-1)))
 //      Neg(Var(predVar(v,p))).toCNF(vars,da)
+    case Pred(v, p) => Var(predVar(v,p,List())).toCNF(vars,da)
+    case Neg(Pred(v, p)) => List(Array(vars(predVar(v,p,List()))*(-1)))
     case True => List()
     case Neg(True) => List(Array())
     case Neg(Neg(a)) => a.toCNF(vars,da)
@@ -125,7 +130,8 @@ abstract sealed class Guard {
 
   def toConstrBuilder: ConstrBuilder = this match {
     case Var(name) => common.beh.choco.Var(name)
-    case Pred(v, p) => common.beh.choco.FlowPred(p.choPred,v) // THIS is the difference with Bool below.
+    case IntPred(v, p) => common.beh.choco.FlowPred(p.choPred,v) // THIS is the difference with Bool below.
+    case Pred(v, p) => throw new Exception("General predicates have no associated choco constraint")
     case And(g1, g2) => g1.toConstrBuilder and g2.toConstrBuilder
     case Or(g1, g2) => g1.toConstrBuilder or g2.toConstrBuilder
     case Neg(g) => common.beh.choco.Neg(g.toConstrBuilder)
@@ -136,7 +142,8 @@ abstract sealed class Guard {
 
   def toBoolConstrBuilder: ConstrBuilder = this match {
     case Var(name) => common.beh.choco.Var(name)
-    case Pred(v, p) => common.beh.choco.Var(predVar(v,p,List()))//common.beh.choco.FlowPred(p.choPred,v)
+    case IntPred(v, p) => common.beh.choco.Var(predVar(v,p,List()))//common.beh.choco.FlowPred(p.choPred,v)
+    case Pred(v, p) => common.beh.choco.Var(predVar(v,p,List()))
     case And(g1, g2) => g1.toBoolConstrBuilder and g2.toBoolConstrBuilder
     case Or(g1, g2) =>  g1.toBoolConstrBuilder or  g2.toBoolConstrBuilder
     case Neg(g) => common.beh.choco.Neg(g.toBoolConstrBuilder)
@@ -147,6 +154,7 @@ abstract sealed class Guard {
 
   def eval(sol: GCBoolSolution): Boolean = this match {
     case Var(name) => sol(name)
+    case IntPred(v, p) => sol(predVar(v,p,List()))
     case Pred(v, p) => sol(predVar(v,p,List()))
     case And(g1, g2) => g1.eval(sol) && g1.eval(sol)
     case Or(g1, g2) => g1.eval(sol) || g1.eval(sol)
@@ -156,8 +164,9 @@ abstract sealed class Guard {
     case True => true
   }
 
-  override def toString(): String = this match {
+  override def toString = this match {
     case Var(name) => ppFlowVar(name)
+    case IntPred(v, p) => p+"("+ppDataVar(v)+")"
     case Pred(v, p) => p+"("+ppDataVar(v)+")"
     case And(g1, g2) => g1.mbPar + " /\\ " + g2.mbPar
     case Or(g1, g2) => g1.mbPar + " \\/ " + g2.mbPar
@@ -180,16 +189,18 @@ abstract sealed class Guard {
 abstract sealed class Statement {
   def fv: Set[String] = this match {
     case SGuard(g) => g.fv
-    case DataAssgn(v, d) => Set(v)
+    case IntAssgn(v, _) => Set(v)
+    case DataAssgn(v, _) => Set(v)
     case VarAssgn(v1, v2) => Set(v1,v2)
+    case FunAssgn(v1,v2,_) => Set(v1,v2)
     case Seq(Nil) => Set()
     case Seq(s::ss) => s.fv ++ Seq(ss).fv
-    case FunAssgn(v1,v2,f) => Set(v1,v2)
   }
 
   def da: DomainAbst = this match {
     case SGuard(g) => g.da
-    case DataAssgn(v, d) => DomainAbst()
+    case IntAssgn(_,_) => DomainAbst()
+    case DataAssgn(_,_) => DomainAbst()
     case VarAssgn(v1, v2) => DomainAbst(v2 -> v1)
     case Seq(Nil) => DomainAbst()
     case Seq(s::ss) => s.da + Seq(ss).da
@@ -198,15 +209,17 @@ abstract sealed class Statement {
 
   def toCNF(vars: MutMap[String,Int],da: DomainAbst): CNF.Core = this match {
     case SGuard(g) => g.toCNF(vars,da)
-    case DataAssgn(v, d) =>
+    case IntAssgn(v,d)  => DataAssgn(v,d).toCNF(vars,da)
+    case DataAssgn(v,d) =>
 //      println("converting data assgnm '"+v+" := "+d+"'.")
       var res:List[Int] = List()
       val dom = da.domain(v)
       for ((pred,fs) <- dom) {
-        var newd = d
-        for (f<-fs.reverse) newd = f.funFun(newd)
+        // ALL PRECALCULATED (only in choco-Bool it is lazily calculated)
+        var newd: Any = d
+        for (f<-fs.reverse) newd = f.calculate(newd)
 //        println("precomputing "+v+" for "+pred+" after "+fs+" ("+d+" -> "+newd+")")
-        if (pred.funPred(newd)) {
+        if (pred.check(newd)) {
           res ::= vars(predVar(v,pred,fs))
         }
         else
@@ -215,6 +228,7 @@ abstract sealed class Statement {
 //      println("got array "+res.mkString("[",",","]"))
       res.map(Array(_))
 //      List(res.toArray)
+
     case VarAssgn(v1, v2) =>
 //      println("converting var eq of "+v1+" and "+v2)
       val (d1,d2) = (da.domain(v1),da.domain(v2))
@@ -246,27 +260,37 @@ abstract sealed class Statement {
 
   def toConstrBuilder: ConstrBuilder = this match {
     case SGuard(g) => g.toConstrBuilder
-    case DataAssgn(v, d) => common.beh.choco.DataAssgn(v,d)
+    case IntAssgn(v, d) => common.beh.choco.DataAssgn(v,d)
+    case DataAssgn(v, d) => throw new Exception("General data assignments have no associated choco constraint")
     case VarAssgn(v1, v2) => common.beh.choco.VarEq(v1,v2)
-    case FunAssgn(v1, v2, f) => common.beh.choco.FunAssgn(v1,v2,f.choFun)
+    case FunAssgn(v1, v2, f) =>
+      if (f.isInstanceOf[IntFunction]) common.beh.choco.FunAssgn(v1,v2,f.asInstanceOf[IntFunction].choFun)
+      else throw new Exception("General data functions have no associated choco constraint")
     case Seq(Nil) => common.beh.choco.TrueC
-    case Seq(s::ss) => s.toBoolConstrBuilder(da) and Seq(ss).toBoolConstrBuilder(da)
+    case Seq(s::ss) => s.toConstrBuilder and Seq(ss).toConstrBuilder
   }
 
   def toBoolConstrBuilder(da: DomainAbst): ConstrBuilder = this match {
     case SGuard(g) => g.toBoolConstrBuilder
+    case IntAssgn(v, d) => DataAssgn(v,d).toBoolConstrBuilder(da)
     case DataAssgn(v, d) => //common.beh.choco.DataAssgn(v,d)
-
+      // INSTEAD OF CALCULATING, CREATE A LAZY CONSTRAINT!
       var res:ConstrBuilder = TrueC
+      println("&& adding lazy predicates...")
       for ((pred,fs) <- da.domain(v)) {
-        var newd = d
-        for (f<-fs.reverse) newd = f.funFun(newd)
-        if (pred.funPred(newd))
-          res = res and common.beh.choco.Var(predVar(v,pred,fs))
-        else
-          res = common.beh.choco.Neg(common.beh.choco.Var(predVar(v,pred,fs)))
+        println("&& "+predVar(v,pred,fs))
+
+//        var newd = d
+//        for (f<-fs.reverse) newd = f.calculate(newd)
+//        if (pred.check(newd))
+//          res = res and common.beh.choco.Var(predVar(v,pred,fs))
+//        else
+//          res = res and common.beh.choco.Neg(common.beh.choco.Var(predVar(v,pred,fs)))
+
+        res = res and LazyPred(predVar(v,pred,fs),data2flow(v),d,pred,fs)
       }
       res
+
     case VarAssgn(v1, v2) =>
       val (d1,d2) = (da.domain(v1),da.domain(v2))
       var res: ConstrBuilder= TrueC
@@ -276,15 +300,17 @@ abstract sealed class Statement {
           res = res and t
         }
       res
+
     case FunAssgn(v1,v2,f) =>
-      val (d1,d2) = (da.domain(v1),da.domain(v2))
-      var res: ConstrBuilder= TrueC
-      for ((pred,fs) <- d2)
-        if (d1 contains (pred,f::fs)) {
-          val t = common.beh.choco.VarEq(predVar(v1,pred,f::fs),predVar(v2,pred,fs))
-          res = res and t
-        }
-      res
+      VarAssgn(v1,v2).toBoolConstrBuilder(da)
+//      val (d1,d2) = (da.domain(v1),da.domain(v2))
+//      var res: ConstrBuilder= TrueC
+//      for ((pred,fs) <- d2)
+//        if (d1 contains (pred,f::fs)) {
+//          val t = common.beh.choco.VarEq(predVar(v1,pred,f::fs),predVar(v2,pred,fs))
+//          res = res and t
+//        }
+//      res
 
     case Seq(Nil) => common.beh.choco.TrueC
     case Seq(s::ss) => s.toBoolConstrBuilder(da) and Seq(ss).toBoolConstrBuilder(da)
@@ -292,6 +318,7 @@ abstract sealed class Statement {
 
   def partialEval(sol: GCBoolSolution): PEval = this match {
     case SGuard(g) => new PEval(Map(),Map(),Map())
+    case IntAssgn(v, d) => new PEval(Map(v -> d),Map(),Map())
     case DataAssgn(v, d) => new PEval(Map(v -> d),Map(),Map())
     case VarAssgn(v1, v2) => new PEval(Map(),Map(v2 -> ImSet(v1)),Map())
     // TODO: CHANGE PEval to split at x=f(y), and include this info in PEval
@@ -304,20 +331,22 @@ abstract sealed class Statement {
       //(x1._1 ++ x2._1, x1._2 ++ x2._2)
   }
 
-  override def toString(): String = this match {
+  override def toString = this match {
     case SGuard(g) => g.toString()
+    case IntAssgn(v, d) => ppDataVar(v) + " := " + d
     case DataAssgn(v, d) => ppDataVar(v) + " := " + d
     case VarAssgn(v1, v2) => ppDataVar(v1) + " := " + ppDataVar(v2)
     case FunAssgn(v1, v2, f) => ppDataVar(v1) + " := " + f + "(" + ppDataVar(v2) + ")"
     case Seq(Nil) => ""
-    case Seq(x::Nil) => x.toString()
+    case Seq(x::Nil) => x.toString
     case Seq(x::xs) => x + " ; " + xs
   }
 
 }
 
 case class Var(name: String) extends Guard
-case class Pred(v:String, p: Predicate) extends Guard
+case class IntPred(v:String, p: IntPredicate) extends Guard
+case class Pred(v:String, p:UnPredicate) extends Guard
 case class And(g1: Guard, g2: Guard) extends Guard
 case class Or(g1: Guard, g2: Guard) extends Guard
 case class Neg(g: Guard) extends Guard
@@ -326,9 +355,10 @@ case class Equiv(g1: Guard, g2: Guard) extends Guard
 case object True extends Guard
 
 case class SGuard(g: Guard) extends Statement
-case class DataAssgn(v: String, d: Int) extends Statement
+case class IntAssgn(v: String, d: Int) extends Statement
 case class VarAssgn(v1: String, v2: String) extends Statement
-case class FunAssgn(v1:String, v2:String, f: Function) extends Statement
+case class FunAssgn(v1:String, v2:String, f: UnFunction) extends Statement
+case class DataAssgn(v: String, d: Any) extends Statement
 case class Seq(sts: List[Statement]) extends Statement
 
 

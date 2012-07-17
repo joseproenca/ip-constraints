@@ -1,6 +1,7 @@
 package common.beh.guardedcommands
 
-import common.beh.{Predicate,Even,GT,Function}
+import common.beh._
+import choco.genericconstraints.{UnFunction, UnPredicate}
 import common.beh.Utils._
 
 
@@ -16,8 +17,8 @@ class DomainAbst {
   var greater: Map[String,Set[String]] = Map() // eg, x -> yz --- y > x, z > x
   var less: Map[String,Set[String]] = Map()
   var max: Set[String] = Set()
-  var inv: Map[String,Set[Predicate]] = Map().withDefaultValue(Set()) // eg, x -> PQR
-  var fun: Map[String,List[Function]] = Map().withDefaultValue(List()) // eg, x -> fgh
+  var inv: Map[String,Set[UnPredicate]] = Map().withDefaultValue(Set()) // eg, x -> PQR
+  var fun: Map[String,List[UnFunction]] = Map().withDefaultValue(List()) // eg, x -> fgh
 
   // NOT USED in the end...
   @deprecated
@@ -44,7 +45,7 @@ class DomainAbst {
 
   // NOT USED in the end...
   @deprecated
-  def addPred (v: String, pred:Predicate) {
+  def addPred (v: String, pred:IntPredicate) {
     inv += v -> (inv(v) + pred)
   }
 
@@ -54,9 +55,9 @@ class DomainAbst {
    * @param x name of the variable representing the end - of shape "F$..."
    * @return a set of predicates that must be evaluated, and a list of functions that must be applied before
    */
-  def domain(x:String): Set[(Predicate,List[Function])] = {
+  def domain(x:String): Set[(UnPredicate,List[UnFunction])] = {
     // 1 - start with current predicates
-    var res = inv(x) map ((_,List[Function]())) //for (p <- inv(x)) yield (p,fun(x))
+    var res = inv(x) map ((_,List[UnFunction]())) //for (p <- inv(x)) yield (p,fun(x))
     if (less contains x) {
       // 2 - add domain of following paths
       for (smaller <- less(x)) {
@@ -78,8 +79,8 @@ class DomainAbst {
    * @param x name of the variable representing the end - of shape "F$..."
    * @return a set of sequences of functions that will be applied
    */
-  def pre(x: String): Set[List[Function]] = {
-    var res = Set[List[Function]]()
+  def pre(x: String): Set[List[UnFunction]] = {
+    var res = Set[List[UnFunction]]()
     if (greater contains x)
       for (larger <- greater(x))
         res ++= (for (fs <- pre(larger)) yield fs ::: fun(x))
@@ -142,12 +143,17 @@ object DomainAbst {
     res.max = Set(bigsmall._1)
     res
   }
-  def apply(v: String, pred:Predicate): DomainAbst = {
+  def apply(v: String, pred:IntPredicate): DomainAbst = {
     val res = new DomainAbst()
     res.inv = Map(v -> Set(pred))
     res
   }
-  def apply(v: String, fun:Function): DomainAbst = {
+  def apply(v: String, pred:UnPredicate): DomainAbst = {
+    val res = new DomainAbst()
+    res.inv = Map(v -> Set(pred))
+    res
+  }
+  def apply(v: String, fun:UnFunction): DomainAbst = {
     val res = new DomainAbst()
     res.fun = Map(v -> List(fun))
 //    println("--- adding function to domain. New funs: "+res.fun)

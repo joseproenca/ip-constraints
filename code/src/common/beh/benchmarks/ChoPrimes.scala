@@ -6,7 +6,7 @@ import common.beh.Utils._
 import choco.kernel.model.variables.integer.{IntegerExpressionVariable, IntegerVariable}
 import choco.Choco
 import common.beh.choco.ChoConstraints
-import common.beh.{GT, Predicate}
+import common.beh.{GT, IntPredicate}
 
 
 /**
@@ -115,7 +115,7 @@ object ChoPrimes extends App {
 //  else print("- ")
 
 
-  class Divides(n:Int) extends Predicate {
+  class Divides(n:Int) extends IntPredicate {
     val choPred = (x:IntegerExpressionVariable) => Choco.eq(Choco.mod(x,primes(n)),0)
     val funPred = (x:Int) => x % primes(n) == 0
     override def toString = "Divides-"+primes(n)

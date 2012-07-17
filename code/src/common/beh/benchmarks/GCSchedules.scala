@@ -2,7 +2,7 @@ package common.beh.benchmarks
 
 import common.beh.Utils._
 import common.beh.guardedcommands._
-import common.beh.Predicate
+import common.beh.IntPredicate
 import choco.kernel.model.variables.integer.IntegerExpressionVariable
 import choco.Choco
 import dataconnectors._
@@ -36,9 +36,9 @@ object GCSchedules extends App {
 //    new GCWriter("x",i,List(500)).constraints ++
     val res =
       new GCExRouter("x","a","b",i).constraints ++
-      new GCFilter("a","e",i,Neg(Pred(dataVar("a",i),evening))).constraints ++
-      new GCFilter("a","f",i,Pred(dataVar("a",i),evening)).constraints ++
-      new GCFilter("b","g",i,Pred(dataVar("b",i),morning)).constraints ++
+      new GCFilter("a","e",i,Neg(IntPred(dataVar("a",i),evening))).constraints ++
+      new GCFilter("a","f",i,IntPred(dataVar("a",i),evening)).constraints ++
+      new GCFilter("b","g",i,IntPred(dataVar("b",i),morning)).constraints ++
       new GCMerger("e","g","m",i).constraints ++
       new GCSDrain("a","c",i).constraints ++
       new GCSDrain("b","d",i).constraints ++
@@ -131,13 +131,13 @@ object GCSchedules extends App {
 
 
 
-  class Morning extends Predicate {
+  class Morning extends IntPredicate {
     // from 7am to 10am
     val choPred = (x:IntegerExpressionVariable) => Choco.and(Choco.geq(x,420),Choco.leq(x,600))
     val funPred = (x:Int) => (x >= 40) && (x <= 600)
     override def toString = "Morning"
   }
-  class Evening extends Predicate {
+  class Evening extends IntPredicate {
     // from 7pm to midnight
     val choPred = (x:IntegerExpressionVariable) => Choco.and(Choco.geq(x,1140),Choco.leq(x,1440))
     val funPred = (x:Int) => (x >= 1140) && (x <= 1440)

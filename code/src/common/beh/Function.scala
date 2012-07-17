@@ -1,29 +1,22 @@
 package common.beh
 
-import _root_.choco.Choco
-import _root_.choco.kernel.model.variables.integer.IntegerExpressionVariable
-
 /**
  * Created with IntelliJ IDEA.
  * User: jose
- * Date: 04/07/12
- * Time: 18:12
+ * Date: 10/07/12
+ * Time: 17:31
  * To change this template use File | Settings | File Templates.
  */
 
+@deprecated
 abstract class Function {
-  val choFun: IntegerExpressionVariable => IntegerExpressionVariable
-  val funFun: Int => Int
+  def calculate(x:Any): Any
 }
 
-class Double extends Function {
-  val choFun = (x:IntegerExpressionVariable) => Choco.mult(x,2)
-  val funFun = 2 * (_:Int)
-  override def toString() = "[*2]"
-}
+class Times(n:Int) extends Function {
+  def calculate(x: Any): Any =
+    if (x.isInstanceOf[Int]) x.asInstanceOf[Int] * n
+    else throw new RuntimeException(this + " is only defined for Int - failed to process "+x)
 
-class Timesn(n: Int) extends Function {
-  val choFun = (x:IntegerExpressionVariable) => Choco.mult(x,n)
-  val funFun = n * (_:Int)
-  override def toString() = "[*"+n+"]"
+  override def toString = "[*"+n+"]"
 }

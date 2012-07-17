@@ -193,11 +193,17 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
     solveBool(cnf,vars)
   }
 
-  def solveBool(cnf: CNF.Core, vars: MutMap[String,Int]): Option[GCBoolSolution] = {
+  def solveBool(c: CNF.Core, vars: MutMap[String,Int]): Option[GCBoolSolution] = {
 
+    // store variable names and ADD FLOW CONSTRAINTS!
     val varname = MutMap[Int,String]()
-    for ((k,v) <- vars)
+    var flowvars = Set[Int]()
+    for ((k,v) <- vars) {
       varname(v) = k
+      if (isFlowVar(k)) flowvars += v
+    }
+    val cnf = flowvars.toArray :: c
+
 
     val MAXVAR: Int = vars.size // cnf.nvars
     val NBCLAUSES: Int = cnf.size //nclauses
@@ -294,7 +300,7 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
     val time = System.currentTimeMillis()
     val builders = toBoolConstrBuilders
 //    println("#> solving abst using choco SAT cnf - "+da.pp)
-//    println("builder: "+builders)
+    println("builder: "+builders.mkString("\n"))
     val optSolBool = solveChocoBool(builders)
 //    log.println("[Cho/SAT solve] "+(System.currentTimeMillis()-time))
     if (!optSolBool.isDefined)
@@ -334,11 +340,23 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
   def toBoolConstrBuilders : Iterable[ConstrBuilder] = {
     solveDomain()
 
+    println("&& domain solved: "+da.pp)
+
     for (com <- commands)
       yield com.toBoolConstrBuilder(da)
   }
 
-  /**
+
+
+  def solveChocoBool : Option[GCBoolSolution] = {
+    val builders = toBoolConstrBuilders
+    //    println("#> solving abst using choco SAT cnf - "+da.pp)
+    println("builder: "+builders.mkString("\n"))
+    solveChocoBool(builders)
+  }
+
+
+    /**
    * Same as "solveBool" but using choco constraints (from constraint builders).
    * @param builders The SAT problem as a choco constraint (from a constraint builder)
    * @return Solution for an abstract problem (using choco constraints).

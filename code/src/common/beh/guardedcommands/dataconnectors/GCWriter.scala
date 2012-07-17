@@ -20,7 +20,7 @@ class GCWriter(val x: String, uid: Int, var data: List[Int]) extends GCBehaviour
 
   protected def loadConstraints = {
     if (!data.isEmpty) {
-      if(useData) GuardedCommands(Var(flowVar(x,uid)) --> DataAssgn(dataVar(x,uid),data.head))
+      if(useData) GuardedCommands(Var(flowVar(x,uid)) --> IntAssgn(dataVar(x,uid),data.head))
       else if (useCC3) throw new Exception("CC3 not implemented")
       else GuardedCommands()
     }

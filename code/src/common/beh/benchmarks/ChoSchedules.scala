@@ -5,7 +5,7 @@ import choco.kernel.model.variables.integer.{IntegerExpressionVariable, IntegerV
 import choco.Choco
 import common.beh.Utils._
 import common.beh.choco.{VarEq, Var, ChoConstraints}
-import common.beh.Predicate
+import common.beh.IntPredicate
 
 /**
  * Created with IntelliJ IDEA.
@@ -94,13 +94,13 @@ object ChoSchedules extends App {
 //  if (res.isDefined) println("partial eval: "+schedule.partialEval(res.get))
 
 
-  class Morning extends Predicate {
+  class Morning extends IntPredicate {
     // from 7am to 10am
     val choPred = (x:IntegerExpressionVariable) => Choco.and(Choco.geq(x,420),Choco.leq(x,600))
     val funPred = (x:Int) => (x >= 40) && (x <= 600)
     override def toString = "Morning"
   }
-  class Evening extends Predicate {
+  class Evening extends IntPredicate {
     // from 7pm to midnight
     val choPred = (x:IntegerExpressionVariable) => Choco.and(Choco.geq(x,1140),Choco.leq(x,1440))
     val funPred = (x:Int) => (x >= 1140) && (x <= 1440)

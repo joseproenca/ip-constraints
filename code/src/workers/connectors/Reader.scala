@@ -3,7 +3,7 @@ package workers.connectors
 import actors.OutputChannel
 import workers.Node
 import common.beh.choco.{ChoConstraints, ChoSolution}
-import common.beh.choco.connectors.{ChoReaderPassive, ChoReader}
+import common.beh.choco.connectors.ChoReaderPassive
 
 /**
  * Created with IntelliJ IDEA.

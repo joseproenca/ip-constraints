@@ -19,7 +19,7 @@ class GCFifo(a: String, b: String, var data: Option[Int], uid: Int) extends GCBe
   def fullFifo =
     if (useData) GuardedCommands(Set(
         True --> SGuard(Neg(av)),
-        bv --> DataAssgn(dataVar(b,uid),data.get)
+        bv --> IntAssgn(dataVar(b,uid),data.get)
       ))
     else if (useCC3) throw new Exception("CC3 not implemented")
     else GuardedCommands(True --> SGuard(Neg(av)))

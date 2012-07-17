@@ -2,7 +2,6 @@ package workers.connectors
 
 import workers.Node
 import common.beh.choco.{ChoSolution, ChoConstraints}
-import workers.Deployer
 import actors.OutputChannel
 import common.beh.choco.connectors.ChoWriter
 

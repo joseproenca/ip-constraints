@@ -5,7 +5,7 @@ import common.beh.Utils._
 import choco.kernel.model.variables.integer.IntegerExpressionVariable
 import choco.Choco
 import common.beh.choco.{ChoSolution, Var, ChoConstraints}
-import common.beh.Predicate
+import common.beh.IntPredicate
 
 /**
  * Created with IntelliJ IDEA.
@@ -129,7 +129,7 @@ object ChoLoanRequest extends App {
   //    if (res.isDefined) print(spent+" ")
   //    else print("- ")
 
-  class Authorised extends Predicate {
+  class Authorised extends IntPredicate {
     val choPred = (x:IntegerExpressionVariable) => Choco.or(Choco.eq(x,1),Choco.eq(x,2))
     val funPred = (x:Int) => (x == 1) || (x == 2)
     override def toString = "Authorised"
@@ -137,7 +137,7 @@ object ChoLoanRequest extends App {
 
 
 
-  class Deny extends Predicate {
+  class Deny extends IntPredicate {
     val sd = Choco.makeIntVar("d_s")
     val ad = Choco.makeIntVar("d_d")
     val pd = Choco.makeIntVar("d_p")
@@ -164,7 +164,7 @@ object ChoLoanRequest extends App {
     val period = Map(1 -> 2    , 2 -> 15   , 3 -> 10)     withDefaultValue 10
   }
 
-  class Approve extends Predicate {
+  class Approve extends IntPredicate {
     val sd = Choco.makeIntVar("d2_s")
     val ad = Choco.makeIntVar("d2_d")
     val pd = Choco.makeIntVar("d2_p")

@@ -14,9 +14,11 @@ object Utils {
 
   def dataVar(x: String, uid: Int): String = "D$" + x + "$" + uid
 
-  def predVar(v: String, pred: Predicate, fs: List[Function]) = v + "_" + pred + "_" + fs.mkString(".")//.hashCode()
+  def predVar(v: String, pred: Any, fs: List[Any]) = v + "_" + pred + "_" + fs.mkString(".")//.hashCode()
 
   def flow2data(x: String): String = "D" + x.tail
+
+  def data2flow(x: String): String = "F" + x.tail
 
   def isFlowVar(x: String): Boolean = x.startsWith("F$")
 

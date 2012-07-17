@@ -24,7 +24,7 @@ class GCSyncFifo(a: String, b: String, var data: Option[Int], uid: Int) extends 
   def fullFifo =
     if (useData) GuardedCommands(Set(
       av --> SGuard(bv),
-      bv --> DataAssgn(dataVar(b,uid),data.get)
+      bv --> IntAssgn(dataVar(b,uid),data.get)
     ))
     else if (useCC3) throw new Exception("CC3 not implemented")
     else GuardedCommands(av --> SGuard(bv))

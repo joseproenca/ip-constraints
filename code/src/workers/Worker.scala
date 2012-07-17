@@ -2,7 +2,6 @@ package workers
 
 import actors.OutputChannel
 import common.beh.{Constraints, Solution}
-import choco.kernel.solver.propagation.listener.SetPropagator
 import strategies.Strategy
 
 /**

@@ -3,7 +3,7 @@ package common.beh.benchmarks
 import common.beh.guardedcommands._
 import common.beh.Utils._
 import common.beh.guardedcommands.dataconnectors._
-import common.beh.Predicate
+import common.beh.IntPredicate
 import choco.kernel.model.variables.integer.IntegerExpressionVariable
 import choco.Choco
 
@@ -34,9 +34,9 @@ object GCLoanRequest extends App {
       new GCIMerger("req2","auth2","pin",0).constraints ++
       new GCMerger("denied","appr2","out",0).constraints ++
       // filters
-      new GCFilter("login","auth",0,Pred(dataVar("login",0),new Authorised)).constraints ++
-      new GCFilter("isEn","denied",0,Pred(dataVar("isEn",0),new Deny)).constraints ++
-      new GCFilter("isEn","appr1",0,Pred(dataVar("isEn",0),new Approve)).constraints
+      new GCFilter("login","auth",0,IntPred(dataVar("login",0),new Authorised)).constraints ++
+      new GCFilter("isEn","denied",0,IntPred(dataVar("isEn",0),new Deny)).constraints ++
+      new GCFilter("isEn","appr1",0,IntPred(dataVar("isEn",0),new Approve)).constraints
 
   var problems = for (bankclerk <- List(1,3)) yield baseProblem ++ // init state
     new GCWriter("start",0,List(3)).constraints ++
@@ -132,7 +132,7 @@ object GCLoanRequest extends App {
 
   ///// PREDICATES ///////
 
-  class Authorised extends Predicate {
+  class Authorised extends IntPredicate {
     val choPred = (x:IntegerExpressionVariable) => Choco.or(Choco.eq(x,1),Choco.eq(x,2))
     val funPred = (x:Int) => (x == 1) || (x == 2)
     override def toString = "Authorised"
@@ -140,7 +140,7 @@ object GCLoanRequest extends App {
 
 
 
-  class Deny extends Predicate {
+  class Deny extends IntPredicate {
     val sd = Choco.makeIntVar("d_s")
     val ad = Choco.makeIntVar("d_d")
     val pd = Choco.makeIntVar("d_p")
@@ -166,7 +166,7 @@ object GCLoanRequest extends App {
     val period = Map(1 -> 2    , 2 -> 15   , 3 -> 10)     withDefaultValue 10
   }
 
-  class Approve extends Predicate {
+  class Approve extends IntPredicate {
     val sd = Choco.makeIntVar("d2_s")
     val ad = Choco.makeIntVar("d2_d")
     val pd = Choco.makeIntVar("d2_p")

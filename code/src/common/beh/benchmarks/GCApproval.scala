@@ -3,11 +3,11 @@ package common.beh.benchmarks
 import common.beh.guardedcommands._
 import common.beh.guardedcommands.dataconnectors._
 import scala.math.pow
-import common.beh.Predicate
+import common.beh.IntPredicate
 import choco.kernel.model.variables.integer.IntegerExpressionVariable
 import choco.Choco
 import common.beh.Utils._
-import common.beh.guardedcommands.Pred
+import common.beh.guardedcommands.IntPred
 import common.beh.guardedcommands.SGuard
 
 /**
@@ -113,10 +113,10 @@ object GCApproval extends App {
   val problem = genMergers(n) ++
 //    new GCExRouter("x","app","y",0).constraints ++
 //    new GCExRouter("y","den","neither",0).constraints ++
-    new GCFilter("x","app-ok",0,Pred(dataVar("x",0),approve)).constraints ++
-    new GCFilter("x","den-ok",0,Pred(dataVar("x",0),deny)).constraints ++
+    new GCFilter("x","app-ok",0,IntPred(dataVar("x",0),approve)).constraints ++
+    new GCFilter("x","den-ok",0,IntPred(dataVar("x",0),deny)).constraints ++
     new GCFilter("x","neither-ok",0,
-      Neg(Pred(dataVar("x",0),approve)) and Neg(Pred(dataVar("x",0),deny))).constraints ++
+      Neg(IntPred(dataVar("x",0),approve)) and Neg(IntPred(dataVar("x",0),deny))).constraints ++
     GuardedCommands(True --> SGuard(Var(flowVar("x",0)))) // flow on one of the clients
 
   if (justInit) problem.justInit = true
@@ -158,7 +158,7 @@ object GCApproval extends App {
 
 /// PREDICATES
 
-class Approve extends Predicate {
+class Approve extends IntPredicate {
   val choPred = (x:IntegerExpressionVariable) =>
     Choco.leq(140,Choco.sum(
       Choco.mult(GCApproval.choF1(x),2),
@@ -174,7 +174,7 @@ class Approve extends Predicate {
   override def toString = "Approve"
 }
 
-class Deny extends Predicate {
+class Deny extends IntPredicate {
   val choPred = (x:IntegerExpressionVariable) =>
     Choco.geq(90,Choco.sum(
       Choco.mult(GCApproval.choF1(x),2),

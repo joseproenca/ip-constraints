@@ -4,7 +4,7 @@ import common.beh.guardedcommands._
 import common.beh.guardedcommands.dataconnectors.{GCSDrain, GCSpout, GCFilter}
 import common.beh.{LT, GT}
 import common.beh.Utils._
-import common.beh.guardedcommands.Pred
+import common.beh.guardedcommands.IntPred
 import common.beh.guardedcommands.SGuard
 import common.beh.guardedcommands.Var
 
@@ -36,15 +36,15 @@ object GCParSpouts extends App {
       ( new GCSpout("b1","c1",0).constraints ++
         GuardedCommands(True --> SGuard(Var(flowVar("a1",0)))) ++
         GuardedCommands(True --> SGuard(Var(flowVar("d1",0)))) ++
-        new GCFilter("b1","a1",0,Pred(dataVar("b1",0),new LT(1))).constraints ++
-        new GCFilter("c1","d1",0,Pred(dataVar("c1",0),new GT(1))).constraints
+        new GCFilter("b1","a1",0,IntPred(dataVar("b1",0),new LT(1))).constraints ++
+        new GCFilter("c1","d1",0,IntPred(dataVar("c1",0),new GT(1))).constraints
       )
 
   for (i <- 2 to n) {
     problem ++=
       ( new GCSpout("b"+i,"c"+i,0).constraints ++
-        new GCFilter("b"+i,"a"+i,0,Pred(dataVar("b"+i,0),new LT(i))).constraints ++
-        new GCFilter("c"+i,"d"+i,0,Pred(dataVar("c"+i,0),new GT(i))).constraints ++
+        new GCFilter("b"+i,"a"+i,0,IntPred(dataVar("b"+i,0),new LT(i))).constraints ++
+        new GCFilter("c"+i,"d"+i,0,IntPred(dataVar("c"+i,0),new GT(i))).constraints ++
         new GCSDrain("a"+i,"a"+(i-1),0).constraints ++
         new GCSDrain("d"+i,"d"+(i-1),0).constraints
       )
