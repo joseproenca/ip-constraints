@@ -276,9 +276,7 @@ abstract sealed class Statement {
     case DataAssgn(v, d) => //common.beh.choco.DataAssgn(v,d)
       // INSTEAD OF CALCULATING, CREATE A LAZY CONSTRAINT!
       var res:ConstrBuilder = TrueC
-      println("&& adding lazy predicates...")
-      for ((pred,fs) <- da.domain(v)) {
-        println("&& "+predVar(v,pred,fs))
+      for ((pred,fs,xflow) <- da.domainWithEnd(v)) {
 
 //        var newd = d
 //        for (f<-fs.reverse) newd = f.calculate(newd)
@@ -287,7 +285,7 @@ abstract sealed class Statement {
 //        else
 //          res = res and common.beh.choco.Neg(common.beh.choco.Var(predVar(v,pred,fs)))
 
-        res = res and LazyPred(predVar(v,pred,fs),data2flow(v),d,pred,fs)
+        res = res and LazyPred(predVar(v,pred,fs),data2flow(xflow),d,pred,fs)
       }
       res
 

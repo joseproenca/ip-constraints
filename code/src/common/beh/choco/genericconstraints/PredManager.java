@@ -24,7 +24,7 @@ public class PredManager extends IntConstraintManager {
                                       Object parameters,
                                       List<String> options) {
         if (solver instanceof CPSolver) {
-            System.out.println("creating new lazy predicate with data "+((ArrayList<Object>)parameters).get(0));
+//            System.out.println("creating new lazy predicate with data "+((ArrayList<Object>)parameters).get(0));
             return new LazyPredSConstraint(solver.getVar(variables[0]),solver.getVar(variables[1]),
 //                    solver.getVar(((ArrayList<IntegerVariable>) parameters).get(3)),
                     ((ArrayList<Object>) parameters).get(0),
@@ -41,13 +41,12 @@ public class PredManager extends IntConstraintManager {
 
 
     static public Constraint genConstr(IntegerVariable xpred, IntegerVariable xflow, Object d, Buffer buf, UnPredicate pred, List<UnFunction> funcs) {
-        System.out.println("Creating generic predicate - "+xpred.getName()+" - "+pred);
+//        System.out.println("Creating generic predicate - "+xpred.getName()+" - "+pred);
         ArrayList<Object> parameters = new ArrayList<Object>();
         parameters.add(0,d);
         parameters.add(1,buf);
         parameters.add(2,pred);
         parameters.add(3,funcs);
-        //        return implies(eq(xflow, 1), cc);
         return new ComponentConstraint(PredManager.class, parameters, new IntegerVariable[]{xpred,xflow});
     }
 }

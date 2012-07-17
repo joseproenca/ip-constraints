@@ -2,7 +2,7 @@ package workers
 
 import org.scalatest.FunSpec
 import common.beh.choco.{ChoConstraints, ChoSolution}
-import strategies.{CompleteStrategyBuilder, StrategyBuilder, CompleteStrategy}
+import strategies._
 
 /**
  * Created with IntelliJ IDEA.
@@ -17,11 +17,11 @@ class TestWorkers extends FunSpec {
     //    val x = scala.actors.Actor.self
     type S = ChoSolution
     type C = ChoConstraints
-    type St = CompleteStrategy[S,C]
+    type St = HybridStrategy[S,C]
     type SB = StrategyBuilder[S,C,St]
 
     // create and run deployer
-    val deployer = new Deployer[S,C,St,SB](2,CompleteStrategyBuilder)
+    val deployer = new Deployer[S,C,St,SB](2,HybridStrategyBuilder)
     deployer.start()
 
     // create nodes
@@ -32,13 +32,15 @@ class TestWorkers extends FunSpec {
 
 //    wr.connect()
 
-    wr.behaviour.connections +=
-      lossy -> Set((wr.behaviour.ends.head,lossy.behaviour.ends.head,lossy.behaviour.uid))
-    wr.neighbours ::= lossy
+//    wr.behaviour.connections +=
+//      lossy -> Set((wr.behaviour.ends.head,lossy.behaviour.ends.head,lossy.behaviour.uid))
+//    wr.neighbours ::= lossy
 
-    lossy.behaviour.connections +=
-      wr -> Set((lossy.behaviour.ends.head,wr.behaviour.ends.head,wr.behaviour.uid))
-    lossy.neighbours ::= wr
+//    lossy.behaviour.connections +=
+//      wr -> Set((lossy.behaviour.ends.head,wr.behaviour.ends.head,wr.behaviour.uid))
+//    lossy.neighbours ::= wr
+
+    wr.connect(lossy , wr.behaviour.ends.head , lossy.behaviour.ends.head)
 
     // trigger all primitives (only proactive ones will start)
     wr.init

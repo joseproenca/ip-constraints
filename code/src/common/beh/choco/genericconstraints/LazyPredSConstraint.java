@@ -45,7 +45,7 @@ public class LazyPredSConstraint extends AbstractBinIntSConstraint {
 
     /** * Default initial propagation: full constraint re-propagation. */
     public void awake() throws ContradictionException {
-        System.out.println("AWAKE (Pred "+v0.getName()+") - dom size xpred/xflow "+v0.getDomainSize()+"/"+v1.getDomainSize());
+        System.out.println("AWAKE (Pred "+v0.getName()+"/"+v1.getName()+") - dom size xpred/xflow "+v0.getDomainSize()+"/"+v1.getDomainSize());
 
         // 3 options for xflow:
         //  - instantiated with 1 - xpred and pred must be true

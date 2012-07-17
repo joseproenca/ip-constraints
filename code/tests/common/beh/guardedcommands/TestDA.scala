@@ -1,9 +1,10 @@
 package common.beh.guardedcommands
 
-import connectors.GCFilter
+import dataconnectors.{GCSync, GCFilter}
 import org.scalatest.FunSpec
 import common.beh.choco.dataconnectors._
 import common.beh.Utils._
+import common.beh.{Odd, Even}
 
 /**
  * Created with IntelliJ IDEA.
@@ -34,38 +35,70 @@ class TestDA extends FunSpec {
     val even = new Even
     val odd = new Odd
 
-    def evend(x:String) = Pred(even,dataVar(x,0))
-    def oddd(x:String) = Pred(odd,dataVar(x,0))
+    def evend(x:String) = IntPred(dataVar(x,0),even)
+    def oddd(x:String) = IntPred(dataVar(x,0),odd)
 
     // TEST
-    val c1= new GCFilter("a","b",0,evend("a")).constraints ++
-            new GCFilter("b","c",0,oddd("b")).constraints ++
-            GuardedCommands(True --> DataAssgn(dataVar("a",0),2)) ++
-            GuardedCommands(True --> SGuard(Var(flowVar("c",0))))
+    // data fails first filter, second should be lazy using chocoSAT. No flow on "c", so fail.
+    val c1= new GCFilter("a","b",0,oddd("a")).constraints ++
+            new GCFilter("b","c",0,evend("b")).constraints ++
+            GuardedCommands(True --> IntAssgn(dataVar("a",0),2)) ++
+            GuardedCommands(True --> SGuard((Var(flowVar("c",0)))))
+    // Result is correct, but it is ALWAYS checking all predicates!
 
-
+    // both predicate hold - requirement for at least an end with flow yields dataflow everywhere
     val c2= new GCFilter("a","b",0,evend("a")).constraints ++
             new GCFilter("b","c",0,evend("b")).constraints ++
-            GuardedCommands(True --> DataAssgn(dataVar("a",0),6)) ++
-            GuardedCommands(True --> SGuard(Var(flowVar("c",0))))
+            GuardedCommands(True --> IntAssgn(dataVar("a",0),6)) //++
+//            GuardedCommands(True --> SGuard((Var(flowVar("a",0)))))
 
+    // as c1, but data flow only on "a" and is discarded (no requirement to flow on "c").
     val c3= new GCFilter("a","b",0,oddd("a")).constraints ++
             new GCFilter("b","c",0,evend("b")).constraints ++
-            GuardedCommands(True --> DataAssgn(dataVar("a",0),3)) ++
-            GuardedCommands(True --> SGuard(Var(flowVar("b",0))))
+            GuardedCommands(True --> IntAssgn(dataVar("a",0),2)) //++
+//            GuardedCommands(True --> SGuard(Var(flowVar("b",0))))
 
-//    println(c1.commands)
+    // control test with no data filters.
+    val c4= new GCSync("a","b",0).constraints ++
+            new GCSync("b","c",0).constraints ++
+            GuardedCommands(True --> IntAssgn(dataVar("a",0),3))// ++
+//            GuardedCommands(True --> SGuard(Var(flowVar("b",0))))
+
+    //    println(c1.commands)
 
     val res1 = c1.solveBool
     val res2 = c2.solveBool
     val res3 = c3.solveBool
-    if (res3.isDefined) println("solved:\n"+res3.get.pretty)
-    else println("no solution")
-    println("partial eval: "+c2.partialEval(res2.get))
+    val res4 = c4.solveBool
+    val resB= c3.solveChocoBool
+
+    println("-----------\n"+c1.commands.mkString("\n"))
+    println("-----------")
+
+
+    if (res1.isDefined) print("solved 1:\n"+res1.get.pretty)
+    else println("1: no solution")
+
+    if (res2.isDefined) print("solved 2:\n"+res2.get.pretty)
+    else println("2: no solution")
+
+    if (res2.isDefined) println("partial eval 2: "+c2.partialEval(res2.get))
+
+    if (res3.isDefined) print("solved 3:\n"+res3.get.pretty)
+    else println("3: no solution")
+
+    if (res4.isDefined) print("solved 4:\n"+res4.get.pretty)
+    else println("4: no solution")
+
+    println("partial eval 4: "+c4.partialEval(res4.get))
+
+    if (resB.isDefined) print("solved B:\n"+resB.get.pretty)
+    else println("B: no solution")
 
     it ("c1 should have no sol") {assert (!res1.isDefined)}
     it ("c2 should have sol") {assert (res2.isDefined)}
     it ("c3 should have sol") {assert (res3.isDefined)}
+    it ("c4 should have sol") {assert (res4.isDefined)}
 
 
   }

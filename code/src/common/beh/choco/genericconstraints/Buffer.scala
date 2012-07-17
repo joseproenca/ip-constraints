@@ -1,6 +1,6 @@
 package common.beh.choco.genericconstraints
 
-import java.util.List
+//import java.util.List
 import scala.collection.JavaConversions._
 
 
@@ -13,17 +13,38 @@ import scala.collection.JavaConversions._
  */
 
 class Buffer {
-  var calculated: Map[(UnPredicate,List[UnFunction],Any),Boolean] = Map()
+  var calculatedP: Map[(UnPredicate,Any),Boolean] = Map()
+  var calculatedF: Map[(UnFunction,Any),Any] = Map()
 
-  def check(p:UnPredicate, fs:List[UnFunction], d:Any) = {
+
+  def calculate(functs:List[UnFunction],d:Any): Any = functs match {
+    case Nil => d
+    case (f: UnFunction)::(fs: List[UnFunction]) =>
+      if (calculatedF contains (f,d)) {
+        print("# bf ")
+        calculate(fs,calculatedF((f,d)))
+      }
+      else {
+        println("# Calc ")
+        val res = f.calculate(d)
+        calculatedF += (f,d) -> res
+        calculate(fs,res)
+      }
+  }
+
+  def check(p:UnPredicate, fs:java.util.List[UnFunction], d:Any) = {
     println("####### checking "+p+"-"+fs.reverse.mkString(".")+"-"+d+"... #######")
-    calculated.get((p,fs, d)) match {
-      case Some(x) => if (x) 1 else 0
+    val newd = calculate(asJavaIterable(fs).toList.reverse,d)
+    calculatedP.get((p, newd)) match {
+      case Some(x) =>
+        println("# buffered #")
+        if (x) 1 else 0
       case None =>
+        println("# Calc #")
         var dt = d
         for (f <- fs) dt = f.calculate(dt)
         val res = p.check(dt)
-        calculated += (p,fs,d) -> res
+        calculatedP += (p,d) -> res
         if (res) 1 else 0
     }
   }

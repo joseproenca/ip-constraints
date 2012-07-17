@@ -1,7 +1,7 @@
 package common.beh.choco
 
 import dataconnectors._
-import common.beh.Utils
+import common.beh.{Even, GT, Utils}
 import Utils.{flowVar,dataVar}
 import org.scalatest.FunSpec
 

@@ -9,6 +9,7 @@ package common.beh.choco
  */
 
 import connectors.{ChoWriter, ChoLossy}
+import common.beh.Utils._
 import org.scalatest.FunSpec
 import choco.Choco
 import choco.cp.solver.CPSolver
@@ -57,15 +58,17 @@ class TestChoc extends FunSpec {
     val s1: ChoBehaviour = new ChoWriter("a",42,2)
     val s2: ChoBehaviour = new ChoLossy("b","c",43)
 
-
     val c = s1.constraints ++ s2.constraints
     s1.connections += this -> Set(("a","b",43))
     val c2 = s1.sync(this,c)
 
-    val r = c2.solve
+    println(c2)
+
+    val r = c2.solve //c2.minimise(dataVar("a",42))
     if (r.isDefined) {
       println(r.get.choSol.getModel.pretty())
       println("solved:\n"+r.get.pretty)
+      println("r.size: "+r.get.size)
     }
     else println("no solution")
 
@@ -76,7 +79,7 @@ class TestChoc extends FunSpec {
       it ("should have 2 variables in the solution")
       {assert(r.get.sizeModel == 2)}
 
-      it ("should have 3 known variables")
+      it ("should have 6 known variables")
       {assert(r.get.size == 3)}
     }
 

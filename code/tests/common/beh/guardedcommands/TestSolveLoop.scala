@@ -1,9 +1,9 @@
 package common.beh.guardedcommands
 
-import connectors.GCFilter
+import dataconnectors.GCFilter
 import common.beh.Utils._
 import org.scalatest.FunSpec
-import common.beh.choco.dataconnectors.{GT, LT}
+import common.beh.{LT, GT}
 
 /**
  * Created with IntelliJ IDEA.
@@ -20,13 +20,13 @@ class TestSolveLoop extends FunSpec {
     val lfive = new LT(5)
     val gtwo= new GT(2)
 
-    def lfivex(x:String) = Pred(lfive,dataVar(x,0))
-    def gtwox(x:String) = Pred(gtwo,dataVar(x,0))
+    def lfivex(x:String) = IntPred(dataVar(x,0),lfive)
+    def gtwox(x:String) = IntPred(dataVar(x,0),gtwo)
 
     println("--- data provided - no CSP solving ---")
     val c1= new GCFilter("a","b",0,lfivex("a")).constraints ++
       new GCFilter("b","c",0,gtwox("b")).constraints ++
-      GuardedCommands(True --> DataAssgn(dataVar("a",0),3)) ++
+      GuardedCommands(True --> IntAssgn(dataVar("a",0),3)) ++
       GuardedCommands(True --> SGuard(Var(flowVar("b",0))))
     val res1 = c1.solve
     if (res1.isDefined) println("solved:\n"+res1.get.pretty)
@@ -56,7 +56,7 @@ class TestSolveLoop extends FunSpec {
     println("--- data provided - no CSP solving ---")
     val c4= new GCFilter("a","b",0,lfivex("a")).constraints ++
       new GCFilter("b","c",0,gtwox("b")).constraints ++
-      GuardedCommands(True --> DataAssgn(dataVar("a",0),3)) ++
+      GuardedCommands(True --> IntAssgn(dataVar("a",0),3)) ++
       GuardedCommands(True --> SGuard(Var(flowVar("b",0))))
     val res4 = c4.solveChocoSat
     if (res4.isDefined) println("solved:\n"+res4.get.pretty)
@@ -90,19 +90,22 @@ class TestSolveLoop extends FunSpec {
     it ("c2 should have sol") {
       assert (res2.isDefined)
       val sol = res2.get
-      assert (sol(dataVar("a",0)) < 5)
+      assert (sol(dataVar("a",0)).isInstanceOf[Int])
+      assert (sol(dataVar("b",0)).isInstanceOf[Int])
+      assert (sol(dataVar("a",0)).asInstanceOf[Int] < 5)
       assert (if (sol.hasFlow(flowVar("c",0)))
-        sol(dataVar("b",0)) > 2
-      else sol(dataVar("b",0)) <= 2)
+        sol(dataVar("b",0)).asInstanceOf[Int] > 2
+      else sol(dataVar("b",0)).asInstanceOf[Int] <= 2)
     }
 
     it ("c3 should have sol") {
       assert (res3.isDefined)
       val sol = res3.get
-      assert (if (sol.hasFlow(flowVar("b",0))) sol(dataVar("b",0)) < 5
-      else                             sol(dataVar("a",0)) >= 5)
-      assert (if (sol.hasFlow(flowVar("c",0))) sol(dataVar("c",0)) > 2
-      else                             sol(dataVar("b",0)) <= 2)
+      assert (if (sol.hasFlow(flowVar("b",0))) sol(dataVar("b",0)).asInstanceOf[Int] < 5
+      else                             sol(dataVar("a",0)).asInstanceOf[Int] >= 5)
+      assert (if (sol.hasFlow(flowVar("c",0))) sol(dataVar("c",0)).asInstanceOf[Int] > 2
+      else if (sol.hasFlow(flowVar("b",0))) sol(dataVar("b",0)).asInstanceOf[Int] <= 2
+      else true)
     }
 
     it ("c4 should have sol") {
@@ -115,19 +118,20 @@ class TestSolveLoop extends FunSpec {
     it ("c5 should have sol") {
       assert (res5.isDefined)
       val sol = res5.get
-      assert (sol(dataVar("a",0)) < 5)
+      assert (sol(dataVar("a",0)).asInstanceOf[Int] < 5)
       assert (if (sol.hasFlow(flowVar("c",0)))
-        sol(dataVar("b",0)) > 2
-      else sol(dataVar("b",0)) <= 2)
+        sol(dataVar("b",0)).asInstanceOf[Int] > 2
+      else sol(dataVar("b",0)).asInstanceOf[Int] <= 2)
     }
 
     it ("c6 should have sol") {
       assert (res6.isDefined)
       val sol = res6.get
-      assert (if (sol.hasFlow(flowVar("b",0))) sol(dataVar("b",0)) < 5
-      else                             sol(dataVar("a",0)) >= 5)
-      assert (if (sol.hasFlow(flowVar("c",0))) sol(dataVar("c",0)) > 2
-      else                             sol(dataVar("b",0)) <= 2)
+      assert (if (sol.hasFlow(flowVar("b",0))) sol(dataVar("b",0)).asInstanceOf[Int] < 5
+      else                             sol(dataVar("a",0)).asInstanceOf[Int] >= 5)
+      assert (if (sol.hasFlow(flowVar("c",0))) sol(dataVar("c",0)).asInstanceOf[Int] > 2
+      else if (sol.hasFlow(flowVar("b",0))) sol(dataVar("b",0)).asInstanceOf[Int] <= 2
+      else true)
     }
 
   }

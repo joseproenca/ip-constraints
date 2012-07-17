@@ -255,6 +255,11 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
     }
   }
 
+
+  /////////////////////////////////
+  // USING DETERMINED CONNECTORS //
+  /////////////////////////////////
+
   /**
    *  Returns a solution for determined and closed connectors
    * @return Data solution from the abstract predicates with a simple data propagation traversal, if the simple
@@ -263,6 +268,28 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
   def quickDataSolve : Option[GCSolution] = {
     val cnf = toCNF
     val optSolBool = solveBool(cnf._1,cnf._2)
+    if (!optSolBool.isDefined)
+      return None
+
+    val pEval = partialEval(optSolBool.get)
+    val done = pEval.freshTraversal()
+
+    if (done)
+      Some(pEval.getSol(optSolBool.get))
+    else
+      None
+  }
+
+
+  /**
+   *  Returns a solution for determined and closed connectors using Lazy constraints in Choco
+   * @return Data solution from the abstract predicates with a simple data propagation traversal, if the simple
+   *         propagation returns a complete solution.
+   */
+  def lazyDataSolve : Option[GCSolution] = {
+    val builders = toBoolConstrBuilders
+    val optSolBool = solveChocoBool(builders)
+
     if (!optSolBool.isDefined)
       return None
 
@@ -300,7 +327,7 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
     val time = System.currentTimeMillis()
     val builders = toBoolConstrBuilders
 //    println("#> solving abst using choco SAT cnf - "+da.pp)
-    println("builder: "+builders.mkString("\n"))
+//    println("builder: "+builders.mkString("\n"))
     val optSolBool = solveChocoBool(builders)
 //    log.println("[Cho/SAT solve] "+(System.currentTimeMillis()-time))
     if (!optSolBool.isDefined)
@@ -340,7 +367,7 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
   def toBoolConstrBuilders : Iterable[ConstrBuilder] = {
     solveDomain()
 
-    println("&& domain solved: "+da.pp)
+//    println("&& domain solved: "+da.pp)
 
     for (com <- commands)
       yield com.toBoolConstrBuilder(da)
@@ -351,7 +378,7 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
   def solveChocoBool : Option[GCBoolSolution] = {
     val builders = toBoolConstrBuilders
     //    println("#> solving abst using choco SAT cnf - "+da.pp)
-    println("builder: "+builders.mkString("\n"))
+//    println("builder: "+builders.mkString("\n"))
     solveChocoBool(builders)
   }
 

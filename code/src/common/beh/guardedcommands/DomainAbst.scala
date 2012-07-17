@@ -55,9 +55,38 @@ class DomainAbst {
    * @param x name of the variable representing the end - of shape "F$..."
    * @return a set of predicates that must be evaluated, and a list of functions that must be applied before
    */
+  def domainWithEnd(x:String): Set[(UnPredicate,List[UnFunction],String)] = {
+    // 1 - start with current predicates
+    //    var res = inv(x) map ((_,List[UnFunction]()))
+    var res = Set[(UnPredicate,List[UnFunction],String)]()
+    for (p <- inv(x)) res += ((p,fun(x),x))
+
+    if (less contains x) {
+      // 2 - add domain of following paths
+      for (smaller <- less(x)) {
+        //        for ((p,fs) <- domain(smaller))
+        //          res(
+        res ++= domainWithEnd(smaller)
+      }
+      // 3 - add functions to all paths
+      if (fun contains x)
+        res = for ((p,fs,end) <- res) yield (p,fs ::: fun(x), end)
+    }
+    res
+  }
+
+
+  /**
+   * Same as domainMap(x:String) - Calculates the predicates and functions that should be calculated for each end.
+   * But it returns a set of predicates and functions with no reference to the
+   * TODO: Test function.
+   * @param x name of the variable representing the end - of shape "F$..."
+   * @return a set of predicates that must be evaluated, and a list of functions that must be applied before
+   */
   def domain(x:String): Set[(UnPredicate,List[UnFunction])] = {
     // 1 - start with current predicates
-    var res = inv(x) map ((_,List[UnFunction]())) //for (p <- inv(x)) yield (p,fun(x))
+    var res = inv(x) map ((_,List[UnFunction]()))
+
     if (less contains x) {
       // 2 - add domain of following paths
       for (smaller <- less(x)) {
