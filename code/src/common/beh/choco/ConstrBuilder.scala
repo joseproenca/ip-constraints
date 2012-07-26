@@ -175,6 +175,12 @@ sealed abstract class ConstrBuilder {
 object ConstrBuilder {
   type VarMap = Map[String, IntegerVariable]
 
+  /**
+   * Retrieves an IntegerVariable from a map if it exists, or creates one if it does not exist, updating the map.
+   * @param m map from variable names (Strings) to Choco variables (IntegerVariables)
+   * @param name of the variable (String)
+   * @return Choco variable (IntegerVariable) for the given variable name
+   */
   def getVar(m: VarMap, name: String): (VarMap, IntegerVariable) = {
     if (m contains name)
       (m, m(name))
@@ -205,14 +211,29 @@ object ConstrBuilder {
 //      res = vars + (vname -> v)
 //    res
 //  }
-  
-  def toChoco(cs: Iterable[ConstrBuilder]): (VarMap,Iterable[ChocoConstr]) = {
+
+//  /**
+//   * Builds a collection of Choco constraints from a collection of constraint builders
+//   * @param cs collection of constraint builders
+//   * @return equivalent Choco constraint
+//   */
+//  def toChoco(cs: Iterable[ConstrBuilder]): (VarMap,Iterable[ChocoConstr]) = {
+//    toChoco(cs,new Buffer)
+//  }
+
+  /**
+   * Same as toChoco but parameterised in the buffer used by lazy constraints.
+   * @param cs collection of contraint builders
+   * @param buf buffer of already calculated functions and predicates in lazy constraints
+   * @return Choco constraint
+   */
+  def toChoco(cs: Iterable[ConstrBuilder], buf: Buffer): (VarMap,Iterable[ChocoConstr]) = {
     var varmap: VarMap = Map()
     var res:Set[ChocoConstr] = Set()
     for (c <- cs) {
       varmap = c.optimiseEqVars(varmap,true)
     }
-    val buf = new Buffer
+//    val buf = new Buffer
     for (c <- cs) {
       val pair = c.toChocoAux(varmap,buf,true,true)
       res += pair._2

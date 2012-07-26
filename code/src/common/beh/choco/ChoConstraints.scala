@@ -3,10 +3,17 @@ package common.beh.choco
 import choco.cp.solver.CPSolver
 import choco.cp.model.CPModel
 import choco.kernel.common.logging.{Verbosity, ChocoLogging}
+import genericconstraints.Buffer
 import scala.collection.JavaConversions._
 import choco.Choco
 import choco.kernel.model.variables.integer.IntegerVariable
-import common.beh.Utils
+import common.beh.Utils._
+import choco.cp.solver.search.BranchingFactory
+import choco.cp.solver.search.integer.branching.AssignVar
+import choco.cp.solver.search.integer.varselector.StaticVarOrder
+import choco.cp.solver.search.integer.branching.domwdeg.DomOverWDegBranchingNew
+import choco.kernel.solver.variables.integer.IntDomainVar
+import choco.cp.solver.search.integer.valiterator.IncreasingDomain
 
 /**
  * Created by IntelliJ IDEA.
@@ -32,7 +39,7 @@ class ChoConstraints extends common.beh.Constraints[ChoSolution,ChoConstraints] 
 
     val m: CPModel = new CPModel
 
-    val pair = ConstrBuilder.toChoco(constrBuilders)
+    val pair = ConstrBuilder.toChoco(constrBuilders,new Buffer)
     val varMap = pair._1
     for (constr <- pair._2)
       m.addConstraint(constr)
@@ -40,7 +47,7 @@ class ChoConstraints extends common.beh.Constraints[ChoSolution,ChoConstraints] 
     // Add flow constraints
     var flowvars = Set[IntegerVariable]()
     for (x <- m.getIntVarIterator) {
-      if (Utils.isFlowVar(x.getName)) flowvars += x
+      if (isFlowVar(x.getName)) flowvars += x
     }
     if (!(flowvars.isEmpty)) {
       var c = Choco.eq(flowvars.head,1)
@@ -67,14 +74,18 @@ class ChoConstraints extends common.beh.Constraints[ChoSolution,ChoConstraints] 
 
   }
 
-  def solve: Option[ChoSolution] = {
+  def solve = solve(List(), new Buffer)
+
+  def solve(buf: Buffer): Option[ChoSolution] = solve(List(),buf)
+
+  def solve(order:List[String], buf: Buffer): Option[ChoSolution] = {
     ChocoLogging.setVerbosity(Verbosity.OFF)
 
     val s = new CPSolver
 
     val m: CPModel = new CPModel
 
-    val pair = ConstrBuilder.toChoco(constrBuilders)
+    val pair = ConstrBuilder.toChoco(constrBuilders, buf)
     val varMap = pair._1
     for (constr <- pair._2)
       m.addConstraint(constr)
@@ -82,7 +93,7 @@ class ChoConstraints extends common.beh.Constraints[ChoSolution,ChoConstraints] 
     // Add flow constraints
     var flowvars = Set[IntegerVariable]()
     for (x <- m.getIntVarIterator) {
-      if (Utils.isFlowVar(x.getName)) flowvars += x
+      if (isFlowVar(x.getName)) flowvars += x
     }
     if (!(flowvars.isEmpty)) {
       var c = Choco.eq(flowvars.head,1)
@@ -94,6 +105,31 @@ class ChoConstraints extends common.beh.Constraints[ChoSolution,ChoConstraints] 
 //    println(m.pretty())
 
     s.read(m)
+
+    // If there is an order of variables passed, use a strategy based on that order.
+    if (!(order isEmpty)) {
+      var flowvar = List[IntDomainVar]()
+//      var datavar = List[IntDomainVar]()
+      val svars = scala.collection.mutable.Map[String,IntDomainVar]()
+
+      for (v <- s.getIntVarIterator)
+        if (!(v.getName startsWith "TMP_")) svars(v.getName) = v
+
+      for (v <- order) {
+        if (svars contains data2flow((v)))  flowvar ::= svars(data2flow(v))
+//        if (svars contains v)               datavar ::= svars(v)
+        svars -= v
+        svars -= data2flow(v)
+      }
+
+      val fullorder: Array[IntDomainVar] = (flowvar::: svars.values.toList).toArray
+//      val fullorder: Array[IntDomainVar] = (flowvar.reverse ::: svars.values.toList.sortBy(_.getName()).reverse).toArray
+//      val fullorder: Array[IntDomainVar] = (svars.values.toList/*.sortBy(_.getName())*/ ::: datavar::: flowvar).toArray
+
+//      println("--- new order: "+fullorder.mkString(","))
+
+      s.addGoal(new AssignVar(new StaticVarOrder(s,fullorder),new IncreasingDomain))
+    }
 
     val solved = s.solve
 

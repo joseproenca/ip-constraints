@@ -143,6 +143,29 @@ class DomainAbst {
   }
 
 
+  def guessOrder: List[String] = {
+    var done = Set[String]()
+    var res = List[String]()
+    for (m <- max) {
+      val run = addRuns(m,done)
+      done = run._1
+      res = res ::: run._2
+    }
+    println("Ordering variables for the solver: "+res.map(ppFlowVar(_)).mkString(" -> "))
+    res
+  }
+
+  private def addRuns(start: String, done:Set[String]): (Set[String],List[String]) = {
+    var newd = done + start
+    var res = if (done contains start) List[String]() else List(start)
+    if (less contains  start) for (s <- less(start)) {
+      val rest = addRuns(s,newd)
+      newd = rest._1
+      res = res ::: rest._2
+    }
+    (newd,res)
+  }
+
 
   def pp: String = {
     var res = ""
@@ -191,7 +214,7 @@ object DomainAbst {
 }
 
 
-object Main extends App {
+object OtherMain extends App {
   val da = new DomainAbst
   da += "a" -> "c"
   da += "b" -> "c"

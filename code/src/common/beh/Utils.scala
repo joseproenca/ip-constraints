@@ -14,7 +14,7 @@ object Utils {
 
   def dataVar(x: String, uid: Int): String = "D$" + x + "$" + uid
 
-  def predVar(v: String, pred: Any, fs: List[Any]) = v + "_" + pred + "_" + fs.mkString(".")//.hashCode()
+  def predVar(v: String, pred: Any, fs: List[Any]) = v + "#" + pred + "_" + fs.mkString(".")//.hashCode()
 
   def flow2data(x: String): String = "D" + x.tail
 
@@ -22,7 +22,9 @@ object Utils {
 
   def isFlowVar(x: String): Boolean = x.startsWith("F$")
 
-  def isPredVar(x: String): Boolean = x.contains('_')
+  def isDataVar(x: String): Boolean = x.startsWith("D$")
+
+  def isPredVar(x: String): Boolean = x.contains('#')
 
   def ppFlowVar(x:String): String = { val y = x.split("\\$"); y(1)+"_"+y(2) }
   def ppDataVar(x:String): String = { val y = x.split("\\$"); "^"+y(1)+"_"+y(2) }

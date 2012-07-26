@@ -21,12 +21,13 @@ class Buffer {
     case Nil => d
     case (f: UnFunction)::(fs: List[UnFunction]) =>
       if (calculatedF contains (f,d)) {
-        print("# bf ")
+        println("# buffered func #")
         calculate(fs,calculatedF((f,d)))
       }
       else {
-        println("# Calc ")
+        println("# Calc func #")
         val res = f.calculate(d)
+        println("# adding "+f+"("+d+") -> "+res+" to buffer")
         calculatedF += (f,d) -> res
         calculate(fs,res)
       }
@@ -37,14 +38,13 @@ class Buffer {
     val newd = calculate(asJavaIterable(fs).toList.reverse,d)
     calculatedP.get((p, newd)) match {
       case Some(x) =>
-        println("# buffered #")
+        println("# buffered P #")
         if (x) 1 else 0
       case None =>
-        println("# Calc #")
-        var dt = d
-        for (f <- fs) dt = f.calculate(dt)
-        val res = p.check(dt)
-        calculatedP += (p,d) -> res
+        println("# Calc P #")
+        val res = p.check(newd)
+//        println("# adding "+p+"("+newd+") -> "+res+" to buffer")
+        calculatedP += (p,newd) -> res
         if (res) 1 else 0
     }
   }

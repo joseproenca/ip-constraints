@@ -18,7 +18,7 @@ class GCSolution(val boolSol: Solution, var varMap: Map[String, Any]) extends So
 
   def pretty: String = {
     var res = boolSol.pretty
-    for ((v:String,k:Int) <- varMap.toList.sortBy((x:(String,Any)) => x._1))
+    for ((v:String,k:Any) <- varMap.toList.sortBy((x:(String,Any)) => x._1))
       res += ppVar(v) + " -> "+k+"\n"
     res
   }

@@ -300,15 +300,15 @@ abstract sealed class Statement {
       res
 
     case FunAssgn(v1,v2,f) =>
-      VarAssgn(v1,v2).toBoolConstrBuilder(da)
-//      val (d1,d2) = (da.domain(v1),da.domain(v2))
-//      var res: ConstrBuilder= TrueC
-//      for ((pred,fs) <- d2)
-//        if (d1 contains (pred,f::fs)) {
-//          val t = common.beh.choco.VarEq(predVar(v1,pred,f::fs),predVar(v2,pred,fs))
-//          res = res and t
-//        }
-//      res
+//      VarAssgn(v1,v2).toBoolConstrBuilder(da)
+      val (d1,d2) = (da.domain(v1),da.domain(v2))
+      var res: ConstrBuilder= TrueC
+      for ((pred,fs) <- d1)
+        if (d2 contains (pred,f::fs)) {
+          val t = common.beh.choco.VarEq(predVar(v1,pred,fs),predVar(v2,pred,f::fs))
+          res = res and t
+        }
+      res
 
     case Seq(Nil) => common.beh.choco.TrueC
     case Seq(s::ss) => s.toBoolConstrBuilder(da) and Seq(ss).toBoolConstrBuilder(da)

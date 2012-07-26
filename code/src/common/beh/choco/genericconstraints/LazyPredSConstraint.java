@@ -45,7 +45,7 @@ public class LazyPredSConstraint extends AbstractBinIntSConstraint {
 
     /** * Default initial propagation: full constraint re-propagation. */
     public void awake() throws ContradictionException {
-        System.out.println("AWAKE (Pred "+v0.getName()+"/"+v1.getName()+") - dom size xpred/xflow "+v0.getDomainSize()+"/"+v1.getDomainSize());
+        System.out.println("# AWAKE ("+v0.getName()+"/"+v1.getName()+") - dom size xpred/xflow "+v0.getDomainSize()+"/"+v1.getDomainSize());
 
         // 3 options for xflow:
         //  - instantiated with 1 - xpred and pred must be true
@@ -109,7 +109,7 @@ public class LazyPredSConstraint extends AbstractBinIntSConstraint {
      */
     public void awakeOnInst(int idx) throws ContradictionException {
         if (idx == 1) {
-            System.out.println("AWAKE (Pred) - xflow instantiated! - "+v1.getVal());
+            System.out.println("# AWAKE (Pred) - xflow instantiated! - "+v1.getVal());
             propagate();
         }
         //constAwake(false); // change if necessary
@@ -119,8 +119,8 @@ public class LazyPredSConstraint extends AbstractBinIntSConstraint {
     /** * <i>Propagation:</i> * Propagating the constraint until local consistency is reached. * * @throws ContradictionException * contradiction exception */
 
     public void propagate() throws ContradictionException {
-        System.out.println("PROPAGATING (Pred) - called");
-        System.out.println("PROPAGATING (Pred) - dom size xpred/xflow "+v0.getDomainSize()+"/"+v1.getDomainSize());
+//        System.out.println("PROPAGATING (Pred) - called");
+        System.out.println("# PROPAGATING (Pred) - dom size xpred/xflow "+v0.getDomainSize()+"/"+v1.getDomainSize());
 
         // if xflow == 1, then predicate and xpred must coincide -----predicate must be true and "1 in domain_xpred"
         if(v1.isInstantiated())
@@ -145,7 +145,7 @@ public class LazyPredSConstraint extends AbstractBinIntSConstraint {
      */
     @Override
     public boolean isSatisfied(int[] tuple) {
-        System.out.println("IsSatisfied? (Pred) - called");
+        System.out.println("# IsSatisfied? ("+v0.getName()+" - "+v1.getName()+") - called");
         if (tuple[1] == 0) return true;
         else return (tuple[0] ==  buffer.check(predicate,functions,data));
     }

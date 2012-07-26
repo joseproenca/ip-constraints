@@ -6,7 +6,7 @@ import common.beh.Utils._
 import common.beh.choco.{ChoConstraints, FlowPred, ConstrBuilder}
 import common.beh.{IntFunction, IntPredicate}
 import choco.kernel.model.variables.integer.IntegerExpressionVariable
-import common.beh.choco.genericconstraints.UnFunction
+import common.beh.choco.genericconstraints.{Buffer, UnFunction}
 
 /**
  * Created with IntelliJ IDEA.
@@ -42,8 +42,8 @@ class PEval(
    * Alternative to quotient
    * @return If all data variables with some data assignment are defined.
    */
-  def freshTraversal(): Boolean = { //: Map[String,Int] = {
-    println("init peval: "+this)
+  def freshTraversal(buf: Buffer): Boolean = { //: Map[String,Int] = {
+//    println("init peval: "+this)
     var next = data.keySet
     var continue = true
     while (continue) {
@@ -60,14 +60,14 @@ class PEval(
 //          rest -= hd
         }
         if (funcs contains hd) for ((y,f) <- funcs(hd)) {
-          data += y -> f.calculate(data(hd))
+          data += y -> buf.calculate(List(f),data(hd))
           next += y
           continue = true
         }
         next -= hd
       }
     }
-    println("new peval: "+this)
+//    println("new peval: "+this)
 
     var finished = true
     var allvars: Set[String] = Set()
@@ -76,7 +76,7 @@ class PEval(
     for (v <- allvars)
       if (!(data contains v)) finished = false
 
-    println("finished? "+finished)
+//    println("finished? "+finished)
     finished
   }
 
