@@ -25,6 +25,7 @@ case class GuardedCom(g:Guard, st: Statement) {
     for (v <- fv) {
       if (!isFlowVar(v)) {
         val dv = dom.domain(v) // v -> Set(P1,P2,P3)
+//        println(" ** "+v+" - "+dv.mkString(","))
         for ((p,fs) <- dv)
           res += predVar(v,p,fs)
       }
@@ -131,7 +132,10 @@ abstract sealed class Guard {
   def toConstrBuilder: ConstrBuilder = this match {
     case Var(name) => common.beh.choco.Var(name)
     case IntPred(v, p) => common.beh.choco.FlowPred(p.choPred,v) // THIS is the difference with Bool below.
-    case Pred(v, p) => throw new Exception("General predicates have no associated choco constraint")
+    case Pred(v, p) => p match {
+      case intp: IntPredicate => common.beh.choco.FlowPred(intp.choPred,v)
+      case _ => throw new Exception("General predicates have no associated choco constraint")
+    }
     case And(g1, g2) => g1.toConstrBuilder and g2.toConstrBuilder
     case Or(g1, g2) => g1.toConstrBuilder or g2.toConstrBuilder
     case Neg(g) => common.beh.choco.Neg(g.toConstrBuilder)
@@ -206,7 +210,7 @@ abstract sealed class Statement {
     case VarAssgn(v1, v2) => DomainAbst(v2 -> v1)
     case Seq(Nil) => DomainAbst()
     case Seq(s::ss) => s.da + Seq(ss).da
-    case FunAssgn(v1,v2,f) => DomainAbst(v2 -> v1) + DomainAbst(v2, f)
+    case FunAssgn(v1,v2,f) => DomainAbst(v2 -> v1) + DomainAbst(v1, f)
   }
 
   def toCNF(vars: MutMap[String,Int],da: DomainAbst): CNF.Core = this match {
@@ -265,11 +269,11 @@ abstract sealed class Statement {
     case IntAssgn(v, d) => common.beh.choco.DataAssgn(v,d)
     case DataAssgn(v, d) =>
       if (d.isInstanceOf[Int]) common.beh.choco.DataAssgn(v,d.asInstanceOf[Int])
-      else throw new Exception("General data assignments have no associated choco constraint")
+      else throw new RuntimeException("General data assignments have no associated choco constraint")
     case VarAssgn(v1, v2) => common.beh.choco.VarEq(v1,v2)
     case FunAssgn(v1, v2, f) =>
       if (f.isInstanceOf[IntFunction]) common.beh.choco.FunAssgn(v1,v2,f.asInstanceOf[IntFunction].choFun)
-      else throw new Exception("General data functions have no associated choco constraint")
+      else throw new RuntimeException("General data functions have no associated choco constraint")
     case Seq(Nil) => common.beh.choco.TrueC
     case Seq(s::ss) => s.toConstrBuilder and Seq(ss).toConstrBuilder
   }

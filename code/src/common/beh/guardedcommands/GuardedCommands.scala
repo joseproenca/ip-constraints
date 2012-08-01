@@ -43,6 +43,12 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
   }
 
   /**
+   * Combines the free variables of all guarded commands
+   * @return free variables of all guarded commands
+   */
+  def fv() = commands.map(_.fv).foldRight[Set[String]](Set())(_++_)
+
+  /**
    * Should be performed only once per guarded command.
    * Possible optimization: collect vars upon creation
    *   - ignored since lots of temporary domains are calculated.
@@ -53,11 +59,13 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
 
     solveDomain()
 
+    println(da.pp)
+
     val afv = commands.map(_.afv(da)).foldRight[Set[String]](Set())(_ ++ _)
     var i = 1
     var vars = MutMap[String, Int]()
     for (v <- afv) {
-//      println(" ** "+v)
+      println(" ** "+v)
       vars(v) = i
       i += 1
     }

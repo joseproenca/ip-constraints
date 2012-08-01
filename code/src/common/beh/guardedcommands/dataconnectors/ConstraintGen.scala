@@ -19,6 +19,7 @@ object ConstraintGen {
   def adrain(a: String, b: String) = new GCADrain(a,b,0).constraints
   def fifo(a: String, b: String, data:Some[Any]) = new GCFifo(a,b,data,0).constraints
   def sfifo(a: String, b: String, data:Some[Any]) = new GCSyncFifo(a,b,data,0).constraints
+  def filter(a: String, b: String, g:Guard) = new GCFilter(a,b,0,g).constraints
   def filter(a: String, b: String, filter:UnPredicate) = new GCFilter(a,b,0,filter).constraints
   def negfilter(a: String, b: String, filter:UnPredicate) = new GCFilter(a,b,0,filter,false).constraints
   def imerger(a: String, b: String, c: String) = new GCIMerger(a,b,c,0).constraints

@@ -11,6 +11,7 @@ import common.beh.Utils._
 import common.beh.guardedcommands.IntPred
 import common.beh.guardedcommands.SGuard
 import z3.Z3
+import common.beh.guardedcommands.dataconnectors.ConstraintGen._
 
 /**
  * Created with IntelliJ IDEA.
@@ -27,9 +28,19 @@ object GCApproval extends App {
   Warmup.go
 
   val n = if (!args.isEmpty) Integer.parseInt(args(0))
-          else               5
-  val choco = if (args.size > 1) args(1) startsWith "c"
-              else               false
+          else               4
+  val satfull = if (args.size > 1) args(1) startsWith "s"
+  else               false
+  val chocosat = if (args.size > 1) args(1) startsWith "cs"
+  else               false
+  val choco = if (args.size > 1) (args(1) startsWith "c") && !chocosat
+  else               false
+  val z3 = if (args.size > 1) args(1) startsWith "z"
+  else               false
+  val quicksat = if (args.size > 1) args(1) startsWith "q"
+  else               false
+  val lazyy = if (args.size > 1) args(1) startsWith "l"
+  else               false
   val justInit = if (args.size > 2) args(2) startsWith "i"
                  else               false
 
@@ -101,85 +112,120 @@ object GCApproval extends App {
   }
 
 
-  def genMergers2(size:Int): GuardedCommands= {
-      val height = scala.math.log(size) / scala.math.log(2)
-      var srcs = List("x")
-      var res = GuardedCommands()
-      for (level <- 1 to height.toInt) {
-        var newsrcs = List[String]()
-        for (x <- srcs) {
-          res = res ++ new GCMerger(x+1,x+2,x,0).constraints
-          newsrcs :::= List(x+1,x+2)
-        }
-        srcs = newsrcs
-      }
-
-
-      for (wr <- genClients(size.toInt)) {
-        srcs match {
-          case hd::tl =>
-            res ++= (wr.constraints ++ new GCSync(wr.x,hd,0).constraints)
-            srcs = tl
-          case Nil => {}
-        }
-      }
-//    println("res: "+res.commands.mkString(","))
-      res
-  }
+//  def genMergers2(size:Int): GuardedCommands= {
+//      val height = scala.math.log(size) / scala.math.log(2)
+//      var srcs = List("x")
+//      var res = GuardedCommands()
+//      for (level <- 1 to height.toInt) {
+//        var newsrcs = List[String]()
+//        for (x <- srcs) {
+//          res = res ++ new GCMerger(x+1,x+2,x,0).constraints
+//          newsrcs :::= List(x+1,x+2)
+//        }
+//        srcs = newsrcs
+//      }
+//
+//      for (wr <- genClients(size.toInt)) {
+//        srcs match {
+//          case hd::tl =>
+//            res ++= (wr.constraints ++ new GCSync(wr.x,hd,0).constraints)
+//            srcs = tl
+//          case Nil => {}
+//        }
+//      }
+////    println("res: "+res.commands.mkString(","))
+//      res
+//  }
 
   val approve = new Approve()
   val deny = new Deny()
 
   val problem = genMergers(n) ++
-//    new GCExRouter("x","app","y",0).constraints ++
-//    new GCExRouter("y","den","neither",0).constraints ++
-    new GCFilter("x","app-ok",0,IntPred(dataVar("x",0),approve)).constraints ++
-    new GCFilter("x","den-ok",0,IntPred(dataVar("x",0),deny)).constraints ++
-    new GCFilter("x","neither-ok",0,
-      Neg(IntPred(dataVar("x",0),approve)) and Neg(IntPred(dataVar("x",0),deny))).constraints ++
-    GuardedCommands(True --> SGuard(Var(flowVar("x",0)))) ++ // flow on one of the clients
-//    ConstraintGen.writer("x",List(19))
-    ConstraintGen.flow("app-ok")
+    filter("x","app-ok",approve) ++
+    filter("x","den-ok",deny) ++
+    filter("x","neither-ok", Neg(IntPred(dataVar("x",0),approve)) and
+                             Neg(IntPred(dataVar("x",0),deny)))
+//    flow("x") ++
+//    flow("app-ok")
+//    writer("x",List(19))
 
   if (justInit) problem.justInit = true
 
 
-  if (choco) {
+  if (satfull) {
+    val time = System.currentTimeMillis()
+    val res = problem.solve
+    val spent = System.currentTimeMillis() - time
+    print(spent)
+  }
+  else if (chocosat) {
     val time = System.currentTimeMillis()
     val res = problem.solveChocoSat
     val spent = System.currentTimeMillis() - time
-
     print(spent)
-
-    if (res.isDefined) println("PAC solved in "+spent+" ms: "+res.get.pretty)
-    else println("PAC - no solution (in "+spent+" ms)")
   }
+  else if (choco) {
+    val time = System.currentTimeMillis()
+    val res = problem.solveChoco
+    val spent = System.currentTimeMillis() - time
+    print(spent)
+  }
+  else if (z3) {
+    val z3 = new Z3Context(new Z3Config("MODEL" -> true))
+    val time = System.currentTimeMillis()
+    val res = Z3.solvez3(Z3.gc2z3(problem,z3),z3)
+    val spent = System.currentTimeMillis() - time
+    print(spent)
+  }
+  else if (quicksat) {
+    val time = System.currentTimeMillis()
+    val res = problem.quickDataSolve
+    val spent = System.currentTimeMillis() - time
+    print(spent)
+  }
+  else if (lazyy) {
+    val time = System.currentTimeMillis()
+    val res = problem.lazyDataSolve
+    val spent = System.currentTimeMillis() - time
+    print(spent)
+  }
+  /// EXPERIMENTS:
   else {
 
+    //// SAT-FULL ////
     var time = System.currentTimeMillis()
     var res: Option[Solution] = problem.solve
     var spent = System.currentTimeMillis() - time
 //    if (res.isDefined) println("SAT-full - solved in "+spent+" ms:\n"+res.get.pretty)
 //    else println("SAT-full - no solution (in "+spent+" ms)")
-    println("SAT-full - "+spent)
+    println("SAT-full  - "+spent)
 
+    //// SATC-FULL ////
+    time = System.currentTimeMillis()
+    res = problem.solveChocoSat
+    spent = System.currentTimeMillis() - time
+//    if (res.isDefined) println("SATC-full - solved in "+spent+" ms:\n"+res.get.pretty)
+//    else println("SATC-full - no solution (in "+spent+" ms)")
+    println("SATC-full - "+spent)
 
+    //// CHOCO ////
+    time = System.currentTimeMillis()
+    res = problem.solveChoco
+    spent = System.currentTimeMillis() - time
+//    if (res.isDefined) println("Choco - solved in "+spent+" ms:\n"+res.get.pretty)
+//    else println("Choco - no solution (in "+spent+" ms)")
+    println("Choco     - "+spent)
 
+    /// Z3 ////
     val z3 = new Z3Context(new Z3Config("MODEL" -> true))
     time = System.currentTimeMillis()
     res = Z3.solvez3(Z3.gc2z3(problem,z3),z3)
     spent = System.currentTimeMillis() - time
 //    if (res.isDefined) println("Z3 - solved in "+spent+" ms:\n"+res.get.pretty)
 //    else println("Z3 - no solution (in "+spent+" ms)")
-    println("Z3 - "+spent)
+    println("Z3        - "+spent)
 
-//    time = System.currentTimeMillis()
-//    res = problem.solveChoco
-//    spent = System.currentTimeMillis() - time
-////    if (res.isDefined) println("Choco - solved in "+spent+" ms:\n"+res.get.pretty)
-////    else println("Choco - no solution (in "+spent+" ms)")
-//    println("Choco - "+spent)
-
+    //// QUICK-SAT ////
     time = System.currentTimeMillis()
     res = problem.quickDataSolve
     spent = System.currentTimeMillis() - time
@@ -187,29 +233,17 @@ object GCApproval extends App {
 //    else println("quick-sat - no solution (in "+spent+" ms)")
     println("quick-sat - "+spent)
 
+    //// LAZY-SAT ////
     time = System.currentTimeMillis()
     res = problem.lazyDataSolve
     spent = System.currentTimeMillis() - time
 //    if (res.isDefined) println("lazy-sat - solved in "+spent+" ms:\n"+res.get.pretty)
 //    else println("lazy-sat - no solution (in "+spent+" ms)")
-    println("lazy-sat - "+spent)
-
-    //    if (res.isDefined) println(" solved in "+spent+" ms:\n"+res1.get.pretty)
-//    else println("PAS - no solution (in "+spent+" ms)")
-//
-//    if (res2.isDefined) println("PAS2 solved in "+spent+" ms:\n"+res2.get.pretty)
-//    else println("PAS - no solution (in "+spent+" ms)")
+    println("lazy-sat  - "+spent)
   }
 
 
 
-  //  val p2 =
-//    new GCFilter("app","app-ok",0,Pred(new Approve(),dataVar("app",0))).constraints ++
-//    GuardedCommands(True --> SGuard(Var(flowVar("app-ok",0))))
-
-//  val res = p2.solve
-//  if (res.isDefined) println("res: "+res.get.pretty)
-//  else println("no sol")
 }
 
 
@@ -229,14 +263,14 @@ class Approve extends IntPredicate {
     (v._2*2 + v._3*3 + v._4*5) >= 140
   }
 
-  override def toString = "Approve"
-
   val z3Pred = (z:Z3Context,v:Z3AST) => //z.mkGT(v,z.mkInt(i,z.mkIntSort()))
     z.mkLE(z.mkInt(140,z.mkIntSort()),z.mkAdd(
       z.mkMul(GCApproval.z3F1(z,v),z.mkInt(2,z.mkIntSort())),
       z.mkMul(GCApproval.z3F2(z,v),z.mkInt(3,z.mkIntSort())),
       z.mkMul(GCApproval.z3F3(z,v),z.mkInt(5,z.mkIntSort()))
     ))
+
+  override def toString = "Approve"
 }
 
 class Deny extends IntPredicate {
@@ -246,12 +280,11 @@ class Deny extends IntPredicate {
       Choco.mult(GCApproval.choF2(x),3),
       Choco.mult(GCApproval.choF3(x),5)
     ))
+
   val funPred = (x:Int) => {
     val v = GCApproval.split(x)
     (v._2*2 + v._3*3 + v._4*5) <= 90
   }
-
-  override def toString = "Deny"
 
 //  val z3Pred = null
   val z3Pred = (z:Z3Context,v:Z3AST) => //z.mkGT(v,z.mkInt(i,z.mkIntSort()))
@@ -261,6 +294,7 @@ class Deny extends IntPredicate {
     z.mkMul(GCApproval.z3F3(z,v),z.mkInt(5,z.mkIntSort()))
   ))
 
+  override def toString = "Deny"
 }
 
 

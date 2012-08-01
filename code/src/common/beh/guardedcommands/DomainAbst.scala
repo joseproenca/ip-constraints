@@ -90,13 +90,15 @@ class DomainAbst {
     if (less contains x) {
       // 2 - add domain of following paths
       for (smaller <- less(x)) {
-//        for ((p,fs) <- domain(smaller))
-//          res(
-        res ++= domain(smaller)
+        if (fun contains smaller)
+          // new 3 - add functions to all paths
+          res ++= (for ((p,fs) <- domain(smaller)) yield (p,fs ::: fun(smaller)))
+        else
+          res ++= domain(smaller)
       }
-      // 3 - add functions to all paths
-      if (fun contains x)
-        res = for ((p,fs) <- res) yield (p,fs ::: fun(x))
+//      // 3 - add functions to all paths
+//      if (fun contains x)
+//        res = for ((p,fs) <- res) yield (p,fs ::: fun(x))
     }
     res
   }

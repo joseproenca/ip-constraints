@@ -4,7 +4,7 @@ import _root_.z3.scala._
 import common.beh.guardedcommands._
 import common.beh.guardedcommands.Var
 import scala.Equiv
-import common.beh.{Even, guardedcommands}
+import common.beh.{IntPredicate, Even, guardedcommands}
 
 /**
  * Created with IntelliJ IDEA.
@@ -42,6 +42,17 @@ object Z3 {
     var res = z3.mkTrue()
     for (com <- gcs.commands)
       res = z3.mkAnd(res,gc2z3(com,z3))
+    val vars = gcs.fv()
+
+    // ADD FLOW CONSRAINTS
+    if (!vars.isEmpty) {
+      val fst = vars.head
+      var flowConstraint = z3.mkBoolConst(z3.mkStringSymbol(fst))
+      for (v <- vars.tail)
+        flowConstraint = z3.mkOr(flowConstraint,z3.mkBoolConst(z3.mkStringSymbol(v)))
+      res = z3.mkAnd(res,flowConstraint)
+    }
+
     res
   }
 
@@ -51,7 +62,11 @@ object Z3 {
   def gc2z3(g: Guard,z3: Z3Context): Z3AST = g match {
     case Var(name) => z3.mkBoolConst(z3.mkStringSymbol(name))
     case IntPred(v, p) => p.z3Pred(z3,z3.mkIntConst(z3.mkStringSymbol(v)))
-    case Pred(v, p) => throw new RuntimeException("General predicates not handled with Z3")
+    case Pred(v, p) =>
+      if (p.isInstanceOf[IntPredicate])
+        p.asInstanceOf[IntPredicate].z3Pred(z3,z3.mkIntConst(z3.mkStringSymbol(v)))
+      else
+        throw new RuntimeException("General predicates not handled with Z3")
     case And(g1, g2) => z3.mkAnd(gc2z3(g1,z3),gc2z3(g2,z3))
     case Or(g1, g2) => z3.mkOr(gc2z3(g1,z3),gc2z3(g2,z3))
     case Neg(g) => z3.mkNot(gc2z3(g,z3))
