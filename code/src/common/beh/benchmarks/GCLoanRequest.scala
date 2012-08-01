@@ -136,6 +136,8 @@ object GCLoanRequest extends App {
     val choPred = (x:IntegerExpressionVariable) => Choco.or(Choco.eq(x,1),Choco.eq(x,2))
     val funPred = (x:Int) => (x == 1) || (x == 2)
     override def toString = "Authorised"
+
+    val z3Pred = null
   }
 
 
@@ -164,6 +166,8 @@ object GCLoanRequest extends App {
     val salary = Map(1 -> 1100 , 2 -> 2100 , 3 -> 1850)   withDefaultValue 2000
     val amount = Map(1 -> 10000, 2 -> 20000, 3 -> 150000) withDefaultValue 1000
     val period = Map(1 -> 2    , 2 -> 15   , 3 -> 10)     withDefaultValue 10
+
+    val z3Pred = null
   }
 
   class Approve extends IntPredicate {
@@ -191,6 +195,8 @@ object GCLoanRequest extends App {
     val salary = Map(1 -> 1100 , 2 -> 2100 , 3 -> 1850)   withDefaultValue 2000
     val amount = Map(1 -> 10000, 2 -> 20000, 3 -> 150000) withDefaultValue 1000
     val period = Map(1 -> 2    , 2 -> 15   , 3 -> 10)     withDefaultValue 10
+
+    val z3Pred = null
   }
 
 }

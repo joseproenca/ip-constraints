@@ -278,8 +278,11 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
 
     if (done)
       Some(pEval.getSol(optSolBool.get))
-    else
+    else {
+      println("failed... peval:\n"+pEval.toString)
+      println("failed... boolSol:\n"+optSolBool.get.pretty)
       None
+    }
   }
 
 

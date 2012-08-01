@@ -11,7 +11,7 @@ import common.beh.guardedcommands._
  * To change this template use File | Settings | File Templates.
  */
 
-class GCFifo(a: String, b: String, var data: Option[Int], uid: Int) extends GCBehaviour(List(a,b), uid) {
+class GCFifo(a: String, b: String, var data: Option[Any], uid: Int) extends GCBehaviour(List(a,b), uid) {
   val av = Var(flowVar(a,uid))
   val bv = Var(flowVar(b,uid))
 
@@ -19,7 +19,7 @@ class GCFifo(a: String, b: String, var data: Option[Int], uid: Int) extends GCBe
   def fullFifo =
     if (useData) GuardedCommands(Set(
         True --> SGuard(Neg(av)),
-        bv --> IntAssgn(dataVar(b,uid),data.get)
+        bv --> DataAssgn(dataVar(b,uid),data.get)
       ))
     else if (useCC3) throw new Exception("CC3 not implemented")
     else GuardedCommands(True --> SGuard(Neg(av)))

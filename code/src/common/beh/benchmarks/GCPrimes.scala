@@ -1,5 +1,6 @@
 package common.beh.benchmarks
 
+import _root_.z3.scala.{Z3AST, Z3Context}
 import common.beh.{GT, IntPredicate}
 import choco.kernel.model.variables.integer.IntegerExpressionVariable
 import choco.Choco
@@ -94,7 +95,7 @@ object GCPrimes extends App {
   }
 
   def genSpout(): GuardedCommands = {
-    new GCSpout("reader","x",0).constraints
+    new GCSSpout("reader","x",0).constraints
   }
 
 
@@ -138,6 +139,6 @@ object GCPrimes extends App {
     val choPred = (x:IntegerExpressionVariable) => Choco.eq(Choco.mod(x,primes(n)),0)
     val funPred = (x:Int) => x % primes(n) == 0
     override def toString = "Divides-"+primes(n)
-  }
 
+    val z3Pred: (Z3Context,Z3AST) => Z3AST  = throw new RuntimeException("Z3 CONSTR UNDEFINED!")}
 }

@@ -119,6 +119,8 @@ object ChoPrimes extends App {
     val choPred = (x:IntegerExpressionVariable) => Choco.eq(Choco.mod(x,primes(n)),0)
     val funPred = (x:Int) => x % primes(n) == 0
     override def toString = "Divides-"+primes(n)
+
+    val z3Pred = null
   }
 
 

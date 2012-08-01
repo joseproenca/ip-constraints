@@ -2,7 +2,7 @@ package common.beh.guardedcommands
 
 import common.beh.choco.genericconstraints.{UnFunction, UnPredicate}
 import dataconnectors._
-import common.beh.Utils._
+import dataconnectors.ConstraintGen._
 
 /**
  * Created with IntelliJ IDEA.
@@ -85,21 +85,38 @@ object Main extends App {
 
 
 
-  val c =
-    new GCTransf("af0", "af1", 0, hackUser).constraints ++
-      new GCFilter("af1", "bf1", 0, checkPwd).constraints ++
-      new GCTransf("bf1", "cf1", 0, recallUser).constraints ++
-      new GCFilter("af2", "bf2", 0, checkPwd).constraints ++
-      new GCMerger("cf1", "bf2", "out", 0).constraints ++
-      new GCWriterData("af0", 0, List("joe")).constraints ++
-      new GCWriterData("af2", 0, List("alex")).constraints ++
-      // at least one should have flow
+//  val c_old =
+//    new GCTransf("af0", "af1", 0, hackUser).constraints ++
+//      new GCFilter("af1", "bf1", 0, checkPwd).constraints ++
+//      new GCTransf("bf1", "cf1", 0, recallUser).constraints ++
+//      new GCFilter("af2", "bf2", 0, checkPwd).constraints ++
+//      new GCMerger("cf1", "bf2", "out", 0).constraints ++
+//      new GCWriterData("af0", 0, List("joe")).constraints ++
+//      new GCWriterData("af2", 0, List("alex")).constraints ++
+//      // at least one should have flow
 //      new GCMerger("af1","af2","forceFlow",0).constraints ++
 //      new GCSDrain("forceFlow","out",0).constraints
-      // other experiments
-//      new GCADrain("af1", "af2", 0).constraints
-//      GuardedCommands(True --> SGuard(Neg(Var(flowVar("bf1",0)))))
-      GuardedCommands(True --> SGuard(Var(flowVar("out",0))))
+//      // other experiments
+////      new GCADrain("af1", "af2", 0).constraints
+////      GuardedCommands(True --> SGuard(Neg(Var(flowVar("bf1",0)))))
+////      GuardedCommands(True --> SGuard(Var(flowVar("out",0))))
+
+  val c = transf("aaf1","af1",hackUser) ++
+    transf("bf1", "bbf1",recallUser) ++
+    filter("af1", "bf1",checkPwd) ++
+    filter("af2", "bf2",checkPwd) ++
+    merger("bbf1","bf2","out") ++
+    writer("aaf1",List("joe")) ++
+    writer("af2", List("alex")) ++
+    // at least one should have flow
+    merger("af1","af2","forceFlow") ++
+    sdrain("forceFlow","out")
+    // other experiments
+//    adrain("af1", "af2")
+//    flow("bf1")
+//    flow("out")
+
+
 
   // Run
 

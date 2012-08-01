@@ -5,6 +5,7 @@ import choco.kernel.solver.ContradictionException;
 import choco.kernel.solver.Solver;
 import choco.kernel.solver.constraints.AbstractSConstraint;
 import choco.kernel.solver.constraints.integer.AbstractBinIntSConstraint;
+import choco.kernel.solver.constraints.integer.AbstractTernIntSConstraint;
 import choco.kernel.solver.variables.integer.IntDomainVar;
 
 import java.util.List;
@@ -16,7 +17,7 @@ import java.util.List;
  * Time: 11:39
  * To change this template use File | Settings | File Templates.
  */
-public class LazyPredSConstraint extends AbstractBinIntSConstraint {
+public class LazyPredSConstraint extends AbstractTernIntSConstraint {
 
     final Object data;
     final Buffer buffer;
@@ -26,11 +27,12 @@ public class LazyPredSConstraint extends AbstractBinIntSConstraint {
 
     public LazyPredSConstraint(IntDomainVar xpred,
                                IntDomainVar xflow, // for information, not for restriction
+                               IntDomainVar yflow, // for information, not for restriction
                                Object data,
                                Buffer buffer,
                                UnPredicate predicate,
                                List<UnFunction> functions) {
-        super(xpred,xflow);
+        super(xpred,xflow,yflow);
         this.data = data;
         this.buffer = buffer;
         this.predicate = predicate;
@@ -45,7 +47,7 @@ public class LazyPredSConstraint extends AbstractBinIntSConstraint {
 
     /** * Default initial propagation: full constraint re-propagation. */
     public void awake() throws ContradictionException {
-        System.out.println("# AWAKE ("+v0.getName()+"/"+v1.getName()+") - dom size xpred/xflow "+v0.getDomainSize()+"/"+v1.getDomainSize());
+//        System.out.println("# AWAKE ("+v0.getName()+"/"+v1.getName()+") - dom size xpred/xflow "+v0.getDomainSize()+"/"+v1.getDomainSize());
 
         // 3 options for xflow:
         //  - instantiated with 1 - xpred and pred must be true
@@ -54,8 +56,8 @@ public class LazyPredSConstraint extends AbstractBinIntSConstraint {
 
         // if xflow == 1, then - predicate and xpred must coincide
         // ----- OLD: (1) predicate must be true and (2) xpred must be true
-        if (v1.isInstantiated())
-            if (v1.getVal() == 1) {
+        if (v1.isInstantiated() && v2.isInstantiated())
+            if (v1.getVal() == 1 && v2.getVal() == 1) {
 //                DisposableIntIterator it = v0.getDomain().getIterator();
 //                try{
 //                    // (1) predicate must be true
@@ -109,9 +111,11 @@ public class LazyPredSConstraint extends AbstractBinIntSConstraint {
      */
     public void awakeOnInst(int idx) throws ContradictionException {
         if (idx == 1) {
-            System.out.println("# AWAKE (Pred) - xflow instantiated! - "+v1.getVal());
+//            System.out.println("# AWAKE (Pred) - xflow instantiated! - "+v1.getVal());
             propagate();
         }
+        if (idx == 2) { propagate(); }
+
         //constAwake(false); // change if necessary
 //        propagate();
     }
@@ -119,12 +123,11 @@ public class LazyPredSConstraint extends AbstractBinIntSConstraint {
     /** * <i>Propagation:</i> * Propagating the constraint until local consistency is reached. * * @throws ContradictionException * contradiction exception */
 
     public void propagate() throws ContradictionException {
-//        System.out.println("PROPAGATING (Pred) - called");
-        System.out.println("# PROPAGATING (Pred) - dom size xpred/xflow "+v0.getDomainSize()+"/"+v1.getDomainSize());
+//        System.out.println("# PROPAGATING (Pred) - dom size xpred/xflow "+v0.getDomainSize()+"/"+v1.getDomainSize());
 
         // if xflow == 1, then predicate and xpred must coincide -----predicate must be true and "1 in domain_xpred"
-        if(v1.isInstantiated())
-        if(v1.getVal() == 1) {
+        if(v1.isInstantiated() && v2.isInstantiated())
+        if(v1.getVal() == 1 && v2.getVal() == 1) {
             if (buffer.check(predicate,functions,data) == 0)
                 v0.removeVal(1,this,false);
             else
@@ -145,15 +148,15 @@ public class LazyPredSConstraint extends AbstractBinIntSConstraint {
      */
     @Override
     public boolean isSatisfied(int[] tuple) {
-        System.out.println("# IsSatisfied? ("+v0.getName()+" - "+v1.getName()+") - called");
-        if (tuple[1] == 0) return true;
+//        System.out.println("# IsSatisfied? ("+v0.getName()+" - "+v1.getName()+") - called");
+        if (tuple[1] == 0 || tuple[2] == 0) return true;
         else return (tuple[0] ==  buffer.check(predicate,functions,data));
     }
 
 
     public AbstractSConstraint<IntDomainVar> opposite(Solver solver) {
 //        throw new RuntimeException("Lazy constraints can occur only in positive positions!");
-        return new NegLazyPredSConstraint(v0,v1,data,buffer,predicate,functions);
+        return new NegLazyPredSConstraint(v0,v1,v2,data,buffer,predicate,functions);
     }
 
     public String pretty() {

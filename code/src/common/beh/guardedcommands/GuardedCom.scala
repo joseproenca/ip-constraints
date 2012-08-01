@@ -187,6 +187,8 @@ abstract sealed class Guard {
 }
 
 abstract sealed class Statement {
+  def and(s: Statement) = Seq(List(this,s))
+
   def fv: Set[String] = this match {
     case SGuard(g) => g.fv
     case IntAssgn(v, _) => Set(v)
@@ -261,7 +263,9 @@ abstract sealed class Statement {
   def toConstrBuilder: ConstrBuilder = this match {
     case SGuard(g) => g.toConstrBuilder
     case IntAssgn(v, d) => common.beh.choco.DataAssgn(v,d)
-    case DataAssgn(v, d) => throw new Exception("General data assignments have no associated choco constraint")
+    case DataAssgn(v, d) =>
+      if (d.isInstanceOf[Int]) common.beh.choco.DataAssgn(v,d.asInstanceOf[Int])
+      else throw new Exception("General data assignments have no associated choco constraint")
     case VarAssgn(v1, v2) => common.beh.choco.VarEq(v1,v2)
     case FunAssgn(v1, v2, f) =>
       if (f.isInstanceOf[IntFunction]) common.beh.choco.FunAssgn(v1,v2,f.asInstanceOf[IntFunction].choFun)
@@ -285,7 +289,7 @@ abstract sealed class Statement {
 //        else
 //          res = res and common.beh.choco.Neg(common.beh.choco.Var(predVar(v,pred,fs)))
 
-        res = res and LazyPred(predVar(v,pred,fs),data2flow(xflow),d,pred,fs)
+        res = res and LazyPred(predVar(v,pred,fs),data2flow(v),data2flow(xflow),d,pred,fs)
       }
       res
 

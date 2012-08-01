@@ -25,26 +25,26 @@ class Buffer {
         calculate(fs,calculatedF((f,d)))
       }
       else {
-        println("# Calc func #")
         val res = f.calculate(d)
-        println("# adding "+f+"("+d+") -> "+res+" to buffer")
+//        println("# adding "+f+"("+d+") -> "+res+" to buffer")
         calculatedF += (f,d) -> res
+        print("# Calc func - "+res+" ")
         calculate(fs,res)
       }
   }
 
   def check(p:UnPredicate, fs:java.util.List[UnFunction], d:Any) = {
-    println("####### checking "+p+"-"+fs.reverse.mkString(".")+"-"+d+"... #######")
+    print("#### checking "+p+"-"+fs.reverse.mkString(".")+"-"+d+"... ")
     val newd = calculate(asJavaIterable(fs).toList.reverse,d)
     calculatedP.get((p, newd)) match {
       case Some(x) =>
-        println("# buffered P #")
+        println("# buffered P ####")
         if (x) 1 else 0
       case None =>
-        println("# Calc P #")
         val res = p.check(newd)
 //        println("# adding "+p+"("+newd+") -> "+res+" to buffer")
         calculatedP += (p,newd) -> res
+        println("# Calc P - "+res+" ####")
         if (res) 1 else 0
     }
   }

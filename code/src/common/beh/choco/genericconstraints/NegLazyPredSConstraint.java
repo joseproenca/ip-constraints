@@ -25,9 +25,11 @@ class NegLazyPredSConstraint extends AbstractUnIntSConstraint {
   final UnPredicate predicate;
   final List<UnFunction> functions;
   final IntDomainVar xflow;
+  final IntDomainVar yflow;
 
-  public NegLazyPredSConstraint(IntDomainVar xpred,
+    public NegLazyPredSConstraint(IntDomainVar xpred,
                                 IntDomainVar xflow, // for information, not for restriction
+                                IntDomainVar yflow, // for information, not for restriction
                                 Object data,
                                 Buffer buffer,
                                 UnPredicate predicate,
@@ -37,6 +39,7 @@ class NegLazyPredSConstraint extends AbstractUnIntSConstraint {
     this.buffer = buffer;
     this.predicate = predicate;
     this.xflow = xflow;
+    this.yflow = yflow;
     this.functions = functions;
   }
 
@@ -48,7 +51,7 @@ class NegLazyPredSConstraint extends AbstractUnIntSConstraint {
   /** * Default initial propagation: full constraint re-propagation. */
   public void awake() throws ContradictionException {
 //      if (true) throw new RuntimeException("Lazy constraints can occur only in positive positions!");
-      System.out.println("AWAKE (Neg-Pred) - dom size xpred/xflow "+v0.getDomainSize()+"/"+xflow.getDomainSize());
+//      System.out.println("AWAKE (Neg-Pred) - dom size xpred/xflow "+v0.getDomainSize()+"/"+xflow.getDomainSize());
 
 //      DisposableIntIterator it = v0.getDomain().getIterator();
 //      try{
@@ -102,8 +105,7 @@ class NegLazyPredSConstraint extends AbstractUnIntSConstraint {
    */
   public void propagate() throws ContradictionException {
 //      if(true) throw new RuntimeException("Lazy constraints can occur only in positive positions!");
-//      System.out.println("PROPAGATING (Neg-Pred) - called");
-      System.out.println("PROPAGATING (Neg-Pred) - dom size xpred/xflow "+v0.getDomainSize()+"/"+xflow.getDomainSize());
+//      System.out.println("PROPAGATING (Neg-Pred) - dom size xpred/xflow "+v0.getDomainSize()+"/"+xflow.getDomainSize());
 
 //      // xflow cannot be instantiated with 0
 //      if(xflow.isInstantiated()) {
@@ -141,7 +143,7 @@ class NegLazyPredSConstraint extends AbstractUnIntSConstraint {
 
 
   public AbstractSConstraint<IntDomainVar> opposite(Solver solver) {
-      return new LazyPredSConstraint(v0,xflow,data,buffer,predicate,functions);
+      return new LazyPredSConstraint(v0,xflow,yflow,data,buffer,predicate,functions);
   }
 
   public String pretty() {

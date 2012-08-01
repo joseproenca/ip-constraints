@@ -28,6 +28,7 @@ object TestGenericConstr extends App {
 
   val xpred: IntegerVariable = Choco.makeBooleanVar("xpred")
   val xflow: IntegerVariable = Choco.makeBooleanVar("xflow")
+  val yflow: IntegerVariable = Choco.makeBooleanVar("yflow")
 
   val gt5 = new UnPredicate {
     def check(x: Any) = x.asInstanceOf[Int] > 5
@@ -45,7 +46,7 @@ object TestGenericConstr extends App {
 
 
   m.addVariable(xflow)
-  val cc = PredManager.genConstr(xpred,xflow,2,new Buffer, gt5, twicePlusOne)
+  val cc = PredManager.genConstr(xpred,xflow,yflow,2,new Buffer, gt5, twicePlusOne)
 
 //    m.addConstraint(Choco.allDifferent(dVar,xflow))
 //    m.addConstraint(Choco.eq(dVar,0))

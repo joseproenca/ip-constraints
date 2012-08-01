@@ -38,7 +38,7 @@ object GCSpouts extends App {
   }
 
   def genSpout(): GuardedCommands = {
-    new GCSpout("x","a",0).constraints ++
+    new GCSSpout("x","a",0).constraints ++
       new GCFilter("x","reader",0,(IntPred(dataVar("x",0),lfive))).constraints ++
       new GCReader("reader",0,1).constraints
   }
@@ -94,11 +94,15 @@ object GCSpouts extends App {
     val choPred = (x:IntegerExpressionVariable) => Choco.and(Choco.geq(x,420),Choco.leq(x,600))
     val funPred = (x:Int) => (x >= 40) && (x <= 600)
     override def toString = "Morning"
+
+    val z3Pred = null
   }
   class Evening extends IntPredicate {
     // from 7pm to midnight
     val choPred = (x:IntegerExpressionVariable) => Choco.and(Choco.geq(x,1140),Choco.leq(x,1440))
     val funPred = (x:Int) => (x >= 1140) && (x <= 1440)
     override def toString = "Evening"
+
+    val z3Pred = null
   }
 }
