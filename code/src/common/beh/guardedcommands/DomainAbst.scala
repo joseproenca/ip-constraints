@@ -59,18 +59,21 @@ class DomainAbst {
     // 1 - start with current predicates
     //    var res = inv(x) map ((_,List[UnFunction]()))
     var res = Set[(UnPredicate,List[UnFunction],String)]()
-    for (p <- inv(x)) res += ((p,fun(x),x))
+//    for (p <- inv(x)) res += ((p,fun(x),x))
+    for (p <- inv(x)) res += ((p,List(),x))
 
     if (less contains x) {
       // 2 - add domain of following paths
       for (smaller <- less(x)) {
-        //        for ((p,fs) <- domain(smaller))
-        //          res(
-        res ++= domainWithEnd(smaller)
+        if (fun contains smaller)
+        // new 3 - add functions to all paths
+          res ++= (for ((p,fs,end) <- domainWithEnd(smaller)) yield (p,fs ::: fun(smaller),end))
+        else
+          res ++= domainWithEnd(smaller)
       }
-      // 3 - add functions to all paths
-      if (fun contains x)
-        res = for ((p,fs,end) <- res) yield (p,fs ::: fun(x), end)
+//      // 3 - add functions to all paths
+//      if (fun contains x)
+//        res = for ((p,fs,end) <- res) yield (p,fs ::: fun(x), end)
     }
     res
   }

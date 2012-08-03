@@ -12,7 +12,9 @@ import dataconnectors.ConstraintGen._
  * To change this template use File | Settings | File Templates.
  */
 
-object Main extends App {
+class RunInteractive
+
+object RunInteractive extends App {
 
   /*
    af0 --(hackUser)--> af1 --[checkPwd] --> bf1 --(recallUser)--> cf1 -_
@@ -26,7 +28,7 @@ object Main extends App {
   def checkPwd = new UnPredicate {
     var attempts = 2
 
-    val secret = Map("joe" -> "asd", "alex" -> "123", "guest" -> "")
+    val secret = Map("bob" -> "asd", "alex" -> "123", "guest" -> "")
 
     def check(x: Any) = if (x.isInstanceOf[String]) {
       val user = x.asInstanceOf[String]
@@ -52,7 +54,7 @@ object Main extends App {
             false
           }
           else
-            check(x)
+            check(x) // try again
         }
       }
     }
@@ -84,30 +86,13 @@ object Main extends App {
   }
 
 
-
-//  val c_old =
-//    new GCTransf("af0", "af1", 0, hackUser).constraints ++
-//      new GCFilter("af1", "bf1", 0, checkPwd).constraints ++
-//      new GCTransf("bf1", "cf1", 0, recallUser).constraints ++
-//      new GCFilter("af2", "bf2", 0, checkPwd).constraints ++
-//      new GCMerger("cf1", "bf2", "out", 0).constraints ++
-//      new GCWriterData("af0", 0, List("joe")).constraints ++
-//      new GCWriterData("af2", 0, List("alex")).constraints ++
-//      // at least one should have flow
-//      new GCMerger("af1","af2","forceFlow",0).constraints ++
-//      new GCSDrain("forceFlow","out",0).constraints
-//      // other experiments
-////      new GCADrain("af1", "af2", 0).constraints
-////      GuardedCommands(True --> SGuard(Neg(Var(flowVar("bf1",0)))))
-////      GuardedCommands(True --> SGuard(Var(flowVar("out",0))))
-
   val c = transf("aaf1","af1",hackUser) ++
     transf("bf1", "bbf1",recallUser) ++
     filter("af1", "bf1",checkPwd) ++
     filter("af2", "bf2",checkPwd) ++
     merger("bbf1","bf2","out") ++
-    writer("aaf1",List("joe")) ++
-    writer("af2", List("alex")) ++
+    writer("aaf1",List("alex")) ++
+    writer("af2", List("bob")) ++
     // at least one should have flow
     merger("af1","af2","forceFlow") ++
     sdrain("forceFlow","out")

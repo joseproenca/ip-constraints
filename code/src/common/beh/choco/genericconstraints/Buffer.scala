@@ -21,7 +21,7 @@ class Buffer {
     case Nil => d
     case (f: UnFunction)::(fs: List[UnFunction]) =>
       if (calculatedF contains (f,d)) {
-//        println("# buffered func #")
+        println("# buffered func #")
         calculate(fs,calculatedF((f,d)))
       }
       else {
@@ -34,17 +34,17 @@ class Buffer {
   }
 
   def check(p:UnPredicate, fs:java.util.List[UnFunction], d:Any) = {
-//    print("#### checking "+p+"-"+fs.reverse.mkString(".")+"-"+d+"... ")
+    print("#### checking "+p+"-"+fs.reverse.mkString(".")+"-"+d+"... ")
     val newd = calculate(asJavaIterable(fs).toList.reverse,d)
     calculatedP.get((p, newd)) match {
       case Some(x) =>
-//        println("# buffered P ####")
+        println("# buffered P ####")
         if (x) 1 else 0
       case None =>
         val res = p.check(newd)
 //        println("# adding "+p+"("+newd+") -> "+res+" to buffer")
         calculatedP += (p,newd) -> res
-//        println("# Calc P - "+res+" ####")
+        println("# Calc P - "+res+" ####")
         if (res) 1 else 0
     }
   }

@@ -38,6 +38,7 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
   def solveDomain() {
     if (!solvedDomain) {
       for (c <- commands) da = da + c.da
+      println(da.pp)
       solvedDomain = true
     }
   }
@@ -59,7 +60,7 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
 
     solveDomain()
 
-    println(da.pp)
+//    println(da.pp)
 
     val afv = commands.map(_.afv(da)).foldRight[Set[String]](Set())(_ ++ _)
     var i = 1

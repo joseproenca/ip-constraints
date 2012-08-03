@@ -293,6 +293,7 @@ abstract sealed class Statement {
 //        else
 //          res = res and common.beh.choco.Neg(common.beh.choco.Var(predVar(v,pred,fs)))
 
+        println("added LazyPred("+predVar(v,pred,fs)+","+data2flow(v)+","+data2flow(xflow)+","+fs+")")
         res = res and LazyPred(predVar(v,pred,fs),data2flow(v),data2flow(xflow),d,pred,fs)
       }
       res
