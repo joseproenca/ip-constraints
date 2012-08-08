@@ -17,9 +17,9 @@ class GCExRouter(a: String, b: String, c: String, uid: Int) extends GCBehaviour(
   val cv = Var(flowVar(c,uid))
 
   var constraints = GuardedCommands(Set(
-    av --> SGuard(bv or cv),
-    (bv or cv) --> SGuard(av),
-    True --> SGuard(Neg(bv and cv))
+    av --> (bv or cv),
+    (bv or cv) --> av,
+    True --> Neg(bv and cv)
   ))
 
   if (useData) constraints ++= Set(

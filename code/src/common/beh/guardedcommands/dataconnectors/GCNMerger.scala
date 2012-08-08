@@ -14,7 +14,7 @@ import common.beh.guardedcommands._
 class GCNMerger(srcs: List[String], snk: String, uid: Int) extends GCBehaviour(snk :: srcs, uid) {
   def v(x:String) = Var(flowVar(x, uid))
 
-  val c1 = v(snk) --> SGuard(orSrcs)
+  val c1 = v(snk) --> orSrcs
 
   val orSrcs = genSrcOr(srcs)
   def genSrcOr(lst:List[String]): Guard = lst match {
@@ -23,9 +23,9 @@ class GCNMerger(srcs: List[String], snk: String, uid: Int) extends GCBehaviour(s
     case Nil    => Neg(True)
   }
 
-  val c2 = orSrcs --> SGuard(v(snk))
+  val c2 = orSrcs --> v(snk)
 
-  val c3 = True --> SGuard(Neg(genSrcAnd(srcs)))
+  val c3 = True --> Neg(genSrcAnd(srcs))
 
   def genSrcAnd(lst:List[String]): Guard = lst match {
     case x::Nil => v(x)

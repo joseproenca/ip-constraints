@@ -3,7 +3,6 @@ package common.beh.guardedcommands.z3
 import _root_.z3.scala._
 import common.beh.guardedcommands._
 import common.beh.guardedcommands.Var
-import scala.Equiv
 import common.beh.{IntPredicate, Even, guardedcommands}
 
 /**
@@ -76,7 +75,7 @@ object Z3 {
   }
 
   def gc2z3(s: Statement, z3: Z3Context): Z3AST = s match {
-    case SGuard(g) => gc2z3(g,z3)
+    case g: Guard => gc2z3(g,z3)
     case IntAssgn(v, d) => z3.mkEq(z3.mkIntConst(z3.mkStringSymbol(v)),z3.mkInt(d,z3.mkIntSort()))
     case VarAssgn(v1, v2) => z3.mkEq(z3.mkIntConst(z3.mkStringSymbol(v1)),z3.mkIntConst(z3.mkStringSymbol(v2)))
     case FunAssgn(v1, v2, f) => throw new RuntimeException("General functions not handled with Z3")
@@ -104,7 +103,7 @@ object Z3 {
 
     // v1 /\ v2
     val const_old = z3.mkAnd(z3.mkNot(z3.mkAnd(v1,v2)),v1)
-    val const = gc2z3( Var("F$x1") --> (SGuard(Var("F$x2") and IntPred("D$x2",new Even)) and IntAssgn("D$x1",4)) ,z3)
+    val const = gc2z3( Var("F$x1") --> ((Var("F$x2") and IntPred("D$x2",new Even)) and IntAssgn("D$x1",4)) ,z3)
 
 
 

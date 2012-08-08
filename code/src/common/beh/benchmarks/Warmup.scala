@@ -7,7 +7,6 @@ import common.beh.guardedcommands.Neg
 import common.beh.guardedcommands.VarAssgn
 import common.beh.guardedcommands.IntPred
 import scala.Some
-import common.beh.guardedcommands.SGuard
 import common.beh.guardedcommands.Var
 import common.beh.IntPredicate
 import choco.kernel.model.variables.integer.IntegerExpressionVariable
@@ -57,7 +56,7 @@ object Warmup {
         new GCSync("e","disp",i).constraints ++
         new GCSync("f","off",i).constraints ++
         new GCSync("g","on",i).constraints ++
-        GuardedCommands(True --> SGuard(Var(flowVar("x",i))))
+        GuardedCommands(True --> Var(flowVar("x",i)))
         new GCSyncFifo("m","c",Some(0),i).constraints ++
         new GCFifo("f","d",None,i).constraints
     }
@@ -71,7 +70,7 @@ object Warmup {
         val av = Var(flowVar(startVar,startUid))
         val bv = Var(flowVar("x",i))
         res ++= GuardedCommands(Set(
-          True --> SGuard(av <-> bv),
+          True --> (av <-> bv),
           av --> VarAssgn(dataVar("x",i), dataVar(startVar,startUid))
         ))
       }
@@ -85,7 +84,7 @@ object Warmup {
       val problem = genScheds(1 to n2, "time",0,true) ++   // some will display
         genScheds(n2+1 to n, "time",0,false) ++            // and some will turn on
         new GCWriter("time",0,List(500)).constraints ++    // (it is morning)
-        GuardedCommands(True --> SGuard(Var(flowVar("time",0)))) // require some dataflow
+        GuardedCommands(True --> Var(flowVar("time",0))) // require some dataflow
 
       val time = System.currentTimeMillis()
       val res = problem.solveChocoSat

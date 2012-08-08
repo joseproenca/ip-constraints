@@ -14,8 +14,7 @@ import common.beh.guardedcommands._
 
 class GCLossy(x: String, y: String, uid: Int) extends GCBehaviour(List(x,y), uid) {
   var constraints = GuardedCommands(
-    Var(flowVar(y,uid)) -->
-      SGuard(Var(flowVar(x,uid)))
+    Var(flowVar(y,uid)) --> Var(flowVar(x,uid))
   )
 
   if (useData) constraints ++= Set(

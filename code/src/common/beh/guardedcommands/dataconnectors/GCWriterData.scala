@@ -4,8 +4,6 @@ import common.beh.guardedcommands._
 import common.beh.Utils._
 import common.beh.guardedcommands.Neg
 import common.beh.guardedcommands.Var
-import common.beh.guardedcommands.SGuard
-import common.beh.guardedcommands.IntAssgn
 
 /**
  * Created with IntelliJ IDEA.
@@ -17,7 +15,7 @@ import common.beh.guardedcommands.IntAssgn
 
 class GCWriterData (val x: String, uid: Int, var data: List[Any]) extends GCBehaviour(List(x), uid) {
   //  val flowConstr = ChoConstraints(TrueC)
-  val nfConstr = GuardedCommands(True --> SGuard(Neg((Var(flowVar(x, uid))))))
+  val nfConstr = GuardedCommands(True --> Neg((Var(flowVar(x, uid)))))
 
   var constraints = loadConstraints
 

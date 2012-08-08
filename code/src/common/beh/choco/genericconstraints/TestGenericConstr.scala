@@ -7,6 +7,7 @@ import choco.Choco
 import choco.kernel.solver.Solver
 import choco.cp.solver.CPSolver
 import java.util
+import common.beh.{UnPredicate, UnFunction}
 
 /**
  * Created with IntelliJ IDEA.

@@ -15,7 +15,7 @@ class GCSyncFifo(a: String, b: String, var data: Option[Any], uid: Int) extends 
   val av = Var(flowVar(a,uid))
   val bv = Var(flowVar(b,uid))
 
-  val emptyFifo = GuardedCommands(True --> SGuard(Neg(bv)))
+  val emptyFifo = GuardedCommands(True --> Neg(bv))
 //  def fullFifo = GuardedCommands(Set(
 //    av --> SGuard(bv),
 //    bv --> DataAssgn(dataVar(b,uid),data.get)
@@ -23,11 +23,11 @@ class GCSyncFifo(a: String, b: String, var data: Option[Any], uid: Int) extends 
 
   def fullFifo =
     if (useData) GuardedCommands(Set(
-      av --> SGuard(bv),
+      av --> bv,
       bv --> DataAssgn(dataVar(b,uid),data.get)
     ))
     else if (useCC3) throw new Exception("CC3 not implemented")
-    else GuardedCommands(av --> SGuard(bv))
+    else GuardedCommands(av --> bv)
 
 
   def loadConstraints = if (data.isDefined) fullFifo else emptyFifo

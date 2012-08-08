@@ -8,7 +8,7 @@ import common.beh.guardedcommands._
 import common.beh.guardedcommands.dataconnectors._
 import common.beh.Utils._
 import common.beh.guardedcommands.IntPred
-import common.beh.guardedcommands.SGuard
+//import common.beh.guardedcommands.SGuard
 
 /**
  * Created with IntelliJ IDEA.
@@ -100,7 +100,7 @@ object GCPrimes extends App {
 
 
   val problem = genFilters(n) ++ genSpout ++
-    GuardedCommands(True --> SGuard(Var(flowVar("x0",0)))) // require some dataflow
+    GuardedCommands(True --> Var(flowVar("x0",0))) // require some dataflow
 
   if (justInit) problem.justInit = true
 //  println(problem.commands.mkString(","))

@@ -5,7 +5,6 @@ import common.beh.guardedcommands.dataconnectors.{GCSDrain, GCSSpout, GCFilter}
 import common.beh.{LT, GT}
 import common.beh.Utils._
 import common.beh.guardedcommands.IntPred
-import common.beh.guardedcommands.SGuard
 import common.beh.guardedcommands.Var
 
 /**
@@ -34,8 +33,8 @@ object GCParSpouts extends App {
   if (n > 0)
     problem ++=
       ( new GCSSpout("b1","c1",0).constraints ++
-        GuardedCommands(True --> SGuard(Var(flowVar("a1",0)))) ++
-        GuardedCommands(True --> SGuard(Var(flowVar("d1",0)))) ++
+        GuardedCommands(True --> Var(flowVar("a1",0))) ++
+        GuardedCommands(True --> Var(flowVar("d1",0))) ++
         new GCFilter("b1","a1",0,IntPred(dataVar("b1",0),new LT(1))).constraints ++
         new GCFilter("c1","d1",0,IntPred(dataVar("c1",0),new GT(1))).constraints
       )

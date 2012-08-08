@@ -9,7 +9,6 @@ import choco.kernel.model.variables.integer.IntegerExpressionVariable
 import choco.Choco
 import common.beh.Utils._
 import common.beh.guardedcommands.IntPred
-import common.beh.guardedcommands.SGuard
 import z3.Z3
 import common.beh.guardedcommands.dataconnectors.ConstraintGen._
 

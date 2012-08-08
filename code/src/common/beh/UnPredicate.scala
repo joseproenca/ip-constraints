@@ -1,4 +1,4 @@
-package common.beh.choco.genericconstraints
+package common.beh
 
 /**
  * Created with IntelliJ IDEA.
@@ -10,8 +10,8 @@ package common.beh.choco.genericconstraints
 abstract class UnPredicate {
   def check(x: Any): Boolean
 
-//  def opposite = new UnPred {
-//    def check(x: Any) = this.check(x)
-//  }
+  //  def opposite = new UnPred {
+  //    def check(x: Any) = this.check(x)
+  //  }
 }
 

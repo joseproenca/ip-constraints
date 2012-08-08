@@ -45,8 +45,8 @@ object GCLoanRequest extends App {
       new GCFifo("start","req1",None,0).constraints ++
       new GCFifo("auth","auth2",None,0).constraints ++
       new GCFifo("pin","appr2",None,0).constraints ++
-      GuardedCommands(True --> SGuard(Var(flowVar("start",0)))) ++ // force data on start
-      GuardedCommands(True --> SGuard(Var(flowVar("login",0))))    // and on login
+      GuardedCommands(True --> Var(flowVar("start",0))) ++ // force data on start
+      GuardedCommands(True --> Var(flowVar("login",0)))    // and on login
 
   // after success of 1
   problems :::= List(baseProblem ++
@@ -56,7 +56,7 @@ object GCLoanRequest extends App {
     new GCFifo("start","req1",Some(3),0).constraints ++
     new GCFifo("auth","auth2",Some(1),0).constraints ++
     new GCFifo("pin","appr2",None,0).constraints ++
-    GuardedCommands(True --> SGuard(Var(flowVar("pin",0))))    // force data on IMerger
+    GuardedCommands(True --> Var(flowVar("pin",0)))    // force data on IMerger
   )
 
   // after success of only login
@@ -67,7 +67,7 @@ object GCLoanRequest extends App {
     new GCFifo("start","req1",None,0).constraints ++
     new GCFifo("auth","auth2",Some(1),0).constraints ++
     new GCFifo("pin","appr2",None,0).constraints ++
-    GuardedCommands(True --> SGuard(Var(flowVar("pin",0))))    // force data on IMerger
+    GuardedCommands(True --> Var(flowVar("pin",0)))    // force data on IMerger
   )
 
   // if only IMerger had flow before
@@ -78,7 +78,7 @@ object GCLoanRequest extends App {
       new GCFifo("start","req1",None,0).constraints ++
       new GCFifo("auth","auth2",None,0).constraints ++
       new GCFifo("pin","appr2",Some(1),0).constraints ++
-      GuardedCommands(True --> SGuard(Var(flowVar("isEn",0))))) // force data before filters
+      GuardedCommands(True --> Var(flowVar("isEn",0)))) // force data before filters
 
   var time: Long = 0
   var res: Option[GCSolution] = None

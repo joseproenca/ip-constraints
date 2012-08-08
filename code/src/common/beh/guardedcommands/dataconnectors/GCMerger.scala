@@ -17,9 +17,9 @@ class GCMerger(a: String, b: String, c: String, uid: Int) extends GCBehaviour(Li
   val cv = Var(flowVar(c,uid))
 
   var constraints = GuardedCommands(Set(
-    cv --> SGuard(av or bv),
-    (av or bv) --> SGuard(cv),
-    True --> SGuard(Neg(av and bv)),
+    cv --> (av or bv),
+    (av or bv) --> cv,
+    True --> Neg(av and bv),
     av --> VarAssgn(dataVar(c,uid),dataVar(a,uid)),
     bv --> VarAssgn(dataVar(c,uid),dataVar(b,uid))
   ))

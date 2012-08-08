@@ -16,5 +16,5 @@ class GCADrain (a: String, b: String, uid: Int) extends GCBehaviour(List(a,b), u
   val av = Var(flowVar(a,uid))
   val bv = Var(flowVar(b,uid))
 
-  var constraints = GuardedCommands( True --> SGuard(Neg(av and bv)))
+  var constraints = GuardedCommands( True --> Neg(av and bv))
 }

@@ -14,7 +14,7 @@ import common.beh.guardedcommands._
 
 class GCWriter(val x: String, uid: Int, var data: List[Int]) extends GCBehaviour(List(x), uid) {
   //  val flowConstr = ChoConstraints(TrueC)
-  val nfConstr = GuardedCommands(True --> SGuard(Neg((Var(flowVar(x, uid))))))
+  val nfConstr = GuardedCommands(True --> Neg((Var(flowVar(x, uid)))))
 
   var constraints = loadConstraints
 

@@ -6,6 +6,8 @@ import choco.kernel.solver.Solver;
 import choco.kernel.solver.constraints.AbstractSConstraint;
 import choco.kernel.solver.constraints.integer.AbstractUnIntSConstraint;
 import choco.kernel.solver.variables.integer.IntDomainVar;
+import common.beh.UnFunction;
+import common.beh.UnPredicate;
 
 import java.util.List;
 

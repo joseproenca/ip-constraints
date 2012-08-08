@@ -4,7 +4,6 @@ import common.beh.guardedcommands._
 import common.beh.Utils._
 import common.beh.guardedcommands.Neg
 import common.beh.guardedcommands.VarAssgn
-import common.beh.guardedcommands.SGuard
 import common.beh.guardedcommands.Var
 
 /**
@@ -22,8 +21,8 @@ class GCIMerger(a: String, b: String, c: String, uid: Int) extends GCBehaviour(L
   val abv = Var(flowVar(a+b,uid))
 
   var constraints = GuardedCommands(Set(
-    cv --> SGuard(av or bv),
-    (av or bv) --> SGuard(cv)
+    cv --> (av or bv),
+    (av or bv) --> cv
   ))
 
   if (useData) constraints ++= Set(

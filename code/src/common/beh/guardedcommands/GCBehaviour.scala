@@ -20,7 +20,7 @@ abstract class GCBehaviour(ends: List[String], uid: Int) extends Behaviour[GCSol
     if (connections contains from) {
       val glue = for ((end,oend,ouid) <- connections(from))
         yield True --> Seq(List(
-          SGuard(Var(flowVar(oend,ouid)) <-> Var(flowVar(end,uid))),
+          Var(flowVar(oend,ouid)) <-> Var(flowVar(end,uid)),
           VarAssgn(dataVar(oend,ouid),dataVar(end,uid))
         ))
       c ++ glue

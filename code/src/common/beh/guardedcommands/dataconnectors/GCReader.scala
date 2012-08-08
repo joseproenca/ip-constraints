@@ -13,7 +13,7 @@ import common.beh.guardedcommands._
 
 class GCReader(x: String, uid: Int, var size: Int) extends GCBehaviour(List(x), uid) {
   //  val flowConstr = ChoConstraints(TrueC)
-  val nfConstr = GuardedCommands(True --> SGuard(Neg((Var(flowVar(x, uid))))))
+  val nfConstr = GuardedCommands(True --> Neg((Var(flowVar(x, uid)))))
 
   var constraints = loadConstraints
 

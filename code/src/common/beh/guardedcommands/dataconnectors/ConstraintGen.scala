@@ -1,10 +1,8 @@
 package common.beh.guardedcommands.dataconnectors
 
 import common.beh.guardedcommands._
-import common.beh.choco.genericconstraints.{UnFunction, UnPredicate}
-import common.beh.Utils
+import common.beh.{UnPredicate, UnFunction, Utils}
 import common.beh.guardedcommands.Var
-import common.beh.guardedcommands.SGuard
 import scala.Some
 
 /**
@@ -35,6 +33,6 @@ object ConstraintGen {
   def reader(a: String,n: Int) = new GCReader(a,n,0).constraints
   def writer(a: String, data: List[Any]) = new GCWriterData(a,0,data).constraints
 
-  def flow(a: String) = GuardedCommands(True --> SGuard(Var(Utils.flowVar(a,0))))
-  def noflow(a: String) = GuardedCommands(True --> SGuard(Neg(Var(Utils.flowVar(a,0)))))
+  def flow(a: String) = GuardedCommands(True --> Var(Utils.flowVar(a,0)))
+  def noflow(a: String) = GuardedCommands(True --> Neg(Var(Utils.flowVar(a,0))))
 }

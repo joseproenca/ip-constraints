@@ -16,7 +16,7 @@ class GCSync(a: String, b: String, uid: Int) extends GCBehaviour(List(a,b), uid)
   val bv = Var(flowVar(b,uid))
 
   var constraints = GuardedCommands(
-    True --> SGuard(av <-> bv)
+    True --> (av <-> bv)
   )
 
   if (useData) constraints +=

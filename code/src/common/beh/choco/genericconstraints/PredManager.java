@@ -7,6 +7,8 @@ import choco.kernel.model.constraints.Constraint;
 import choco.kernel.model.variables.integer.IntegerVariable;
 import choco.kernel.solver.Solver;
 import choco.kernel.solver.constraints.SConstraint;
+import common.beh.UnFunction;
+import common.beh.UnPredicate;
 
 import java.util.ArrayList;
 import java.util.List;

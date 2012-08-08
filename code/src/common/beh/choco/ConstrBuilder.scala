@@ -3,8 +3,8 @@ package common.beh.choco
 import choco.kernel.model.variables.integer.{IntegerExpressionVariable, IntegerVariable}
 import choco.Choco
 import choco.kernel.model.constraints.{Constraint => ChocoConstr}
-import common.beh.Utils
-import genericconstraints.{Buffer, PredManager, UnFunction, UnPredicate}
+import common.beh.{UnPredicate, UnFunction, Utils}
+import genericconstraints.{Buffer, PredManager}
 import scala.collection.JavaConversions._
 
 /**

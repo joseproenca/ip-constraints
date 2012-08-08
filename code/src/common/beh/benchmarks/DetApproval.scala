@@ -1,18 +1,12 @@
 package common.beh.benchmarks
 
-import _root_.z3.scala.{Z3Config, Z3AST, Z3Context}
 import common.beh.guardedcommands.dataconnectors.GCMerger
-import common.beh.guardedcommands.dataconnectors.GCSync
-import common.beh.guardedcommands.dataconnectors.GCWriter
-import common.beh.guardedcommands.{Pred, GuardedCommands, Neg, IntPred}
-import scala.math.pow
-import common.beh.{Predicate, Solution, IntPredicate}
-import choco.kernel.model.variables.integer.IntegerExpressionVariable
-import choco.Choco
+import common.beh.guardedcommands.GuardedCommands
+import common.beh._
 import common.beh.Utils._
 import common.beh.guardedcommands.dataconnectors.ConstraintGen._
-import common.beh.guardedcommands.z3.Z3
-import common.beh.choco.genericconstraints.{UnFunction, UnPredicate}
+import guardedcommands.Neg
+import guardedcommands.Pred
 
 /**
  * Created with IntelliJ IDEA.

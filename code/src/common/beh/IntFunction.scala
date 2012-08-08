@@ -2,7 +2,6 @@ package common.beh
 
 import _root_.choco.Choco
 import _root_.choco.kernel.model.variables.integer.IntegerExpressionVariable
-import choco.genericconstraints.UnFunction
 
 /**
  * Created with IntelliJ IDEA.

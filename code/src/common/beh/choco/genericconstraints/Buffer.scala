@@ -2,6 +2,7 @@ package common.beh.choco.genericconstraints
 
 //import java.util.List
 import scala.collection.JavaConversions._
+import common.beh.{UnPredicate, UnFunction}
 
 
 /**

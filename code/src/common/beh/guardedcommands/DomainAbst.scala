@@ -1,7 +1,6 @@
 package common.beh.guardedcommands
 
 import common.beh._
-import choco.genericconstraints.{UnFunction, UnPredicate}
 import common.beh.Utils._
 
 

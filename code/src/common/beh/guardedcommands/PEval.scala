@@ -4,9 +4,9 @@ import collection.mutable.{Set => MutSet}
 import collection.{Set => GenSet}
 import common.beh.Utils._
 import common.beh.choco.{ChoConstraints, FlowPred, ConstrBuilder}
-import common.beh.{IntFunction, IntPredicate}
+import common.beh.{UnFunction, IntFunction, IntPredicate}
 import choco.kernel.model.variables.integer.IntegerExpressionVariable
-import common.beh.choco.genericconstraints.{Buffer, UnFunction}
+import common.beh.choco.genericconstraints.Buffer
 
 /**
  * Created with IntelliJ IDEA.

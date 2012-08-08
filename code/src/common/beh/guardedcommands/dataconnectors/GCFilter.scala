@@ -2,7 +2,7 @@ package common.beh.guardedcommands.dataconnectors
 
 import common.beh.Utils._
 import common.beh.guardedcommands._
-import common.beh.choco.genericconstraints.UnPredicate
+import common.beh.UnPredicate
 
 /**
  * Created with IntelliJ IDEA.
@@ -42,12 +42,12 @@ class GCFilter(a: String, b: String, uid: Int,g: Guard) extends GCBehaviour(List
 
   var constraints = GuardedCommands(Set(
     // b -> a
-    bv --> SGuard(av),
+    bv --> av,
     // b -> ^b = ^a /\ P(^a)
     bv --> VarAssgn(dataVar(b,uid),dataVar(a,uid)),
-    bv --> SGuard(g),
+    bv --> g,
     // (a /\ P (^a)) -> b
-    (av and g) --> SGuard(bv)
+    (av and g) --> bv
   ))
 
   if (!useData) throw new Exception("Filter requires 'useData' option")

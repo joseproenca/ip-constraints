@@ -1,7 +1,6 @@
 package common.beh.guardedcommands
 
-import common.beh.choco.genericconstraints.{UnFunction, UnPredicate}
-import dataconnectors._
+import common.beh.{UnFunction, UnPredicate}
 import dataconnectors.ConstraintGen._
 
 /**
@@ -27,8 +26,7 @@ object RunInteractive extends App {
   // Use "val" for shared predicates: common attempt count and buffer.
   def checkPwd = new UnPredicate {
     var attempts = 2
-
-    val secret = Map("bob" -> "asd", "alex" -> "123", "guest" -> "")
+    val secret = Map("alex" -> "123", "bob" -> "asd", "guest" -> "")
 
     def check(x: Any) = if (x.isInstanceOf[String]) {
       val user = x.asInstanceOf[String]
@@ -67,12 +65,11 @@ object RunInteractive extends App {
   val hackUser = new UnFunction {
     var lastUser = ""
     def calculate(x: Any) = if (x.isInstanceOf[String]) {
-      println("hacking username... requested password for user "+x)
+      println("overriding username "+x)
       println("new user? (enter keeps old one)")
       lastUser = x.toString
       val p = readLine()
-      if (p == "") x
-      else p
+      if (p == "") x else p
     }
     override def toString = "hackUser"
   }
@@ -86,32 +83,46 @@ object RunInteractive extends App {
   }
 
 
-  val c = transf("aaf1","af1",hackUser) ++
-    transf("bf1", "bbf1",recallUser) ++
-    filter("af1", "bf1",checkPwd) ++
-    filter("af2", "bf2",checkPwd) ++
-    merger("bbf1","bf2","out") ++
-    writer("aaf1",List("alex")) ++
-    writer("af2", List("bob")) ++
+  val connector =
+    writer("alex",List("alex")) ++
+    writer("bob", List("bob")) ++
+    transf("alex","a1",hackUser) ++
+    transf("a2", "a3",recallUser) ++
+    filter("a1", "a2",checkPwd) ++
+    filter("bob", "b1",checkPwd) ++
+    merger("a3","b1","x") ++
+    reader("x",1) ++
     // at least one should have flow
-    merger("af1","af2","forceFlow") ++
-    sdrain("forceFlow","out")
-    // other experiments
-//    adrain("af1", "af2")
-//    flow("bf1")
-//    flow("out")
+    merger("alex","bob","forceFlow") ++
+    sdrain("forceFlow","x")
+
+
+//  val c = transf("aaf1","af1",hackUser) ++
+//    transf("bf1", "bbf1",recallUser) ++
+//    filter("af1", "bf1",checkPwd) ++
+//    filter("af2", "bf2",checkPwd) ++
+//    merger("bbf1","bf2","out") ++
+//    writer("aaf1",List("alex")) ++
+//    writer("af2", List("bob")) ++
+//    // at least one should have flow
+//    merger("af1","af2","forceFlow") ++
+//    sdrain("forceFlow","out")
+//    // other experiments
+////    adrain("af1", "af2")
+////    flow("bf1")
+////    flow("out")
 
 
 
   // Run
 
-  val res = c.lazyDataSolve
+  val sol = connector.lazyDataSolve
 
 //  println("-----------\n" + c.commands.mkString("\n"))
 //  println("-----------")
 
 
-  if (res.isDefined) print("solved CS:\n" + res.get.pretty)
+  if (sol.isDefined) print("solved CS:\n" + sol.get.pretty)
   else println("no solution")
 
 //  if (res.isDefined) println("partial eval: " + c.partialEval(res.get))

@@ -1,4 +1,4 @@
-package common.beh.choco.genericconstraints
+package common.beh
 
 /**
  * Created with IntelliJ IDEA.
@@ -9,5 +9,5 @@ package common.beh.choco.genericconstraints
  */
 
 abstract class UnFunction {
-  def calculate(x:Any): Any
+  def calculate(x: Any): Any
 }

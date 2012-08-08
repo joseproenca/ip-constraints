@@ -3,7 +3,6 @@ package common.beh
 import _root_.choco.kernel.model.constraints.Constraint
 import _root_.choco.kernel.model.variables.integer.IntegerExpressionVariable
 import _root_.choco.Choco
-import choco.genericconstraints.UnPredicate
 import z3.scala.{Z3Context, Z3AST}
 
 /**

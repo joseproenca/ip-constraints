@@ -8,10 +8,8 @@ import scala.collection.JavaConversions._
 import choco.Choco
 import choco.kernel.model.variables.integer.IntegerVariable
 import common.beh.Utils._
-import choco.cp.solver.search.BranchingFactory
 import choco.cp.solver.search.integer.branching.AssignVar
 import choco.cp.solver.search.integer.varselector.StaticVarOrder
-import choco.cp.solver.search.integer.branching.domwdeg.DomOverWDegBranchingNew
 import choco.kernel.solver.variables.integer.IntDomainVar
 import choco.cp.solver.search.integer.valiterator.IncreasingDomain
 
