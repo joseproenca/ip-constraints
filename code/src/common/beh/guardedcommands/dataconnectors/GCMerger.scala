@@ -16,11 +16,17 @@ class GCMerger(a: String, b: String, c: String, uid: Int) extends GCBehaviour(Li
   val bv = Var(flowVar(b,uid))
   val cv = Var(flowVar(c,uid))
 
-  var constraints = GuardedCommands(Set(
-    cv --> (av or bv),
-    (av or bv) --> cv,
-    True --> Neg(av and bv),
-    av --> VarAssgn(dataVar(c,uid),dataVar(a,uid)),
-    bv --> VarAssgn(dataVar(c,uid),dataVar(b,uid))
-  ))
+  var constraints = GuardedCommands(
+    cv --> (av \/ bv),
+    (av \/ bv) --> cv,
+    !(av and bv))
+
+  if (useData) constraints ++= Set(
+    av --> (cv := av),
+    bv --> (cv := av))
+  //    av --> VarAssgn(dataVar(c,uid),dataVar(a,uid)),
+  //    bv --> VarAssgn(dataVar(c,uid),dataVar(b,uid))
+
+  if (useCC3) throw new Exception("CC3 not implemented")
+
 }

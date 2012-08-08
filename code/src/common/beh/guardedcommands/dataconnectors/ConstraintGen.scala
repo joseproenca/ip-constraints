@@ -31,7 +31,7 @@ object ConstraintGen {
   def exrouter(a: String, b: String, c: String) = new GCExRouter(a,b,c,0).constraints
   def nexrouter(src: String, snks: List[String]) = new GCNExRouter(src,snks,0).constraints
   def reader(a: String,n: Int) = new GCReader(a,n,0).constraints
-  def writer(a: String, data: List[Any]) = new GCWriterData(a,0,data).constraints
+  def writer(a: String, data: List[Any]) = new GCWriter(a,0,data).constraints
 
   def flow(a: String) = GuardedCommands(True --> Var(Utils.flowVar(a,0)))
   def noflow(a: String) = GuardedCommands(True --> Neg(Var(Utils.flowVar(a,0))))

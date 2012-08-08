@@ -13,7 +13,7 @@ import common.beh.guardedcommands._
 
 class GCReader(x: String, uid: Int, var size: Int) extends GCBehaviour(List(x), uid) {
   //  val flowConstr = ChoConstraints(TrueC)
-  val nfConstr = GuardedCommands(True --> Neg((Var(flowVar(x, uid)))))
+  val nfConstr = GuardedCommands(Neg((Var(flowVar(x, uid)))))
 
   var constraints = loadConstraints
 
@@ -35,4 +35,5 @@ class GCReader(x: String, uid: Int, var size: Int) extends GCBehaviour(List(x), 
   // suggests which ends must have dataflow if "end" has also dataflow
   def guessRequirements(end: String) = Set()
 
+  if (useCC3) throw new Exception("CC3 not implemented")
 }

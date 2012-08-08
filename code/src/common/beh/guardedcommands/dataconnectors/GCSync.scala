@@ -16,11 +16,11 @@ class GCSync(a: String, b: String, uid: Int) extends GCBehaviour(List(a,b), uid)
   val bv = Var(flowVar(b,uid))
 
   var constraints = GuardedCommands(
-    True --> (av <-> bv)
+    av <-> bv
   )
 
   if (useData) constraints +=
-    av --> VarAssgn(dataVar(b,uid), dataVar(a,uid))
+    av --> (bv := av) //VarAssgn(dataVar(b,uid), dataVar(a,uid))
 
   if (useCC3) throw new Exception("CC3 not implemented")
 }

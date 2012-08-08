@@ -6,8 +6,8 @@ import org.sat4j.core.VecInt
 import org.sat4j.specs.{TimeoutException, ContradictionException, ISolver}
 import scala.collection.mutable.{Set => MutSet, Map => MutMap}
 import common.beh.Utils._
-import common.beh.choco._
-import genericconstraints.Buffer
+import common.beh.choco.{ConstrBuilder,ChoSolution,ChoConstraints,FalseC}
+import common.beh.choco.genericconstraints.Buffer
 import scala.Some
 
 /**
@@ -29,6 +29,7 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
   var solvedDomain = false
   //  var someVars: Option[MutMap[String,Int]] = None
   val buf = new Buffer
+  var closed = false
 
 
   /**
@@ -97,6 +98,24 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
 
     val cnf = commands.map(_.toCNF(vars,da)).foldRight[CNF.Core](List())((x:CNF.Core,y:CNF.Core) => x ::: y)
     (cnf,vars)
+  }
+
+  /**
+   * Add SOME-FLOW and CC3 constraints.
+   * Not yet in use.
+   */
+  def close() {
+    if (!closed) {
+      var flowvars: Guard = !True
+      for (v <- fv())
+        if (isFlowVar(v)) {
+          flowvars = (Var(v) \/ flowvars)
+          commands +=  Var(v) \/ Var(flow2snk(v)) \/ Var(flow2src(v))
+        }
+      commands += flowvars
+      closed = true
+    }
+
   }
 
 
@@ -206,7 +225,8 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
 
   def solveBool(c: CNF.Core, vars: MutMap[String,Int]): Option[GCBoolSolution] = {
 
-    // store variable names and ADD FLOW CONSTRAINTS!
+    // store variable names and
+    // ADD FLOW CONSTRAINTS!
     val varname = MutMap[Int,String]()
     var flowvars = Set[Int]()
     for ((k,v) <- vars) {
@@ -214,6 +234,7 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
       if (isFlowVar(k)) flowvars += v
     }
     val cnf = flowvars.toArray :: c
+//    val cnf = c
 
 
     val MAXVAR: Int = vars.size // cnf.nvars
@@ -277,6 +298,8 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
    *         propagation returns a complete solution.
    */
   def quickDataSolve : Option[GCSolution] = {
+//    close
+
     val cnf = toCNF
     val optSolBool = solveBool(cnf._1,cnf._2)
     if (!optSolBool.isDefined)
@@ -301,6 +324,7 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
    *         propagation returns a complete solution.
    */
   def lazyDataSolve : Option[GCSolution] = {
+    close
     val builders = toBoolConstrBuilders
 //    val buf = new Buffer // using the same to solve boolean constraints and to get a solution while traversing the tree.
     val optSolBool = solveChocoBool(builders)
@@ -322,11 +346,13 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
   /////////////////////////
 
   def solveChoco : Option[ChoSolution] = {
+    // not closing constraints
     val choConstr = ChoConstraints(toConstBuilders)
     choConstr.solve
   }
 
   def toConstBuilders:Iterable[ConstrBuilder] = {
+    // not closing constraints
     for (com <- commands)
       yield com.toConstrBuilder
   }
@@ -467,6 +493,7 @@ object GuardedCommands {
     g.commands = gs
     g
   }
+  def apply(gs: GuardedCom*): GuardedCommands = apply(gs.toSet)
   def apply(g: GuardedCom): GuardedCommands = apply(Set(g))
   def apply(): GuardedCommands = new GuardedCommands()
 

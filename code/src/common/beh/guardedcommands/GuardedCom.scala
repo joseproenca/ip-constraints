@@ -5,6 +5,7 @@ import collection.mutable.{Set => MutSet, Map => MutMap}
 import collection.immutable.{Set => ImSet}
 import common.beh.Utils._
 import common.beh.choco.{LazyPred, TrueC, ConstrBuilder}
+import collection.mutable
 
 /**
  * Created with IntelliJ IDEA.
@@ -71,10 +72,13 @@ case class GuardedCom(g:Guard, st: Statement) {
 
 abstract sealed class Guard extends Statement{
   def and(e: Guard) = And(this,e)
+  def /\(e: Guard) = And(this,e)
   def or(e: Guard) = Or(this,e)
+  def \/(e: Guard) = Or(this,e)
   def ->(e: Guard) = Impl(this,e)
   def -->(e: Statement) = GuardedCom(this,e)
   def <->(e: Guard) = Equiv(this,e)
+  def unary_! = Neg(this)
 
   override def fv: Set[String] = this match {
     case Var(name) => Set(name)
@@ -86,7 +90,6 @@ abstract sealed class Guard extends Statement{
     case Impl(g1, g2) => g1.fv ++ g2.fv
     case Equiv(g1, g2) => g1.fv ++ g2.fv
     case True => Set()
-    case s => super.fv
   }
 
   override def da: DomainAbst = this match {
@@ -99,7 +102,6 @@ abstract sealed class Guard extends Statement{
     case Impl(g1, g2) => g1.da + g2.da
     case Equiv(g1, g2) => g1.da + g2.da
     case True => DomainAbst()
-    case s => super.da
   }
 
   override def toCNF(vars: MutMap[String,Int],da: DomainAbst): CNF.Core = this match {
@@ -128,7 +130,6 @@ abstract sealed class Guard extends Statement{
     case True => List()
     case Neg(True) => List(Array())
     case Neg(Neg(a)) => a.toCNF(vars,da)
-    case s => super.toCNF(vars,da)
   }
 
   override def toConstrBuilder: ConstrBuilder = this match {
@@ -144,7 +145,6 @@ abstract sealed class Guard extends Statement{
     case Impl(g1, g2) => g1.toBoolConstrBuilder --> g2.toBoolConstrBuilder
     case Equiv(g1, g2) => g1.toBoolConstrBuilder <-> g2.toBoolConstrBuilder
     case True => common.beh.choco.TrueC
-    case s => super.toConstrBuilder
   }
 
   def toBoolConstrBuilder: ConstrBuilder = this match {
@@ -193,8 +193,19 @@ abstract sealed class Guard extends Statement{
 
 }
 
+
 abstract sealed class Statement {
-  def and(s: Statement) = Seq(List(this,s))
+
+  def and(s: Statement) = this match {
+    case Seq(s1) => s match {
+      case Seq(s2) => Seq(s1:::s2)
+      case y => Seq(s1:::List(y))
+    }
+    case x => s match {
+      case Seq(s2) => Seq(x::s2)
+      case y => Seq(List(this,s))
+    }
+  }
 
   def fv: Set[String] = this match {
     case g: Guard => g.fv
@@ -267,7 +278,6 @@ abstract sealed class Statement {
 
     case Seq(Nil) => List()
     case Seq(s::ss) => s.toCNF(vars,da) ++ Seq(ss).toCNF(vars,da)
-//    case g: Guard => super.toCNF(vars,da)
   }
 
   def toConstrBuilder: ConstrBuilder = this match {
@@ -282,7 +292,6 @@ abstract sealed class Statement {
       else throw new RuntimeException("General data functions have no associated choco constraint")
     case Seq(Nil) => common.beh.choco.TrueC
     case Seq(s::ss) => s.toConstrBuilder and Seq(ss).toConstrBuilder
-//    case g: Guard => super.toConstrBuilder
   }
 
   def toBoolConstrBuilder(da: DomainAbst): ConstrBuilder = this match {
@@ -362,12 +371,20 @@ abstract sealed class Statement {
 }
 
 /// GUARDS
-case class Var(name: String) extends Guard
+case class Var(name: String) extends Guard {
+  def :=(v:Var): Statement = VarAssgn(flow2data(name),flow2data(v.name))
+  def :=(d:Any): Statement = DataAssgn(flow2data(name),d)
+//  def :=(d: Any): Statement = d match {
+//    case (v:Var) => VarAssgn(flow2data(name),flow2data(v.name))
+//    case _ => DataAssgn(flow2data(name),d)
+//  }
+  def :=(f:UnFunction,v:Var): Statement = FunAssgn(flow2data(name),flow2data(v.name),f)
+}
 case class IntPred(v:String, p: IntPredicate) extends Guard
 case class Pred(v:String, p:UnPredicate) extends Guard
 case class And(g1: Guard, g2: Guard) extends Guard
 case class Or(g1: Guard, g2: Guard) extends Guard
-case class Neg(g: Guard) extends Guard
+case class Neg(g1: Guard) extends Guard
 case class Impl(g1: Guard, g2: Guard) extends Guard
 case class Equiv(g1: Guard, g2: Guard) extends Guard
 case object True extends Guard

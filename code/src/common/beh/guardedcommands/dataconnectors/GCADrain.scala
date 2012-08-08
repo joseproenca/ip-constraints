@@ -1,7 +1,7 @@
 package common.beh.guardedcommands.dataconnectors
 
 import common.beh.guardedcommands._
-import common.beh.Utils._
+import common.beh.Utils.{flowVar,st2GC,srcVar,snkVar}
 import common.beh.guardedcommands.Var
 
 /**
@@ -15,6 +15,15 @@ import common.beh.guardedcommands.Var
 class GCADrain (a: String, b: String, uid: Int) extends GCBehaviour(List(a,b), uid) {
   val av = Var(flowVar(a,uid))
   val bv = Var(flowVar(b,uid))
+  val asr = Var(srcVar(a,uid))
+  val bsk = Var(snkVar(b,uid))
 
-  var constraints = GuardedCommands( True --> Neg(av and bv))
+  var constraints = GuardedCommands(!(av and bv))
+
+  if (useCC3)
+    constraints ++= Set(
+      av --> bsk,
+      bv --> asr,
+      (!av /\ !bv) --> (!asr /\ !bsk)
+    )
 }

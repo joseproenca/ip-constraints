@@ -34,14 +34,14 @@ class GCNMerger(srcs: List[String], snk: String, uid: Int) extends GCBehaviour(s
   }
 
   def genData(lst:List[String]): List[GuardedCom] =
-    for (src <- srcs) yield v(src) --> VarAssgn(dataVar(snk,uid),dataVar(src,uid))
+    for (src <- srcs) yield v(src) --> (v(snk) := v(src)) //VarAssgn(dataVar(snk,uid),dataVar(src,uid))
 
 
-  var constraints = GuardedCommands(Set(
+  var constraints = GuardedCommands(
     c1,
     c2,
     c3
-  ))
+  )
 
   if (useData) constraints ++= genData(srcs)
 

@@ -15,5 +15,7 @@ class GCSSpout(a: String, b: String, uid: Int) extends GCBehaviour(List(a,b), ui
   val av = Var(flowVar(a,uid))
   val bv = Var(flowVar(b,uid))
 
-  var constraints = GuardedCommands( True --> (av <-> bv) )
+  var constraints = GuardedCommands( av <-> bv )
+
+  if (useCC3) throw new Exception("CC3 not implemented")
 }

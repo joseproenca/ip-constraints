@@ -72,7 +72,27 @@ class ChoConstraints extends common.beh.Constraints[ChoSolution,ChoConstraints] 
 
   }
 
-  def solve = solve(List(), new Buffer)
+
+  /**
+   * Add flow constraints and CC3 constraints.
+   * Not in use yet.
+   */
+  def close() {
+    // Add flow constraints
+    var flowvars = Set[String]()
+    for (cb <- constrBuilders; x <- cb.getVars) {
+      if (isFlowVar(x)) flowvars += x
+    }
+    if (!(flowvars.isEmpty)) {
+      var c: ConstrBuilder = Var(flowvars.head)
+      for (v <- flowvars.tail)
+        c = Or(Var(v),c)
+      impose(c)
+    }
+
+  }
+
+  def solve: Option[ChoSolution] = solve(List(), new Buffer)
 
   def solve(buf: Buffer): Option[ChoSolution] = solve(List(),buf)
 
@@ -88,17 +108,17 @@ class ChoConstraints extends common.beh.Constraints[ChoSolution,ChoConstraints] 
     for (constr <- pair._2)
       m.addConstraint(constr)
 
-    // Add flow constraints
-    var flowvars = Set[IntegerVariable]()
-    for (x <- m.getIntVarIterator) {
-      if (isFlowVar(x.getName)) flowvars += x
-    }
-    if (!(flowvars.isEmpty)) {
-      var c = Choco.eq(flowvars.head,1)
-      for (v <- flowvars.tail)
-        c = Choco.or(Choco.eq(v,1),c)
-      m.addConstraint(c)
-    }
+//    // Add flow constraints
+//    var flowvars = Set[IntegerVariable]()
+//    for (x <- m.getIntVarIterator) {
+//      if (isFlowVar(x.getName)) flowvars += x
+//    }
+//    if (!(flowvars.isEmpty)) {
+//      var c = Choco.eq(flowvars.head,1)
+//      for (v <- flowvars.tail)
+//        c = Choco.or(Choco.eq(v,1),c)
+//      m.addConstraint(c)
+//    }
 
 //    println(m.pretty())
 

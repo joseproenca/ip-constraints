@@ -90,28 +90,11 @@ object RunInteractive extends App {
     transf("a2", "a3",recallUser) ++
     filter("a1", "a2",checkPwd) ++
     filter("bob", "b1",checkPwd) ++
-    merger("a3","b1","x") ++
-    reader("x",1) ++
+    merger("a3","b1","out") ++
+    reader("out",1) ++
     // at least one should have flow
     merger("alex","bob","forceFlow") ++
-    sdrain("forceFlow","x")
-
-
-//  val c = transf("aaf1","af1",hackUser) ++
-//    transf("bf1", "bbf1",recallUser) ++
-//    filter("af1", "bf1",checkPwd) ++
-//    filter("af2", "bf2",checkPwd) ++
-//    merger("bbf1","bf2","out") ++
-//    writer("aaf1",List("alex")) ++
-//    writer("af2", List("bob")) ++
-//    // at least one should have flow
-//    merger("af1","af2","forceFlow") ++
-//    sdrain("forceFlow","out")
-//    // other experiments
-////    adrain("af1", "af2")
-////    flow("bf1")
-////    flow("out")
-
+    sdrain("forceFlow","out")
 
 
   // Run
@@ -124,6 +107,4 @@ object RunInteractive extends App {
 
   if (sol.isDefined) print("solved CS:\n" + sol.get.pretty)
   else println("no solution")
-
-//  if (res.isDefined) println("partial eval: " + c.partialEval(res.get))
 }

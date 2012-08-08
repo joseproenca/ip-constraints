@@ -20,6 +20,7 @@ import java.util.List;
  * Time: 11:53
  * To change this template use File | Settings | File Templates.
  */
+@SuppressWarnings("unchecked")
 public class PredManager extends IntConstraintManager {
     public SConstraint makeConstraint(Solver solver,
                                       IntegerVariable[] variables,

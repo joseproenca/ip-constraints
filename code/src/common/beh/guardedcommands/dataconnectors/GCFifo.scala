@@ -15,14 +15,15 @@ class GCFifo(a: String, b: String, var data: Option[Any], uid: Int) extends GCBe
   val av = Var(flowVar(a,uid))
   val bv = Var(flowVar(b,uid))
 
-  val emptyFifo = GuardedCommands(True --> Neg(bv))
+  val emptyFifo = GuardedCommands(!bv)
+
   def fullFifo =
-    if (useData) GuardedCommands(Set(
-        True --> Neg(av),
-        bv --> DataAssgn(dataVar(b,uid),data.get)
-      ))
+    if (useData) GuardedCommands(
+        !av,
+        bv --> (bv := data.get)
+      )
     else if (useCC3) throw new Exception("CC3 not implemented")
-    else GuardedCommands(True --> Neg(av))
+    else GuardedCommands(Neg(av))
 
 
   def loadConstraints = if (data.isDefined) fullFifo else emptyFifo

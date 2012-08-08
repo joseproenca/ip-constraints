@@ -18,11 +18,11 @@ class GCTransf (a: String, b: String, uid: Int, f: UnFunction) extends GCBehavio
   val bv = Var(flowVar(b,uid))
 
   var constraints = GuardedCommands(
-    True --> (av <-> bv)
+    av <-> bv
   )
 
   if (useData) constraints +=
-    av --> FunAssgn(dataVar(b,uid), dataVar(a,uid), f)
+    av --> (bv := (f,av))  // FunAssgn(dataVar(b,uid), dataVar(a,uid), f)
 
   if (useCC3) throw new Exception("CC3 not implemented")
 }

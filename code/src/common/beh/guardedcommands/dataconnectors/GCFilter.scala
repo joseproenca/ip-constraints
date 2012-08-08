@@ -40,15 +40,15 @@ class GCFilter(a: String, b: String, uid: Int,g: Guard) extends GCBehaviour(List
                     else      Neg(Pred(dataVar(a,uid),p)))
 }
 
-  var constraints = GuardedCommands(Set(
+  var constraints = GuardedCommands(
     // b -> a
     bv --> av,
     // b -> ^b = ^a /\ P(^a)
-    bv --> VarAssgn(dataVar(b,uid),dataVar(a,uid)),
+    bv -->  (bv := av), //VarAssgn(dataVar(b,uid),dataVar(a,uid)),
     bv --> g,
     // (a /\ P (^a)) -> b
-    (av and g) --> bv
-  ))
+    (av /\ g) --> bv
+  )
 
   if (!useData) throw new Exception("Filter requires 'useData' option")
 
