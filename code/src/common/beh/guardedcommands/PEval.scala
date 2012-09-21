@@ -4,7 +4,7 @@ import collection.mutable.{Set => MutSet}
 import collection.{Set => GenSet}
 import common.beh.Utils._
 import common.beh.choco.{ChoConstraints, FlowPred, ConstrBuilder}
-import common.beh.{UnFunction, IntFunction, IntPredicate}
+import common.beh.{Solution, UnFunction, IntFunction, IntPredicate}
 import choco.kernel.model.variables.integer.IntegerExpressionVariable
 import common.beh.choco.genericconstraints.Buffer
 
@@ -42,16 +42,20 @@ class PEval(
    * Alternative to quotient
    * @return If all data variables with some data assignment are defined.
    */
-  def freshTraversal(buf: Buffer): Boolean = { //: Map[String,Int] = {
-//    println("init peval: "+this)
+  def freshTraversal(buf: Option[Buffer]): Boolean = { //: Map[String,Int] = {
+//    println("### init peval: "+this)
     var next = data.keySet
     var continue = true
     while (continue) {
       continue = false
+//      println("  ## starting loop - next: "+next.mkString(","))
       while (!next.isEmpty) {
         val hd = next.head
+//        println("  # checking head: "+hd)
         if (rest contains hd) {
+//          println("  # rest contains head.")
           for (x <- rest(hd)) {
+//            println("  # adding data "+data(hd)+" to rest end: "+x)
             data += x -> data(hd)
             next += x
             continue = true
@@ -59,16 +63,26 @@ class PEval(
           }
 //          rest -= hd
         }
-        if (funcs contains hd) for ((y,f) <- funcs(hd)) {
-          data += y -> buf.calculate(List(f),data(hd))
-          next += y
-          continue = true
+        if (buf.isDefined) {
+          if (funcs contains hd) for ((y,f) <- funcs(hd)) {
+            data += y -> buf.get.calculate(List(f),data(hd))
+            next += y
+            continue = true
+          }
+        } else {
+          if (funcs contains hd) for ((y,f) <- funcs(hd)) {
+            data += y -> f.calculate(data(hd))
+            next += y
+            continue = true
+          }
         }
         next -= hd
       }
     }
-//    println("new peval: "+this)
+//    println("### new peval: "+this)
 
+    // Ending condition: all variables used in sigma-attributions have a data value.
+    // Correction: all variables with dataflow have a data value (filtered during partial evaluation)
     var finished = true
     var allvars: Set[String] = Set()
     for ((x,s) <- rest) allvars ++= Set(x) ++ s
@@ -76,9 +90,13 @@ class PEval(
     for (v <- allvars)
       if (!(data contains v)) finished = false
 
-//    println("finished? "+finished)
+//    println("### finished? "+finished)
     finished
   }
+
+
+
+
 
   // ASSUME: instance freshly created with partialEval
   /**
@@ -310,13 +328,13 @@ class PEval(
 
   def isFinished = rest.isEmpty
 
-  def getSol(sol:GCBoolSolution) : GCSolution = {
+  def getSol(sol:Solution) : GCSolution = {
     new GCSolution(sol,data)
   }
 
-  override def toString = data.map(x=>ppFlowVar(x._1)+"->"+x._2).mkString(" , ")+" / "+
-    rest.map(x=>ppFlowVar(x._1)+"->"+x._2.map(ppFlowVar(_)).mkString("{",",","}")).mkString(" ; ")+" / "+
-    funcs.map(x=>ppFlowVar(x._1)+"->"+x._2.map(y=>ppFlowVar(y._1)+"-"+y._2).mkString("{",",","}")).mkString(" ; ")
+  override def toString = data.map(x=>ppFlowVar(x._1)+"->"+x._2).mkString(" ,\n")+" /\n"+
+    rest.map(x=>ppFlowVar(x._1)+"->"+x._2.map(ppFlowVar(_)).mkString("{",",","}")).mkString(" ;\n")+" /\n"+
+    funcs.map(x=>ppFlowVar(x._1)+"->"+x._2.map(y=>ppFlowVar(y._1)+"-"+y._2).mkString("{",",","}")).mkString(" ;\n")
 
 }
 

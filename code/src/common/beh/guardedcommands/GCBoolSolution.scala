@@ -22,7 +22,8 @@ class GCBoolSolution(var varMap: Map[String, Boolean]) extends Solution {
   }
 
   def apply(v:String) = //varMap(v)
-    if (varMap contains v) varMap(v) else false // if it is not mentioned, probably it was not relevant. Use default "false"
+    //if (varMap contains v) varMap(v) else false // if it is not mentioned, probably it was not relevant. Use default "false"
+    hasFlow(v)
   def update(v:String,b:Boolean) {
     varMap = varMap + (v -> b)
   }

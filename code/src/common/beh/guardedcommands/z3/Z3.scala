@@ -3,7 +3,9 @@ package common.beh.guardedcommands.z3
 import _root_.z3.scala._
 import common.beh.guardedcommands._
 import common.beh.guardedcommands.Var
-import common.beh.{IntPredicate, Even, guardedcommands}
+import common.beh.{IntFunction, IntPredicate, Even, guardedcommands}
+import common.beh.Utils._
+import collection.mutable.{Map => MutMap, ListBuffer}
 
 /**
  * Created with IntelliJ IDEA.
@@ -38,16 +40,20 @@ object Z3 {
   }
 
   def gc2z3(gcs: GuardedCommands, z3: Z3Context): Z3AST = {
+//    gcs.close() // add flow constraints here
+
     var res = z3.mkTrue()
     for (com <- gcs.commands)
       res = z3.mkAnd(res,gc2z3(com,z3))
-    val vars = gcs.fv()
 
     // ADD FLOW CONSRAINTS
-    if (!vars.isEmpty) {
-      val fst = vars.head
+    val bvars = new ListBuffer[String]()
+    gcs.bfv(bvars)
+//    println("bool vars: "+bvars.mkString("-"))
+    if (!bvars.isEmpty) {
+      val fst = bvars.head
       var flowConstraint = z3.mkBoolConst(z3.mkStringSymbol(fst))
-      for (v <- vars.tail)
+      for (v <- bvars.tail)
         flowConstraint = z3.mkOr(flowConstraint,z3.mkBoolConst(z3.mkStringSymbol(v)))
       res = z3.mkAnd(res,flowConstraint)
     }
@@ -78,7 +84,11 @@ object Z3 {
     case g: Guard => gc2z3(g,z3)
     case IntAssgn(v, d) => z3.mkEq(z3.mkIntConst(z3.mkStringSymbol(v)),z3.mkInt(d,z3.mkIntSort()))
     case VarAssgn(v1, v2) => z3.mkEq(z3.mkIntConst(z3.mkStringSymbol(v1)),z3.mkIntConst(z3.mkStringSymbol(v2)))
-    case FunAssgn(v1, v2, f) => throw new RuntimeException("General functions not handled with Z3")
+    case FunAssgn(v1, v2, f) =>
+      if (f.isInstanceOf[IntFunction])
+        z3.mkEq(z3.mkIntConst(z3.mkStringSymbol(v1)),
+          f.asInstanceOf[IntFunction].z3Fun(z3,z3.mkIntConst(z3.mkStringSymbol(v2))))
+      else throw new RuntimeException("General data functions have no associated z3 functions")
     case DataAssgn(v, d) => //throw new RuntimeException("General data assignments not handled with Z3")
       if (d.isInstanceOf[Int])
         z3.mkEq(z3.mkIntConst(z3.mkStringSymbol(v)),z3.mkInt(d.asInstanceOf[Int],z3.mkIntSort()))
@@ -87,6 +97,186 @@ object Z3 {
     case Seq(Nil) => z3.mkTrue()
     case Seq(x::xs) => z3.mkAnd(gc2z3(x,z3),gc2z3(Seq(xs),z3))
   }
+
+
+//  def solveBool(c: CNF.Core, vars: MutMap[String,Int], z3: Z3Context): Option[GCBoolSolution] = {
+//
+//  }
+
+
+  /**
+   * Converts a guarded command into a Z3 term.
+   * @param gcs the guarded command to be converted
+   * @param da the domain abstraction, with the look-ahead for functions and predicates
+   * @param z3 the Z3 context, used to build operators and variables
+   * @return a Z3 term equivalent to the predicate abstraction of the given guarded command
+   */
+  def gc2boolz3(gcs: GuardedCommands, da: DomainAbst,z3: Z3Context): Z3AST = {
+    var res = z3.mkTrue()
+    for (com <- gcs.commands)
+      res = z3.mkAnd(res,gc2boolz3(com,da,z3))
+
+    // ADD FLOW CONSRAINTS
+    val bvars = new ListBuffer[String]()
+    gcs.bfv(bvars)
+    if (!bvars.isEmpty) {
+      val fst = bvars.head
+      var flowConstraint = z3.mkBoolConst(z3.mkStringSymbol(fst))
+      for (v <- bvars.tail)
+        flowConstraint = z3.mkOr(flowConstraint,z3.mkBoolConst(z3.mkStringSymbol(v)))
+      res = z3.mkAnd(res,flowConstraint)
+    }
+
+    res
+  }
+
+  def gc2boolz3(gc: GuardedCom, da: DomainAbst, z3: Z3Context): Z3AST =
+    z3.mkImplies(gc2boolz3(gc.g,z3), gc2boolz3(gc.st,da,z3))
+
+  def gc2boolz3(g: Guard, z3: Z3Context): Z3AST = g match {
+    case Var(name)     => z3.mkBoolConst(z3.mkStringSymbol(name))
+    case IntPred(v, p) => z3.mkBoolConst(z3.mkStringSymbol(predVar(v,p,List())))
+    case Pred(v, p)    => z3.mkBoolConst(z3.mkStringSymbol(predVar(v,p,List())))
+    case And(g1, g2)   => z3.mkAnd(gc2boolz3(g1,z3),gc2boolz3(g2,z3))
+    case Or(g1, g2)    => z3.mkOr(gc2boolz3(g1,z3),gc2boolz3(g2,z3))
+    case Neg(g)        => z3.mkNot(gc2boolz3(g,z3))
+    case Impl(g1, g2)  => z3.mkImplies(gc2boolz3(g1,z3),gc2boolz3(g2,z3))
+    case guardedcommands.Equiv(g1, g2) => z3.mkEq(gc2boolz3(g1,z3),gc2boolz3(g2,z3))
+    case True          => z3.mkTrue()
+  }
+
+
+  def gc2boolz3(s: Statement, da: DomainAbst, z3: Z3Context): Z3AST = s match {
+    case g: Guard => gc2boolz3(g,z3)
+    case IntAssgn(v, d) => gc2boolz3(DataAssgn(v,d),da,z3)
+    case DataAssgn(v, d) =>
+      var res: Z3AST = z3.mkTrue()
+      val dom = da.domain(v)
+      for ((pred,fs) <- dom) {
+        var newd: Any = d
+        for (f<-fs.reverse) newd = f.calculate(newd)
+        if  (pred.check(newd))
+          res = z3.mkAnd(res,z3.mkBoolConst(z3.mkStringSymbol(predVar(v,pred,fs))))
+        else
+          res = z3.mkAnd(res,z3.mkNot(z3.mkBoolConst(z3.mkStringSymbol(predVar(v,pred,fs)))))
+      }
+      res
+    case VarAssgn(v1, v2) =>
+      val (d1,d2) = (da.domain(v1), da.domain(v2))
+      var res: Z3AST = z3.mkTrue()
+      for((pred,fs) <- d1)
+        if (d2 contains (pred,fs)) {
+          val t = gc2boolz3(Var(predVar(v1,pred,fs)) <-> Var(predVar(v2,pred,fs)),da,z3)
+          res = z3.mkAnd(res,t)
+        }
+      res
+    case FunAssgn(v1, v2, f) =>
+      val (d1,d2) = (da.domain(v1), da.domain(v2))
+      var res: Z3AST = z3.mkTrue()
+      for((pred,fs) <- d1)
+        if (d2 contains (pred,f::fs)) {
+          val t = gc2boolz3(Var(predVar(v1,pred,fs)) <-> Var(predVar(v2,pred,f::fs)),da,z3)
+          res = z3.mkAnd(res,t)
+        }
+      res
+    case Seq(Nil) => z3.mkTrue()
+    case Seq(x::xs) => z3.mkAnd(gc2boolz3(x,da,z3),gc2boolz3(Seq(xs),da,z3))
+  }
+
+  /*
+    case g: Guard => g.toBoolConstrBuilder
+    case IntAssgn(v, d) => DataAssgn(v,d).toBoolConstrBuilder(da)
+    case DataAssgn(v, d) => //common.beh.choco.DataAssgn(v,d)
+      // INSTEAD OF CALCULATING, CREATE A LAZY CONSTRAINT!
+      var res:ConstrBuilder = TrueC
+      for ((pred,fs,xflow) <- da.domainWithEnd(v)) {
+
+//        var newd = d
+//        for (f<-fs.reverse) newd = f.calculate(newd)
+//        if (pred.check(newd))
+//          res = res and common.beh.choco.Var(predVar(v,pred,fs))
+//        else
+//          res = res and common.beh.choco.Neg(common.beh.choco.Var(predVar(v,pred,fs)))
+
+        println("added LazyPred("+predVar(v,pred,fs)+","+data2flow(v)+","+data2flow(xflow)+","+fs+")")
+        res = res and LazyPred(predVar(v,pred,fs),data2flow(v),data2flow(xflow),d,pred,fs)
+      }
+      res
+
+    case VarAssgn(v1, v2) =>
+      val (d1,d2) = (da.domain(v1),da.domain(v2))
+      var res: ConstrBuilder= TrueC
+      for ((pred,fs) <- d2)
+        if (d1 contains (pred,fs)) {
+          val t = common.beh.choco.VarEq(predVar(v1,pred,fs),predVar(v2,pred,fs))
+          res = res and t
+        }
+      res
+
+    case FunAssgn(v1,v2,f) =>
+//      VarAssgn(v1,v2).toBoolConstrBuilder(da)
+      val (d1,d2) = (da.domain(v1),da.domain(v2))
+      var res: ConstrBuilder= TrueC
+      for ((pred,fs) <- d1)
+        if (d2 contains (pred,f::fs)) {
+          val t = common.beh.choco.VarEq(predVar(v1,pred,fs),predVar(v2,pred,f::fs))
+          res = res and t
+        }
+      res
+
+    case Seq(Nil) => common.beh.choco.TrueC
+    case Seq(s::ss) => s.toBoolConstrBuilder(da) and Seq(ss).toBoolConstrBuilder(da)
+
+////////////////////////////
+
+    case DataAssgn(v,d) =>
+//      println("converting data assgnm '"+v+" := "+d+"'.")
+      var res:List[Int] = List()
+      val dom = da.domain(v)
+      for ((pred,fs) <- dom) {
+        // ALL PRECALCULATED (only in choco-Bool it is lazily calculated)
+        var newd: Any = d
+        for (f<-fs.reverse) newd = f.calculate(newd)
+//        println("precomputing "+v+" for "+pred+" after "+fs+" ("+d+" -> "+newd+")")
+        if (pred.check(newd)) {
+          res ::= vars(predVar(v,pred,fs))
+        }
+        else
+          res ::= vars(predVar(v,pred,fs)) * (-1)
+      }
+//      println("got array "+res.mkString("[",",","]"))
+      res.map(Array(_))
+//      List(res.toArray)
+
+    case VarAssgn(v1, v2) =>
+//      println("converting var eq of "+v1+" and "+v2)
+      val (d1,d2) = (da.domain(v1),da.domain(v2))
+      var res: CNF.Core = List()
+      for ((pred,fs) <- d1)
+        if (d2 contains (pred,fs)) {
+          val t =  (Var(predVar(v1,pred,fs)) <-> Var(predVar(v2,pred,fs))).toCNF(vars,da)
+//          println("converting "+v1+" <-> "+v2+" for "+pred+" - "+ t.map(_.mkString(",")).mkString("["," ; ","]"))
+          res :::= t
+        }
+      res
+    case FunAssgn(v1, v2, f) =>
+      //      println("converting var eq of "+v1+" and "+v2)
+      val (d1,d2) = (da.domain(v1),da.domain(v2))
+      var res: CNF.Core = List()
+//      println("adding := for new abst-vars "+FunAssgn(v1,v2,f)+"\ndomains:\n"+d1+"\n--\n"+d2)
+      for ((pred,fs) <- d1)
+        if (d2 contains (pred,f::fs)) {
+//          println("adding "+predVar(v1,pred,fs)+" <-> "+predVar(v2,pred,f::fs))
+          val t =  (Var(predVar(v1,pred,fs)) <-> Var(predVar(v2,pred,f::fs))).toCNF(vars,da)
+          res :::= t
+        }
+    //      println("conversion: "+res.map(_.mkString(",")).mkString("["," ; ","]"))
+      res
+
+    case Seq(Nil) => List()
+    case Seq(s::ss) => s.toCNF(vars,da) ++ Seq(ss).toCNF(vars,da)
+
+   */
 
 
 

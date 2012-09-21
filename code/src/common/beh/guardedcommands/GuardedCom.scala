@@ -1,7 +1,7 @@
 package common.beh.guardedcommands
 
-import common.beh.{UnPredicate, UnFunction, IntPredicate, IntFunction}
-import collection.mutable.{Set => MutSet, Map => MutMap}
+import common.beh._
+import collection.mutable.{Set => MutSet, Map => MutMap, ListBuffer}
 import collection.immutable.{Set => ImSet}
 import common.beh.Utils._
 import common.beh.choco.{LazyPred, TrueC, ConstrBuilder}
@@ -16,8 +16,20 @@ import collection.mutable
  */
 
 case class GuardedCom(g:Guard, st: Statement) {
+
+  def optimiseEqVars(vars: mutable.Map[String, String]) {
+    if (g == True)
+      GuardedCom(True,st.optimiseEqVars(vars))
+    else {
+      for (v <- fv) vars(v) = v
+      this
+    }
+  }
+
+
   def fv:Set[String] = g.fv ++ st.fv
-  def da:DomainAbst = g.da + st.da
+  def bfv(l:ListBuffer[String]) = g.bfv(l)
+  def solveDomain(da:DomainAbst) = {g.solveDomain(da); st.solveDomain(da)}
 
   def afv(dom: DomainAbst) :Set[String] = {
     var res = Set[String]()
@@ -35,6 +47,12 @@ case class GuardedCom(g:Guard, st: Statement) {
     }
     res
   }
+  def afv2(dom: DomainAbst,vars: MutMap[String,Int]) :Unit = {
+    g.afv2(dom,vars)
+    st.afv2(dom,vars)
+  }
+
+
 
   def toCNF(vars: MutMap[String,Int],da: DomainAbst): CNF.Core =  {
     // recalculate "not g or st"
@@ -43,6 +61,20 @@ case class GuardedCom(g:Guard, st: Statement) {
       list = (cl1 ++ cl2) :: list
     list
   }
+  def toCNF2(vars: MutMap[String,Int],da: DomainAbst, list: CNF2.Core): Unit =  {
+    // recalculate "not g or st"
+    if (g != True) {
+      val l1: ListBuffer[Array[Int]] = ListBuffer()
+      val l2: ListBuffer[Array[Int]] = ListBuffer()
+      Neg(g).toCNF2(vars,da,l1)
+      st.toCNF2(vars,da,l2)
+      for (cl1 <- l1; cl2 <- l2)
+        list += cl1 ++ cl2
+    }
+    else
+      st.toCNF2(vars,da,list)
+  }
+
 
   def toConstrBuilder: ConstrBuilder = {
     g.toConstrBuilder --> st.toConstrBuilder
@@ -52,9 +84,11 @@ case class GuardedCom(g:Guard, st: Statement) {
     g.toBoolConstrBuilder --> st.toBoolConstrBuilder(da)
   }
 
-  def partialEval(sol:GCBoolSolution): PEval = { //(Map[String,Int], Map[String,String]) = {
-    if (g.eval(sol))
+  def partialEval(sol:Solution): PEval = { //(Map[String,Int], Map[String,String]) = {
+    if (g.eval(sol)) {
+//      println("  # PE ("+g.toString+"): "+st.toString)
       st.partialEval(sol)
+    }
     else new PEval(Map(),Map(),Map())
   }
 
@@ -80,6 +114,23 @@ abstract sealed class Guard extends Statement{
   def <->(e: Guard) = Equiv(this,e)
   def unary_! = Neg(this)
 
+  override def optimiseEqVars(vars: mutable.Map[String, String]): Guard =
+    // TODO: under construction
+    throw new RuntimeException("Under construction")
+
+  //  this match {
+//    case Var(name) =>
+//    case IntPred(v, p) =>
+//    case Pred(v, p) =>
+//    case And(g1, g2) =>
+//    case Or(g1, g2) =>
+//    case Neg(g1) =>
+//    case Impl(g1, g2) =>
+//    case Equiv(g1, g2) =>
+//    case True =>
+//  }
+
+
   override def fv: Set[String] = this match {
     case Var(name) => Set(name)
     case IntPred(v, p) => Set(v)
@@ -92,16 +143,38 @@ abstract sealed class Guard extends Statement{
     case True => Set()
   }
 
-  override def da: DomainAbst = this match {
-    case Var(name) =>  DomainAbst()
-    case IntPred(v, p) => DomainAbst(v,p)
-    case Pred(v, p) => DomainAbst(v,p)
-    case And(g1, g2) => g1.da + g2.da
-    case Or(g1, g2) => g1.da + g2.da
-    case Neg(g) => g.da
-    case Impl(g1, g2) => g1.da + g2.da
-    case Equiv(g1, g2) => g1.da + g2.da
-    case True => DomainAbst()
+  override def afv2(da:DomainAbst,vs:MutMap[String,Int]): Unit = this match {
+    case Var(name) => updD(da,vs,name)
+    case IntPred(v, p) => for ((p,fs) <- da.domain(v)) updD(da,vs,predVar(v,p,fs))
+    case Pred(v, p) => for ((p,fs) <- da.domain(v)) updD(da,vs,predVar(v,p,fs))
+    case And(g1, g2) => {g1.afv2(da,vs); g2.afv2(da,vs)}
+    case Or(g1, g2) => {g1.afv2(da,vs); g2.afv2(da,vs)}
+    case Neg(g) => g.afv2(da,vs)
+    case Impl(g1, g2) => {g1.afv2(da,vs); g2.afv2(da,vs)}
+    case Equiv(g1, g2) => {g1.afv2(da,vs); g2.afv2(da,vs)}
+    case True => {}
+  }
+
+  def bfv(l:ListBuffer[String]): Unit = this match {
+    case Var(name) => if (!l.contains(name)) l += name
+    case And(g1, g2) => {g1.bfv(l); g2.bfv(l)}
+    case Or(g1, g2) => {g1.bfv(l); g2.bfv(l)}
+    case Neg(g) => g.bfv(l)
+    case Impl(g1, g2) => {g1.bfv(l); g2.bfv(l)}
+    case Equiv(g1, g2) => {g1.bfv(l); g2.bfv(l)}
+    case _ => {}
+  }
+
+  override def solveDomain(da: DomainAbst): Unit = this match {
+    case Var(name) =>  {}
+    case IntPred(v, p) => da += (v,p)
+    case Pred(v, p) => da += (v,p)
+    case And(g1, g2) => {g1.solveDomain(da); g2.solveDomain(da)}
+    case Or(g1, g2) => {g1.solveDomain(da); g2.solveDomain(da)}
+    case Neg(g) => g.solveDomain(da)
+    case Impl(g1, g2) => {g1.solveDomain(da); g2.solveDomain(da)}
+    case Equiv(g1, g2) => {g1.solveDomain(da); g2.solveDomain(da)}
+    case True => {}
   }
 
   override def toCNF(vars: MutMap[String,Int],da: DomainAbst): CNF.Core = this match {
@@ -121,16 +194,51 @@ abstract sealed class Guard extends Statement{
     case Var(a) => List(Array(vars(a)))
     case Neg(Var(a)) => List(Array(vars(a)*(-1)))
     case IntPred(v, p) => Var(predVar(v,p,List())).toCNF(vars,da)
-//      if (da.domain(v) contains p) Var(predVar(v,p)).toCNF(vars,da)
-//      else List(Array())
+    //      if (da.domain(v) contains p) Var(predVar(v,p)).toCNF(vars,da)
+    //      else List(Array())
     case Neg(IntPred(v, p)) => List(Array(vars(predVar(v,p,List()))*(-1)))
-//      Neg(Var(predVar(v,p))).toCNF(vars,da)
+    //      Neg(Var(predVar(v,p))).toCNF(vars,da)
     case Pred(v, p) => Var(predVar(v,p,List())).toCNF(vars,da)
     case Neg(Pred(v, p)) => List(Array(vars(predVar(v,p,List()))*(-1)))
     case True => List()
     case Neg(True) => List(Array())
     case Neg(Neg(a)) => a.toCNF(vars,da)
   }
+  override def toCNF2(vars: MutMap[String,Int],da: DomainAbst,l:CNF2.Core): Unit = this match {
+    case Impl(e1,e2) => (Neg(e1) or e2).toCNF2(vars,da,l)
+    case Neg(Impl(e1,e2)) => (Neg(e2) and e1).toCNF2(vars,da,l)
+    case Equiv(e1,e2) => ((e1 -> e2) and (e2 -> e1)).toCNF2(vars,da,l)
+    case Neg(Equiv(e1,e2)) => (Neg(e1 -> e2) or Neg(e2 -> e1)).toCNF2(vars,da,l)
+    case And(c1,c2) => {c1.toCNF2(vars,da,l); c2.toCNF2(vars,da,l)}
+    case Neg(And(e1,e2)) => (Neg(e1) or Neg(e2)).toCNF2(vars,da,l)
+    case Or(c1,c2) => {
+      val l1: ListBuffer[Array[Int]] = ListBuffer()
+      val l2: ListBuffer[Array[Int]] = ListBuffer()
+      c1.toCNF2(vars,da,l1)
+      c2.toCNF2(vars,da,l2)
+      for (cl1 <- l1; cl2 <- l2)
+        l += cl1 ++ cl2
+    }
+    case Neg(Or(e1,e2)) => (Neg(e1) and Neg(e2)).toCNF2(vars,da,l)
+    case Var(a) => l += Array(vars(a))
+    case Neg(Var(a)) => l += Array(vars(a)*(-1))
+    case IntPred(v, p) => Var(predVar(v,p,List())).toCNF2(vars,da,l)
+    //      if (da.domain(v) contains p) Var(predVar(v,p)).toCNF(vars,da)
+    //      else List(Array())
+    case Neg(IntPred(v, p)) => l += Array(vars(predVar(v,p,List()))*(-1))
+    //      Neg(Var(predVar(v,p))).toCNF(vars,da)
+    case Pred(v, p) => Var(predVar(v,p,List())).toCNF2(vars,da,l)
+    case Neg(Pred(v, p)) => l += Array(vars(predVar(v,p,List()))*(-1))
+    case True => {}
+    case Neg(True) => l += Array()
+    case Neg(Neg(a)) => a.toCNF2(vars,da,l)
+  }
+
+  private def join(c1: CNF2.Core, c2:CNF2.Core) = {
+    c1 ++= c2
+    c1
+  }
+
 
   override def toConstrBuilder: ConstrBuilder = this match {
     case Var(name) => common.beh.choco.Var(name)
@@ -159,12 +267,12 @@ abstract sealed class Guard extends Statement{
     case True => common.beh.choco.TrueC
   }
 
-  def eval(sol: GCBoolSolution): Boolean = this match {
-    case Var(name) => sol(name)
-    case IntPred(v, p) => sol(predVar(v,p,List()))
-    case Pred(v, p) => sol(predVar(v,p,List()))
-    case And(g1, g2) => g1.eval(sol) && g1.eval(sol)
-    case Or(g1, g2) => g1.eval(sol) || g1.eval(sol)
+  def eval(sol: Solution): Boolean = this match {
+    case Var(name) => sol.hasFlow(name)
+    case IntPred(v, p) => sol.hasFlow(predVar(v,p,List()))
+    case Pred(v, p) => sol.hasFlow(predVar(v,p,List()))
+    case And(g1, g2) => g1.eval(sol) && g2.eval(sol)
+    case Or(g1, g2) => g1.eval(sol) || g2.eval(sol)
     case Neg(g) => !g.eval(sol)
     case Impl(g1, g2) => !g1.eval(sol) || g2.eval(sol)
     case Equiv(g1, g2) => ((g1->g2) and (g2->g1)).eval(sol)
@@ -177,7 +285,7 @@ abstract sealed class Guard extends Statement{
     case Pred(v, p) => p+"("+ppDataVar(v)+")"
     case And(g1, g2) => g1.mbPar + " /\\ " + g2.mbPar
     case Or(g1, g2) => g1.mbPar + " \\/ " + g2.mbPar
-    case Neg(g) => "¬"+g
+    case Neg(g) => "¬"+g.mbPar
     case Impl(g1, g2) => g1.mbPar + " -> " + g2.mbPar
     case Equiv(g1, g2) => g1.mbPar + " <-> " + g2.mbPar
     case True => "True"
@@ -207,6 +315,19 @@ abstract sealed class Statement {
     }
   }
 
+  def optimiseEqVars(vars: mutable.Map[String, String]): Statement =
+    throw new RuntimeException("under construction.")
+//  this match {
+//    case g: Guard => g.optimiseEqVars(vars)
+//    case IntAssgn(v, d) => { vars(v) = v; this }
+//    case VarAssgn(v1, v2) =>
+//      if (vars contains v1) vars(.......)
+//    case FunAssgn(v1, v2, f) =>
+//    case DataAssgn(v, d) =>
+//    case Seq(sts) =>
+//  }
+
+
   def fv: Set[String] = this match {
     case g: Guard => g.fv
     case IntAssgn(v, _) => Set(v)
@@ -217,15 +338,38 @@ abstract sealed class Statement {
     case Seq(s::ss) => s.fv ++ Seq(ss).fv
 //    case g: Guard => super.fv
   }
+  def afv2(da:DomainAbst,vs:MutMap[String,Int]): Unit = this match {
+    case g: Guard => g.afv2(da,vs)
+    case IntAssgn(v, _) => for ((p,fs) <- da.domain(v)) updD(da,vs,predVar(v,p,fs))
+    case DataAssgn(v, _) => for ((p,fs) <- da.domain(v)) updD(da,vs,predVar(v,p,fs))
+    case VarAssgn(v1, v2) =>
+      for ((p,fs) <- da.domain(v1)) updD(da,vs,predVar(v1,p,fs))
+      for ((p,fs) <- da.domain(v2)) updD(da,vs,predVar(v2,p,fs))
+    case FunAssgn(v1,v2,_) =>
+      for ((p,fs) <- da.domain(v1)) updD(da,vs,predVar(v1,p,fs))
+      for ((p,fs) <- da.domain(v2)) updD(da,vs,predVar(v2,p,fs))
+    case Seq(Nil) => {}
+    case Seq(s::ss) => {s.afv2(da,vs); Seq(ss).afv2(da,vs)}
+    //    case g: Guard => super.fv
+  }
+  protected def updD(da:DomainAbst,vars:MutMap[String,Int],v:String) {
+    if (!vars.contains(v)) {
+      val i = vars("")
+      vars(v) = i
+      vars("") = i+1
+    }
+  }
 
-  def da: DomainAbst = this match {
-    case g: Guard => g.da
-    case IntAssgn(_,_) => DomainAbst()
-    case DataAssgn(_,_) => DomainAbst()
-    case VarAssgn(v1, v2) => DomainAbst(v2 -> v1)
-    case Seq(Nil) => DomainAbst()
-    case Seq(s::ss) => s.da + Seq(ss).da
-    case FunAssgn(v1,v2,f) => DomainAbst(v2 -> v1) + DomainAbst(v1, f)
+  def solveDomain(da: DomainAbst): Unit = this match {
+    case g: Guard => g.solveDomain(da)
+    case IntAssgn(_,_) => {}
+    case DataAssgn(_,_) => {}
+    case VarAssgn(v1, v2) => da += (v2 -> v1)
+    case Seq(Nil) => {}
+    case Seq(s::ss) => {s.solveDomain(da); Seq(ss).solveDomain(da)}
+    case FunAssgn(v1,v2,f) =>
+      da += (v2 -> v1)
+      da += (v1, f)
 //    case g: Guard => super.da
   }
 
@@ -280,6 +424,39 @@ abstract sealed class Statement {
     case Seq(s::ss) => s.toCNF(vars,da) ++ Seq(ss).toCNF(vars,da)
   }
 
+  def toCNF2(vars: MutMap[String,Int],da: DomainAbst, l:CNF2.Core ): Unit= this match {
+    case g: Guard => g.toCNF2(vars,da,l)
+    case IntAssgn(v,d)  => DataAssgn(v,d).toCNF2(vars,da,l)
+    case DataAssgn(v,d) =>
+      val dom = da.domain(v)
+      for ((pred,fs) <- dom) {
+        // ALL PRECALCULATED (only in choco-Bool it is lazily calculated)
+        var newd: Any = d
+        for (f<-fs.reverse) newd = f.calculate(newd)
+        if (pred.check(newd)) {
+          l += Array(vars(predVar(v,pred,fs)))
+        }
+        else
+          l += Array(vars(predVar(v,pred,fs)) * (-1))
+      }
+    case VarAssgn(v1, v2) =>
+      val (d1,d2) = (da.domain(v1),da.domain(v2))
+      for ((pred,fs) <- d1)
+        if (d2 contains (pred,fs)) {
+          (Var(predVar(v1,pred,fs)) <-> Var(predVar(v2,pred,fs))).toCNF2(vars,da,l)
+        }
+    case FunAssgn(v1, v2, f) =>
+      //      println("converting var eq of "+v1+" and "+v2)
+      val (d1,d2) = (da.domain(v1),da.domain(v2))
+      for ((pred,fs) <- d1)
+        if (d2 contains (pred,f::fs)) {
+          (Var(predVar(v1,pred,fs)) <-> Var(predVar(v2,pred,f::fs))).toCNF2(vars,da,l)
+        }
+    case Seq(Nil) => {}
+    case Seq(s::ss) => {s.toCNF2(vars,da,l); Seq(ss).toCNF2(vars,da,l) }
+  }
+
+
   def toConstrBuilder: ConstrBuilder = this match {
     case g: Guard => g.toConstrBuilder
     case IntAssgn(v, d) => common.beh.choco.DataAssgn(v,d)
@@ -309,7 +486,7 @@ abstract sealed class Statement {
 //        else
 //          res = res and common.beh.choco.Neg(common.beh.choco.Var(predVar(v,pred,fs)))
 
-        println("added LazyPred("+predVar(v,pred,fs)+","+data2flow(v)+","+data2flow(xflow)+","+fs+")")
+//        println("added LazyPred("+predVar(v,pred,fs)+","+data2flow(v)+","+data2flow(xflow)+","+fs+")")
         res = res and LazyPred(predVar(v,pred,fs),data2flow(v),data2flow(xflow),d,pred,fs)
       }
       res
@@ -340,13 +517,21 @@ abstract sealed class Statement {
 //    case g: Guard => super.toBoolConstrBuilder
   }
 
-  def partialEval(sol: GCBoolSolution): PEval = this match {
+  def partialEval(sol: Solution): PEval = this match {
     case g: Guard => new PEval(Map(),Map(),Map())
-    case IntAssgn(v, d) => new PEval(Map(v -> d),Map(),Map())
-    case DataAssgn(v, d) => new PEval(Map(v -> d),Map(),Map())
-    case VarAssgn(v1, v2) => new PEval(Map(),Map(v2 -> ImSet(v1)),Map())
+    case IntAssgn(v, d) =>
+      if (sol.hasFlow(data2flow(v))) new PEval(Map(v -> d),Map(),Map())
+      else new PEval(Map(),Map(),Map())
+    case DataAssgn(v, d) =>
+      if (sol.hasFlow(data2flow(v))) new PEval(Map(v -> d),Map(),Map())
+      else new PEval(Map(),Map(),Map())
+    case VarAssgn(v1, v2) =>
+      if (sol.hasFlow(data2flow(v2))) new PEval(Map(),Map(v2 -> ImSet(v1)),Map())
+      else new PEval(Map(),Map(),Map())
     // TODO: CHANGE PEval to split at x=f(y), and include this info in PEval
-    case FunAssgn(v1, v2, f) => new PEval(Map(),Map(),Map(v2 -> ImSet((v1,f))))
+    case FunAssgn(v1, v2, f) =>
+      if (sol.hasFlow(data2flow(v2))) new PEval(Map(),Map(),Map(v2 -> ImSet((v1,f))))
+      else new PEval(Map(),Map(),Map())
     case Seq(Nil) => new PEval(Map(),Map(),Map())
     case Seq(s::ss) =>
       val x1 = s.partialEval(sol)
@@ -415,5 +600,23 @@ object CNF {
 }
 
 class CNF(val cnf:CNF.Core, val vars: Array[String])
+
+
+object CNF2 {
+  type Core = ListBuffer[Array[Int]]
+
+  def fv(cnf: CNF.Core): Iterable[Int] = {
+    var s: MutSet[Int] = MutSet()
+    for (l <- cnf; v <- l)
+      if (v<0) s += (v * (-1))
+      else     s+= v
+    s
+  }
+
+  def not(s:String) = (-1) * s.hashCode
+  def v(s:String) = s.hashCode
+}
+class CNF2(val cnf:CNF2.Core, val vars: Array[String])
+
 
 

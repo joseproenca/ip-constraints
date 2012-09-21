@@ -22,8 +22,10 @@ class GCWriter (val x: String, uid: Int, var data: List[Any]) extends GCBehaviou
 
   protected def loadConstraints = {
     if (!data.isEmpty) {
-      if(useData) GuardedCommands(xv --> (xv := data.head))
-      //(Var(flowVar(x,uid)) --> DataAssgn(dataVar(x,uid),data.head))
+      if(useData) GuardedCommands(
+        xv --> (xv := data.head)//(Var(flowVar(x,uid)) --> DataAssgn(dataVar(x,uid),data.head))
+      )
+
       else if (useCC3) throw new Exception("CC3 not implemented")
       else GuardedCommands()
     }
@@ -34,8 +36,10 @@ class GCWriter (val x: String, uid: Int, var data: List[Any]) extends GCBehaviou
     if (s.hasFlow(flowVar(x, uid))) {
       //      println("Writer: FLOW! new size: "+size)
       notifyflow()
-      constraints = loadConstraints
+      // update state
       data = data.tail
+      // update constraints
+      constraints = loadConstraints
     }
   }
 

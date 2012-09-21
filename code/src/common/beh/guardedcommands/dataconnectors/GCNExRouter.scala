@@ -14,7 +14,6 @@ import common.beh.guardedcommands._
 class GCNExRouter(src: String, snks: List[String], uid: Int) extends GCBehaviour(src::snks, uid) {
   def v(x:String) = Var(flowVar(x, uid))
 
-  val c1 = v(src) --> orSnks
 
   val orSnks = genSnkOr(snks)
   def genSnkOr(lst:List[String]): Guard = lst match {
@@ -22,10 +21,6 @@ class GCNExRouter(src: String, snks: List[String], uid: Int) extends GCBehaviour
     case x::xs  => v(x) or genSnkOr(xs)
     case Nil    => Neg(True)
   }
-
-  val c2 = orSnks --> v(src)
-
-  val c3 = True --> Neg(genSnkAnd(snks))
 
   def genSnkAnd(lst:List[String]): Guard = lst match {
     case x::Nil => v(x)
@@ -36,12 +31,15 @@ class GCNExRouter(src: String, snks: List[String], uid: Int) extends GCBehaviour
   def genData(lst:List[String]): List[GuardedCom] =
     for (snk <- snks) yield v(snk) --> VarAssgn(dataVar(snk,uid),dataVar(src,uid))
 
+  val c1 = v(src) --> orSnks
+  val c2 = orSnks --> v(src)
+  val c3 = if (snks.tail.isEmpty) True else Neg(genSnkAnd(snks))
 
-  var constraints = GuardedCommands(Set(
+  var constraints = GuardedCommands(
     c1,
     c2,
     c3
-  ))
+  )
 
   if (useData) constraints ++= genData(snks)
 

@@ -20,7 +20,8 @@ class GCSync(a: String, b: String, uid: Int) extends GCBehaviour(List(a,b), uid)
   )
 
   if (useData) constraints +=
-    av --> (bv := av) //VarAssgn(dataVar(b,uid), dataVar(a,uid))
+//    av --> (bv := av) //VarAssgn(dataVar(b,uid), dataVar(a,uid))
+      (bv := av)
 
   if (useCC3) throw new Exception("CC3 not implemented")
 }

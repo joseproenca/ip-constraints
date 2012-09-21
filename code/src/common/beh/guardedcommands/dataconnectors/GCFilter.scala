@@ -41,12 +41,10 @@ class GCFilter(a: String, b: String, uid: Int,g: Guard) extends GCBehaviour(List
 }
 
   var constraints = GuardedCommands(
-    // b -> a
     bv --> av,
-    // b -> ^b = ^a /\ P(^a)
     bv -->  (bv := av), //VarAssgn(dataVar(b,uid),dataVar(a,uid)),
+//    bv := av ,
     bv --> g,
-    // (a /\ P (^a)) -> b
     (av /\ g) --> bv
   )
 

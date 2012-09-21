@@ -20,21 +20,23 @@ import common.beh.guardedcommands.dataconnectors.ConstraintGen._
  * To change this template use File | Settings | File Templates.
  */
 
-class GCApproval
+class AllApproval
 
-object GCApproval extends App {
+object AllApproval extends App {
 
   Warmup.go
 
   val n = if (!args.isEmpty) Integer.parseInt(args(0))
-          else               4
+  else               12
   val satfull = if (args.size > 1) args(1) startsWith "s"
   else               false
   val chocosat = if (args.size > 1) args(1) startsWith "cs"
   else               false
   val choco = if (args.size > 1) (args(1) startsWith "c") && !chocosat
   else               false
-  val z3 = if (args.size > 1) args(1) startsWith "z"
+  val z3sat = if (args.size > 1) args(1) startsWith "zs"
+  else               false
+  val z3 = if (args.size > 1) (args(1) startsWith "z") && !z3sat
   else               false
   val quicksat = if (args.size > 1) args(1) startsWith "q"
   else               false
@@ -75,7 +77,7 @@ object GCApproval extends App {
 
   def genClients(n:Int): Iterable[GCWriter] = {
     var res = List[GCWriter]()
-    for (i <- 1 to n) {
+    for (i <- n to 1 by -1) {
       res ::=
         new GCWriter("w"+i,0,List(join(i,(i*3 % 16)+5,(i*4 % 16)+5,(i*5 % 16)+5)))
 //      println("new writer: "+(i,(i*3 % 16)+5,(i*4 % 16)+5,(i*5 % 16)+5)+ " -- "+
@@ -91,7 +93,7 @@ object GCApproval extends App {
     for (level <- 1 to height) {
       var newsrcs = List[String]()
       for (x <- srcs) {
-        res = res ++ new GCMerger(x+1,x+2,x,0).constraints
+        res ++= merger(x+1,x+2,x)
         newsrcs :::= List(x+1,x+2)
       }
       srcs = newsrcs
@@ -101,7 +103,7 @@ object GCApproval extends App {
     for (wr <- genClients(size.toInt)) {
       srcs match {
         case hd::tl =>
-          res ++= (wr.constraints ++ new GCSync(wr.x,hd,0).constraints)
+          res ++= (wr.constraints ++ sync(wr.x,hd))
           srcs = tl
         case Nil => {}
       }
@@ -151,6 +153,12 @@ object GCApproval extends App {
   if (justInit) problem.justInit = true
 
 
+  else if (quicksat) {
+    val time = System.currentTimeMillis()
+    val res = problem.quickDataSolve
+    val spent = System.currentTimeMillis() - time
+    print(spent)
+  }
   if (satfull) {
     val time = System.currentTimeMillis()
     val res = problem.solve
@@ -169,16 +177,17 @@ object GCApproval extends App {
     val spent = System.currentTimeMillis() - time
     print(spent)
   }
+  else if (z3sat) {
+    val z3 = new Z3Context(new Z3Config("MODEL" -> true))
+    val time = System.currentTimeMillis()
+    val res = problem.quickDataSolve(z3)
+    val spent = System.currentTimeMillis() - time
+    print(spent)
+  }
   else if (z3) {
     val z3 = new Z3Context(new Z3Config("MODEL" -> true))
     val time = System.currentTimeMillis()
     val res = Z3.solvez3(Z3.gc2z3(problem,z3),z3)
-    val spent = System.currentTimeMillis() - time
-    print(spent)
-  }
-  else if (quicksat) {
-    val time = System.currentTimeMillis()
-    val res = problem.quickDataSolve
     val spent = System.currentTimeMillis() - time
     print(spent)
   }
@@ -191,29 +200,43 @@ object GCApproval extends App {
   /// EXPERIMENTS:
   else {
 
-    //// SAT-FULL ////
-    var time = System.currentTimeMillis()
-    var res: Option[Solution] = problem.solve
-    var spent = System.currentTimeMillis() - time
-//    if (res.isDefined) println("SAT-full - solved in "+spent+" ms:\n"+res.get.pretty)
-//    else println("SAT-full - no solution (in "+spent+" ms)")
-    println("SAT-full  - "+spent)
+//    println("  # THE PROBLEM:\n"+problem.commands.mkString(" - ","\n - ","\n"))
 
-    //// SATC-FULL ////
-    time = System.currentTimeMillis()
-    res = problem.solveChocoSat
-    spent = System.currentTimeMillis() - time
-//    if (res.isDefined) println("SATC-full - solved in "+spent+" ms:\n"+res.get.pretty)
-//    else println("SATC-full - no solution (in "+spent+" ms)")
-    println("SATC-full - "+spent)
+    var time: Long = 0
+    var res: Option[Solution] = null
+    var spent: Long = 0
 
-    //// CHOCO ////
+    //// QUICK-SAT ////
     time = System.currentTimeMillis()
-    res = problem.solveChoco
+    res = problem.quickDataSolve
     spent = System.currentTimeMillis() - time
-//    if (res.isDefined) println("Choco - solved in "+spent+" ms:\n"+res.get.pretty)
-//    else println("Choco - no solution (in "+spent+" ms)")
-    println("Choco     - "+spent)
+    //    if (res.isDefined) println("quick-sat - solved in "+spent+" ms:\n"+res.get.pretty)
+    //    else println("quick-sat - no solution (in "+spent+" ms)")
+    println("quick-sat - "+spent)
+
+//    //// SAT-FULL ////
+//    time = System.currentTimeMillis()
+//    res = problem.solve
+//    spent = System.currentTimeMillis() - time
+////    if (res.isDefined) println("SAT-full - solved in "+spent+" ms:\n"+res.get.pretty)
+////    else println("SAT-full - no solution (in "+spent+" ms)")
+//    println("SAT-full  - "+spent)
+//
+//    //// SATC-FULL ////
+//    time = System.currentTimeMillis()
+//    res = problem.solveChocoSat
+//    spent = System.currentTimeMillis() - time
+////    if (res.isDefined) println("SATC-full - solved in "+spent+" ms:\n"+res.get.pretty)
+////    else println("SATC-full - no solution (in "+spent+" ms)")
+//    println("SATC-full - "+spent)
+//
+//    //// CHOCO ////
+//    time = System.currentTimeMillis()
+//    res = problem.solveChoco
+//    spent = System.currentTimeMillis() - time
+////    if (res.isDefined) println("Choco - solved in "+spent+" ms:\n"+res.get.pretty)
+////    else println("Choco - no solution (in "+spent+" ms)")
+//    println("Choco     - "+spent)
 
     /// Z3 ////
     val z3 = new Z3Context(new Z3Config("MODEL" -> true))
@@ -224,21 +247,22 @@ object GCApproval extends App {
 //    else println("Z3 - no solution (in "+spent+" ms)")
     println("Z3        - "+spent)
 
-    //// QUICK-SAT ////
+    //// QUICK-SAT-Z3 ////
+    val zz3 = new Z3Context(new Z3Config("MODEL" -> true))
     time = System.currentTimeMillis()
-    res = problem.quickDataSolve
+    res = problem.quickDataSolve(zz3)
     spent = System.currentTimeMillis() - time
-//    if (res.isDefined) println("quick-sat - solved in "+spent+" ms:\n"+res.get.pretty)
-//    else println("quick-sat - no solution (in "+spent+" ms)")
-    println("quick-sat - "+spent)
+//    if (res.isDefined) println("quick-z3  - solved in "+spent+" ms:\n"+res.get.pretty)
+//    else println("quick-z3  - no solution (in "+spent+" ms)")
+    println("quick-z3  - "+spent)
 
-    //// LAZY-SAT ////
-    time = System.currentTimeMillis()
-    res = problem.lazyDataSolve
-    spent = System.currentTimeMillis() - time
-//    if (res.isDefined) println("lazy-sat - solved in "+spent+" ms:\n"+res.get.pretty)
-//    else println("lazy-sat - no solution (in "+spent+" ms)")
-    println("lazy-sat  - "+spent)
+//      // LAZY-SAT ////
+//    time = System.currentTimeMillis()
+//    res = problem.lazyDataSolve
+//    spent = System.currentTimeMillis() - time
+////    if (res.isDefined) println("lazy-sat - solved in "+spent+" ms:\n"+res.get.pretty)
+////    else println("lazy-sat - no solution (in "+spent+" ms)")
+//    println("lazy-sat  - "+spent)
   }
 
 
@@ -252,21 +276,21 @@ object GCApproval extends App {
 class Approve extends IntPredicate {
   val choPred = (x:IntegerExpressionVariable) =>
     Choco.leq(140,Choco.sum(
-      Choco.mult(GCApproval.choF1(x),2),
-      Choco.mult(GCApproval.choF2(x),3),
-      Choco.mult(GCApproval.choF3(x),5)
+      Choco.mult(AllApproval.choF1(x),2),
+      Choco.mult(AllApproval.choF2(x),3),
+      Choco.mult(AllApproval.choF3(x),5)
     ))
 
   val funPred = (x:Int) => {
-    val v = GCApproval.split(x)
+    val v = AllApproval.split(x)
     (v._2*2 + v._3*3 + v._4*5) >= 140
   }
 
   val z3Pred = (z:Z3Context,v:Z3AST) => //z.mkGT(v,z.mkInt(i,z.mkIntSort()))
     z.mkLE(z.mkInt(140,z.mkIntSort()),z.mkAdd(
-      z.mkMul(GCApproval.z3F1(z,v),z.mkInt(2,z.mkIntSort())),
-      z.mkMul(GCApproval.z3F2(z,v),z.mkInt(3,z.mkIntSort())),
-      z.mkMul(GCApproval.z3F3(z,v),z.mkInt(5,z.mkIntSort()))
+      z.mkMul(AllApproval.z3F1(z,v),z.mkInt(2,z.mkIntSort())),
+      z.mkMul(AllApproval.z3F2(z,v),z.mkInt(3,z.mkIntSort())),
+      z.mkMul(AllApproval.z3F3(z,v),z.mkInt(5,z.mkIntSort()))
     ))
 
   override def toString = "Approve"
@@ -275,22 +299,22 @@ class Approve extends IntPredicate {
 class Deny extends IntPredicate {
   val choPred = (x:IntegerExpressionVariable) =>
     Choco.geq(90,Choco.sum(
-      Choco.mult(GCApproval.choF1(x),2),
-      Choco.mult(GCApproval.choF2(x),3),
-      Choco.mult(GCApproval.choF3(x),5)
+      Choco.mult(AllApproval.choF1(x),2),
+      Choco.mult(AllApproval.choF2(x),3),
+      Choco.mult(AllApproval.choF3(x),5)
     ))
 
   val funPred = (x:Int) => {
-    val v = GCApproval.split(x)
+    val v = AllApproval.split(x)
     (v._2*2 + v._3*3 + v._4*5) <= 90
   }
 
 //  val z3Pred = null
   val z3Pred = (z:Z3Context,v:Z3AST) => //z.mkGT(v,z.mkInt(i,z.mkIntSort()))
     z.mkGE(z.mkInt(90,z.mkIntSort()),z.mkAdd(
-    z.mkMul(GCApproval.z3F1(z,v),z.mkInt(2,z.mkIntSort())),
-    z.mkMul(GCApproval.z3F2(z,v),z.mkInt(3,z.mkIntSort())),
-    z.mkMul(GCApproval.z3F3(z,v),z.mkInt(5,z.mkIntSort()))
+    z.mkMul(AllApproval.z3F1(z,v),z.mkInt(2,z.mkIntSort())),
+    z.mkMul(AllApproval.z3F2(z,v),z.mkInt(3,z.mkIntSort())),
+    z.mkMul(AllApproval.z3F3(z,v),z.mkInt(5,z.mkIntSort()))
   ))
 
   override def toString = "Deny"

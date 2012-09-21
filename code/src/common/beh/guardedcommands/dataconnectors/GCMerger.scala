@@ -23,7 +23,7 @@ class GCMerger(a: String, b: String, c: String, uid: Int) extends GCBehaviour(Li
 
   if (useData) constraints ++= Set(
     av --> (cv := av),
-    bv --> (cv := av))
+    bv --> (cv := bv))
   //    av --> VarAssgn(dataVar(c,uid),dataVar(a,uid)),
   //    bv --> VarAssgn(dataVar(c,uid),dataVar(b,uid))
 

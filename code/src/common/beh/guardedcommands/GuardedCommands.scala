@@ -1,14 +1,17 @@
 package common.beh.guardedcommands
 
-import common.beh.Constraints
+import _root_.z3.scala.Z3Context
+import common.beh.{Solution, Constraints}
 import org.sat4j.minisat.SolverFactory
 import org.sat4j.core.VecInt
 import org.sat4j.specs.{TimeoutException, ContradictionException, ISolver}
-import scala.collection.mutable.{Set => MutSet, Map => MutMap}
+import collection.mutable.{Set => MutSet, Map => MutMap, ListBuffer}
 import common.beh.Utils._
 import common.beh.choco.{ConstrBuilder,ChoSolution,ChoConstraints,FalseC}
 import common.beh.choco.genericconstraints.Buffer
 import scala.Some
+import z3.Z3
+import com.sun.xml.internal.ws.api.streaming.XMLStreamReaderFactory.Zephyr
 
 /**
  * Created with IntelliJ IDEA.
@@ -38,8 +41,8 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
    */
   def solveDomain() {
     if (!solvedDomain) {
-      for (c <- commands) da = da + c.da
-      println(da.pp)
+      for (c <- commands) c.solveDomain(da)
+//      println(da.pp)
       solvedDomain = true
     }
   }
@@ -49,6 +52,12 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
    * @return free variables of all guarded commands
    */
   def fv() = commands.map(_.fv).foldRight[Set[String]](Set())(_++_)
+  /**
+   * Combines the *boolean* free variables of all guarded commands
+   * @return boolean free variables of all guarded commands
+   */
+  def bfv(l:ListBuffer[String]) = for (c<-commands) c.bfv(l)
+  //commands.map(_.bfv).foldRight[Set[String]](Set())(_++_)
 
   /**
    * Should be performed only once per guarded command.
@@ -63,19 +72,34 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
 
 //    println(da.pp)
 
-    val afv = commands.map(_.afv(da)).foldRight[Set[String]](Set())(_ ++ _)
-    var i = 1
-    var vars = MutMap[String, Int]()
-    for (v <- afv) {
-      println(" ** "+v)
-      vars(v) = i
-      i += 1
-    }
+//    val t1 = System.currentTimeMillis()
+//
+//    val afv = commands.map(_.afv(da)).foldRight[Set[String]](Set())(_ ++ _)
+//    var i = 1
+//    var vars = MutMap[String, Int]()
+//    for (v <- afv) {
+////      println(" ** "+v)
+//      vars(v) = i
+//      i += 1
+//    }
+//
+//    val t2 = System.currentTimeMillis()
+
+    val vars2 = MutMap[String,Int](""->1)
+    for (c <- commands) c.afv2(da,vars2)
+    vars2 -= ""
+
+//    val t3 = System.currentTimeMillis()
+//
+//    println("VARS: old/new "+(t2-t1)+"/"+(t3-t2))
+//    println("V1: "+vars.toList.sorted)
+//    println("V2: "+vars2.toList.sorted)
+
 
     // TODO: optimize constraints: search for eq vars and assign the same var (int)!
 
 //    someVars = Some(vars)
-    vars
+    vars2
   }
 
 
@@ -84,6 +108,7 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
    * @return  The CNF problem for the abstract problem.
    */
   def toCNF: (CNF.Core,MutMap[String,Int]) = {
+    val t0 = System.currentTimeMillis()
     var vars: MutMap[String, Int] = collectVars
 
 //    // DEBUGGING
@@ -95,9 +120,22 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
 //      if (!da.domain(v).isEmpty)
 //        println("var "+v+" - domain: "+da.domain(v).mkString(","))
 
+//    val t1 = System.currentTimeMillis()
+//    val cnf1 = commands.map(_.toCNF(vars,da)).foldRight[CNF.Core](List())((x:CNF.Core,y:CNF.Core) => x ::: y)
+//    val t2 = System.currentTimeMillis()
+    val cnf2tmp: CNF2.Core = new ListBuffer()
+    for (c <- commands) c.toCNF2(vars,da,cnf2tmp)
+    val cnf2 = cnf2tmp.toList
+//    val t3 = System.currentTimeMillis()
+//
+//    println("CNFS: vars/old/new - "+(t1-t0)+"/"+(t2-t1)+"/"+(t3-t2))
 
-    val cnf = commands.map(_.toCNF(vars,da)).foldRight[CNF.Core](List())((x:CNF.Core,y:CNF.Core) => x ::: y)
-    (cnf,vars)
+//    val c11 = cnf1.map(_.toList.sorted)
+//    val c22 = cnf2.map(_.toList.sorted)
+//    println("CNF1: "+c11.sorted(Ordering[Iterable[Int]]))
+//    println("CNF2: "+c22.sorted(Ordering[Iterable[Int]]))
+
+    (cnf2,vars)
   }
 
   /**
@@ -110,8 +148,9 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
       for (v <- fv())
         if (isFlowVar(v)) {
           flowvars = (Var(v) \/ flowvars)
-          commands +=  Var(v) \/ Var(flow2snk(v)) \/ Var(flow2src(v))
+//          commands +=  Var(v) \/ Var(flow2snk(v)) \/ Var(flow2src(v))
         }
+      //if (useCC3)
       commands += flowvars
       closed = true
     }
@@ -124,7 +163,7 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
    * @param sol Solution to this' abstract problem
    * @return A partial evaluation - initially only a set of (var and data) assignments and function applications.
    */
-  def partialEval(sol:GCBoolSolution): PEval = { //(Map[String,Int], Map[String,Set[String]]) = {
+  def partialEval(sol:Solution): PEval = { //(Map[String,Int], Map[String,Set[String]]) = {
     val pevals = commands.map(_.partialEval(sol)) // list of pairs of maps
     val peval = pevals.foldRight[PEval](new PEval(Map(),Map(),Map()))((x:PEval,y:PEval) => x++y)//(x._1++y._1, x._2++y._2))
     peval
@@ -178,12 +217,12 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
 
   def solve : Option[GCSolution] = {
     // solveDomain; toCNF; solveBool?; [partialEval; quotient; dataAssign(done?); solveData(done?); incrementAndSolve?]
-    val time = System.currentTimeMillis()
+    val t1 = System.currentTimeMillis()
     val cnf = toCNF
-//    println("cnf: "+cnf)
-//    println("GC: "+commands.mkString(","))
+//    val t2 = System.currentTimeMillis()
     val optSolBool = solveBool(cnf._1,cnf._2)
-//    log.println("[SAT solve] "+(System.currentTimeMillis()-time))
+//    val t3 = System.currentTimeMillis()
+//    println("[SAT toCNF-Solve] "+(t2-t1)+" - "+(t3-t2))
     if (!optSolBool.isDefined)
       return None
 //    println("INIT GUESS:\n"+optSolBool.get.pretty)
@@ -192,7 +231,7 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
       return Some(new GCSolution(optSolBool.get,Map[String, Int]()))
     }
 
-    val res = loopPartialEval(partialEval(optSolBool.get),cnf,optSolBool.get,time)
+    val res = loopPartialEval(partialEval(optSolBool.get),cnf,optSolBool.get,0)
 //    log.println("[all solve] "+(System.currentTimeMillis()-time))
     res
   }
@@ -225,16 +264,18 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
 
   def solveBool(c: CNF.Core, vars: MutMap[String,Int]): Option[GCBoolSolution] = {
 
-    // store variable names and
-    // ADD FLOW CONSTRAINTS!
+    // store variable names
     val varname = MutMap[Int,String]()
     var flowvars = Set[Int]()
     for ((k,v) <- vars) {
       varname(v) = k
       if (isFlowVar(k)) flowvars += v
     }
-    val cnf = flowvars.toArray :: c
-//    val cnf = c
+
+    // ADD FLOW CONSTRAINTS! (if necessary)
+    var cnf = c
+    if (!closed)
+      cnf = flowvars.toArray :: c
 
 
     val MAXVAR: Int = vars.size // cnf.nvars
@@ -288,6 +329,20 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
   }
 
 
+  ///////////////
+  // OPTMISING //
+  ///////////////
+
+  def optimiseEqVars: Map[String,String] = {
+    var vars = MutMap[String,String]()
+    for (gc <- commands)
+      gc.optimiseEqVars(vars)
+
+    vars
+    // TODO: under construction
+    throw new RuntimeException("Under construction")
+  }
+
   /////////////////////////////////
   // USING DETERMINED CONNECTORS //
   /////////////////////////////////
@@ -299,20 +354,59 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
    */
   def quickDataSolve : Option[GCSolution] = {
 //    close
+    val t0 = System.currentTimeMillis()
+    solveDomain()
 
+    val t1 = System.currentTimeMillis()
     val cnf = toCNF
+    val t2 = System.currentTimeMillis()
+    // optimised closing (for flow variables) in solveBool for CNF's
     val optSolBool = solveBool(cnf._1,cnf._2)
-    if (!optSolBool.isDefined)
+    val t3 = System.currentTimeMillis()
+    println("[QSAT Domain-toCNF-Solve] "+(t1-t0)+" - "+(t2-t1)+" - "+(t3-t2))
+    if (!optSolBool.isDefined) {
+      println("Fail boolean satisfaction...")
       return None
+    }
 
     val pEval = partialEval(optSolBool.get)
-    val done = pEval.freshTraversal(buf)
+    val done = pEval.freshTraversal(None)
 
     if (done)
       Some(pEval.getSol(optSolBool.get))
     else {
       println("failed... peval:\n"+pEval.toString)
       println("failed... boolSol:\n"+optSolBool.get.pretty)
+      None
+    }
+  }
+
+  /**
+   * Same as @see(quickDataSolve), but using Z3 instead of SAT4J for SAT solving.
+   * @param z3
+   * @return
+   */
+  def quickDataSolve(z3: Z3Context): Option[GCSolution] = {
+    val t0 = System.currentTimeMillis()
+    solveDomain()
+//    close  // OPTMISED in gc2boolz3, based on this.bfv
+
+    val t1 = System.currentTimeMillis()
+    val z3term = Z3.gc2boolz3(this,da,z3)
+    val optSolBool = Z3.solvez3(z3term,z3)
+    val t3 = System.currentTimeMillis()
+    println("[QZ3  Domain-toBoolZ3+Solve] "+(t1-t0)+" - "+(t3-t1))
+    if (!optSolBool.isDefined)
+      return None
+
+    val pEval = partialEval(optSolBool.get)
+    val done = pEval.freshTraversal(None)
+
+    if (done)
+      Some(pEval.getSol(optSolBool.get))
+    else {
+//      println("failed... peval:\n"+pEval.toString)
+//      println("failed... boolSol:\n"+optSolBool.get.pretty)
       None
     }
   }
@@ -333,7 +427,7 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
       return None
 
     val pEval = partialEval(optSolBool.get)
-    val done = pEval.freshTraversal(buf)
+    val done = pEval.freshTraversal(Some(buf))
 
     if (done)
       Some(pEval.getSol(optSolBool.get))

@@ -27,7 +27,7 @@ object ChoApproval extends App {
     var res = List[ChoWriter]()
     for (i <- 1 to n) {
       res ::=
-        new ChoWriter("w"+i,0,List(GCApproval.join(i,(i*3 % 16)+5,(i*4 % 16)+5,(i*5 % 16)+5)))
+        new ChoWriter("w"+i,0,List(AllApproval.join(i,(i*3 % 16)+5,(i*4 % 16)+5,(i*5 % 16)+5)))
       //      println("new writer: "+(i,(i*3 % 16)+5,(i*4 % 16)+5,(i*5 % 16)+5)+ " -- "+
       //        join(i,(i*3 % 16)+5,(i*4 % 16)+5,(i*5 % 16)+5))
     }

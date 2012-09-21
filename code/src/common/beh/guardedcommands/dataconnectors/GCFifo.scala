@@ -30,5 +30,24 @@ class GCFifo(a: String, b: String, var data: Option[Any], uid: Int) extends GCBe
 
   var constraints = loadConstraints
 
+  override def update(s: GCSolution) {
+    if (s.hasFlow(flowVar(a,uid))) {
+      // update state
+      data = Some(s(dataVar(a,uid)))
+      // update constraints
+      constraints = fullFifo
+      // println("FIFO: FLOW IN!")
+      // notifyflow()
+    }
+    else if (s.hasFlow(flowVar(b,uid))) {
+      // update state
+      data = None
+      // update constraints
+      constraints = emptyFifo
+      // println("FIFO: FLOW OUT!")
+      // notifyflow()
+    }
+  }
+
   // update state not implemented
 }
