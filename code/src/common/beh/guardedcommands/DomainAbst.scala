@@ -1,6 +1,5 @@
 package common.beh.guardedcommands
 
-import _root_.choco.kernel.solver.propagation.listener.SetPropagator
 import common.beh._
 import common.beh.Utils._
 import scala.collection.mutable.Map
@@ -85,11 +84,13 @@ class DomainAbst {
   /**
    * Same as domainMap(x:String) - Calculates the predicates and functions that should be calculated for each end.
    * But it returns a set of predicates and functions with no reference to the
+   * PROBLEM: loops forever if there is a loop.
    * TODO: Test function.
    * @param x name of the variable representing the end - of shape "F$..."
    * @return a set of predicates that must be evaluated, and a list of functions that must be applied before
    */
   def domain(x:String): immutable.Set[(UnPredicate,List[UnFunction])] = {
+//    println("asking domain of "+x+". Here is the DA: "+pp)
     // 1 - start with current predicates
     var res = inv(x) map ((_,List[UnFunction]()))
 

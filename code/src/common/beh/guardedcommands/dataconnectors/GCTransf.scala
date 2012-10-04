@@ -13,7 +13,7 @@ import common.beh.UnFunction
  * To change this template use File | Settings | File Templates.
  */
 
-class GCTransf (a: String, b: String, uid: Int, f: UnFunction) extends GCBehaviour(List(a,b), uid) {
+class GCTransf (a: String, b: String, uid: Int, f: UnFunction) extends GCConnector(List(a,b), uid) {
   val av = Var(flowVar(a,uid))
   val bv = Var(flowVar(b,uid))
 

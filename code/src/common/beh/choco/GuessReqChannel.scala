@@ -1,6 +1,6 @@
 package common.beh.choco
 
-import common.beh.{Constraints, Solution, Behaviour}
+import common.beh.{Constraints, Solution, Connector}
 
 /**
  * Created with IntelliJ IDEA.
@@ -10,7 +10,7 @@ import common.beh.{Constraints, Solution, Behaviour}
  * To change this template use File | Settings | File Templates.
  */
 
-trait GuessReqChannel[S<: Solution, C <: Constraints[S,C]] extends Behaviour[S,C] {
+trait GuessReqChannel[S<: Solution, C <: Constraints[S,C]] extends Connector[S,C] {
 
   val List(x,y) = ends
 

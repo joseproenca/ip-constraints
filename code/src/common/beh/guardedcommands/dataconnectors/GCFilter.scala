@@ -12,7 +12,7 @@ import common.beh.UnPredicate
  * To change this template use File | Settings | File Templates.
  */
 
-class GCFilter(a: String, b: String, uid: Int,g: Guard) extends GCBehaviour(List(a,b), uid) {
+class GCFilter(a: String, b: String, uid: Int,g: Guard) extends GCConnector(List(a,b), uid) {
   val av = Var(flowVar(a,uid))
   val bv = Var(flowVar(b,uid))
 

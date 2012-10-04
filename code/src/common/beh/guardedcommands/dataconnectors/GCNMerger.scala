@@ -11,7 +11,7 @@ import common.beh.guardedcommands._
  * To change this template use File | Settings | File Templates.
  */
 
-class GCNMerger(srcs: List[String], snk: String, uid: Int) extends GCBehaviour(snk :: srcs, uid) {
+class GCNMerger(srcs: List[String], snk: String, uid: Int) extends GCConnector(snk :: srcs, uid) {
   def v(x:String) = Var(flowVar(x, uid))
 
   val c1 = v(snk) --> orSrcs

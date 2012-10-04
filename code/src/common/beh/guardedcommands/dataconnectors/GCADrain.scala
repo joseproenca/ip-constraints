@@ -12,7 +12,7 @@ import common.beh.guardedcommands.Var
  * To change this template use File | Settings | File Templates.
  */
 
-class GCADrain (a: String, b: String, uid: Int) extends GCBehaviour(List(a,b), uid) {
+class GCADrain (a: String, b: String, uid: Int) extends GCConnector(List(a,b), uid) {
   val av = Var(flowVar(a,uid))
   val bv = Var(flowVar(b,uid))
   val asr = Var(srcVar(a,uid))

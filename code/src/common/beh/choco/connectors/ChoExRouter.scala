@@ -1,7 +1,7 @@
 package common.beh.choco.connectors
 
 import common.beh.Utils._
-import common.beh.choco.{Neg, ChoConstraints, Var, ChoBehaviour}
+import common.beh.choco.{Neg, ChoConstraints, Var, ChoConnector}
 
 /**
  * Created with IntelliJ IDEA.
@@ -11,7 +11,7 @@ import common.beh.choco.{Neg, ChoConstraints, Var, ChoBehaviour}
  * To change this template use File | Settings | File Templates.
  */
 
-class ChoExRouter(x:String,y:String,z:String,uid:Int) extends ChoBehaviour(List(x,y),uid) {
+class ChoExRouter(x:String,y:String,z:String,uid:Int) extends ChoConnector(List(x,y),uid) {
 
   useData = false
   useCC3 = false

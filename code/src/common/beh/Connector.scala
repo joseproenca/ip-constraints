@@ -8,7 +8,7 @@ package common.beh
  * To change this template use File | Settings | File Templates.
  */
 
-abstract class Behaviour[S<: Solution, C <: Constraints[S,C]](val ends: List[String],val uid: Int) {
+abstract class Connector[S<: Solution, C <: Constraints[S,C]](val ends: List[String],val uid: Int = 0) {
 //  protected type mytype <: Behaviour[S, C]
 //  val ends: List[String]
 //  val uid: Int
@@ -17,7 +17,7 @@ abstract class Behaviour[S<: Solution, C <: Constraints[S,C]](val ends: List[Str
   var useData = false
   var useCC3 = false
 
-  def compat(other: Behaviour[S,C]) =
+  def compat(other: Connector[S,C]) =
     useData == other.useData && useCC3 == other.useCC3
 
   var connections: Map[AnyRef,Set[(String,String,Int)]] = Map() // neighbours to pairs of sync'd ends

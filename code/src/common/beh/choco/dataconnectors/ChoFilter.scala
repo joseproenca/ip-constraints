@@ -17,7 +17,7 @@ import common.beh.Utils._
  */
 
 
-class ChoFilter(x: String, y: String, uid: Int, p: IntegerVariable => Constraint) extends ChoDataBehaviour(List(x, y), uid) {
+class ChoFilter(x: String, y: String, uid: Int, p: IntegerVariable => Constraint) extends ChoDataConnector(List(x, y), uid) {
 
   useData = true
   useCC3 = false

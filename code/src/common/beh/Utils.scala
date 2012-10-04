@@ -12,6 +12,7 @@ import guardedcommands.{Var, True, GuardedCom, Statement}
  */
 
 object Utils {
+  def mkVar(x: String, uid: Int=0): Var = Var(flowVar(x,uid))
   def flowVar(x: String, uid: Int): String = "F$" + x + "$" + uid
   def dataVar(x: String, uid: Int): String = "D$" + x + "$" + uid
   def predVar(v: String, pred: Any, fs: List[Any]) = v + "#" + pred + "_" + fs.mkString(".")//.hashCode()

@@ -1,8 +1,8 @@
 package dreams.connectors
 
 import dreams.Actor
-import common.beh.choco._
-import connectors.ChoLossy
+import common.beh.guardedcommands.{GCSolution, GuardedCommands}
+import common.beh.guardedcommands.dataconnectors.GCLossy
 
 /**
  * Created by IntelliJ IDEA.
@@ -12,10 +12,10 @@ import connectors.ChoLossy
  * To change this template use File | Settings | File Templates.
  */
 
-class Lossy extends Actor[ChoSolution, ChoConstraints] {
+class Lossy extends Actor[GCSolution, GuardedCommands] {
   val uid = hashCode
 
-  val behaviour = new ChoLossy("a","b",uid)
+  val behaviour = new GCLossy("a","b",uid)
 
 //// Also works, but this should be done in choco.connectors.
 //  val constr = ChoConstraints(Impl(Var(ConstrBuilder.flowVar("a",uid)), Var(ConstrBuilder.flowVar("b",uid))))

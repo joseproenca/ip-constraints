@@ -11,7 +11,6 @@ import common.beh.choco.{ConstrBuilder,ChoSolution,ChoConstraints,FalseC}
 import common.beh.choco.genericconstraints.Buffer
 import scala.Some
 import z3.Z3
-import com.sun.xml.internal.ws.api.streaming.XMLStreamReaderFactory.Zephyr
 
 /**
  * Created with IntelliJ IDEA.
@@ -28,6 +27,7 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
   var justInit = false
 
   var commands = Set[GuardedCom]()
+//  var eqvars = Set[(String,String)]()
   var da = DomainAbst()
   var solvedDomain = false
   //  var someVars: Option[MutMap[String,Int]] = None
@@ -53,7 +53,7 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
    */
   def fv() = commands.map(_.fv).foldRight[Set[String]](Set())(_++_)
   /**
-   * Combines the *boolean* free variables of all guarded commands
+   * Combines the *boolean* free variables of all guarded commands efficiently
    * @return boolean free variables of all guarded commands
    */
   def bfv(l:ListBuffer[String]) = for (c<-commands) c.bfv(l)
@@ -70,27 +70,10 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
 
     solveDomain()
 
-//    println(da.pp)
-
-//    val t1 = System.currentTimeMillis()
-//
-//    val afv = commands.map(_.afv(da)).foldRight[Set[String]](Set())(_ ++ _)
-//    var i = 1
-//    var vars = MutMap[String, Int]()
-//    for (v <- afv) {
-////      println(" ** "+v)
-//      vars(v) = i
-//      i += 1
-//    }
-//
-//    val t2 = System.currentTimeMillis()
-
     val vars2 = MutMap[String,Int](""->1)
     for (c <- commands) c.afv2(da,vars2)
     vars2 -= ""
 
-//    val t3 = System.currentTimeMillis()
-//
 //    println("VARS: old/new "+(t2-t1)+"/"+(t3-t2))
 //    println("V1: "+vars.toList.sorted)
 //    println("V2: "+vars2.toList.sorted)
@@ -98,7 +81,6 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
 
     // TODO: optimize constraints: search for eq vars and assign the same var (int)!
 
-//    someVars = Some(vars)
     vars2
   }
 
@@ -108,7 +90,7 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
    * @return  The CNF problem for the abstract problem.
    */
   def toCNF: (CNF.Core,MutMap[String,Int]) = {
-    val t0 = System.currentTimeMillis()
+//    val t0 = System.currentTimeMillis()
     var vars: MutMap[String, Int] = collectVars
 
 //    // DEBUGGING
@@ -140,9 +122,9 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
 
   /**
    * Add SOME-FLOW and CC3 constraints.
-   * Not yet in use.
+   * CC3 not yet in use.
    */
-  def close() {
+  private def closeOld() {
     if (!closed) {
       var flowvars: Guard = !True
       for (v <- fv())
@@ -156,6 +138,34 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
     }
 
   }
+
+  /**
+   * Add SOME-FLOW and CC3 constraints.
+   * CC3 not yet in use.
+   */
+  def close() {
+    println("## closing...")
+    if (!closed) {
+      println("## not closed yet...")
+      val bvars = new ListBuffer[String]()
+      bfv(bvars)
+      println("## b vars: "+bvars.size)
+      if (!bvars.isEmpty) {
+        val fst = bvars.head
+        var flowConstraint: Guard = Var(fst)
+        for (v <- bvars.tail)
+          flowConstraint = flowConstraint \/  Var(v)
+//        println("closing - adding "+flowConstraint)
+        commands += flowConstraint
+      }
+      closed = true
+    }
+  }
+
+  def flatten() {
+
+  }
+
 
 
   /**
@@ -266,16 +276,19 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
 
     // store variable names
     val varname = MutMap[Int,String]()
-    var flowvars = Set[Int]()
-    for ((k,v) <- vars) {
+    for ((k,v) <- vars)
       varname(v) = k
-      if (isFlowVar(k)) flowvars += v
-    }
+
+
 
     // ADD FLOW CONSTRAINTS! (if necessary)
     var cnf = c
-    if (!closed)
+    if (!closed) {
+      var flowvars = Set[Int]()
+      for ((k,v) <- vars)
+        if (isFlowVar(k)) flowvars += v
       cnf = flowvars.toArray :: c
+    }
 
 
     val MAXVAR: Int = vars.size // cnf.nvars
@@ -363,7 +376,7 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
     // optimised closing (for flow variables) in solveBool for CNF's
     val optSolBool = solveBool(cnf._1,cnf._2)
     val t3 = System.currentTimeMillis()
-    println("[QSAT Domain-toCNF-Solve] "+(t1-t0)+" - "+(t2-t1)+" - "+(t3-t2))
+//    println("[QSAT Domain-toCNF-Solve] "+(t1-t0)+" - "+(t2-t1)+" - "+(t3-t2))
     if (!optSolBool.isDefined) {
       println("Fail boolean satisfaction...")
       return None
@@ -393,9 +406,10 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
 
     val t1 = System.currentTimeMillis()
     val z3term = Z3.gc2boolz3(this,da,z3)
+//    println("z3 term: "+z3term.toString())
     val optSolBool = Z3.solvez3(z3term,z3)
     val t3 = System.currentTimeMillis()
-    println("[QZ3  Domain-toBoolZ3+Solve] "+(t1-t0)+" - "+(t3-t1))
+//    println("[QZ3  Domain-toBoolZ3+Solve] "+(t1-t0)+" - "+(t3-t1))
     if (!optSolBool.isDefined)
       return None
 
@@ -441,6 +455,8 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
 
   def solveChoco : Option[ChoSolution] = {
     // not closing constraints
+    // NOW closing
+    close()
     val choConstr = ChoConstraints(toConstBuilders)
     choConstr.solve
   }
@@ -572,7 +588,7 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
     }
   }
 
-  def +(other: GuardedCom): GuardedCommands = {
+  def ++(other: GuardedCom): GuardedCommands = {
     val thiscommands = commands
     new GuardedCommands(){
       commands = thiscommands + other

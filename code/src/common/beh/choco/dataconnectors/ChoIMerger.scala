@@ -13,7 +13,7 @@ import common.beh.choco.Var
  * To change this template use File | Settings | File Templates.
  */
 
-class ChoIMerger(x:String,y:String,z:String,uid:Int) extends ChoDataBehaviour(List(x,y),uid) {
+class ChoIMerger(x:String,y:String,z:String,uid:Int) extends ChoDataConnector(List(x,y),uid) {
 
   useData = true
   useCC3 = false

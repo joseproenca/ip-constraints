@@ -1,7 +1,7 @@
 package workers.strategies
 
 import common.beh.{Constraints, Solution}
-import common.beh.choco.{ChoConstraints, ChoSolution}
+import common.beh.guardedcommands.{GuardedCommands, GCSolution}
 
 
 class CompleteStrategy[S <: Solution, C <: Constraints[S, C]] extends Strategy[S, C, CompleteStrategy[S, C]] {
@@ -28,6 +28,7 @@ class CompleteStrategy[S <: Solution, C <: Constraints[S, C]] extends Strategy[S
 }
 
 object CompleteStrategyBuilder
-  extends StrategyBuilder[ChoSolution, ChoConstraints, CompleteStrategy[ChoSolution, ChoConstraints]] {
-  def apply = new CompleteStrategy[ChoSolution, ChoConstraints]()
-}
+  extends StrategyBuilder[GCSolution, GuardedCommands, CompleteStrategy[GCSolution, GuardedCommands]] {
+    def apply = new CompleteStrategy[GCSolution, GuardedCommands]()
+
+  }

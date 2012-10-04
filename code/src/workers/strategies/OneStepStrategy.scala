@@ -1,7 +1,7 @@
 package workers.strategies
 
 import common.beh.{Constraints, Solution}
-import common.beh.choco.{ChoConstraints, ChoSolution}
+import common.beh.guardedcommands.{GuardedCommands, GCSolution}
 
 
 class OneStepStrategy[S<:Solution,C<:Constraints[S,C]] extends Strategy[S,C,OneStepStrategy[S,C]] {
@@ -23,6 +23,6 @@ class OneStepStrategy[S<:Solution,C<:Constraints[S,C]] extends Strategy[S,C,OneS
 }
 
 object OneStepStrategyBuilder
-  extends StrategyBuilder[ChoSolution, ChoConstraints, OneStepStrategy[ChoSolution, ChoConstraints]] {
-  def apply = new OneStepStrategy[ChoSolution, ChoConstraints]()
-}
+  extends StrategyBuilder[GCSolution, GuardedCommands, OneStepStrategy[GCSolution, GuardedCommands]] {
+    def apply = new OneStepStrategy[GCSolution, GuardedCommands]()
+  }

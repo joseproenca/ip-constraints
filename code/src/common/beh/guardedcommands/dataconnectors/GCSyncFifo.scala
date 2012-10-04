@@ -11,7 +11,7 @@ import common.beh.guardedcommands._
  * To change this template use File | Settings | File Templates.
  */
 
-class GCSyncFifo(a: String, b: String, var data: Option[Any], uid: Int) extends GCBehaviour(List(a,b), uid) {
+class GCSyncFifo(a: String, b: String, var data: Option[Any], uid: Int) extends GCConnector(List(a,b), uid) {
   val av = Var(flowVar(a,uid))
   val bv = Var(flowVar(b,uid))
 

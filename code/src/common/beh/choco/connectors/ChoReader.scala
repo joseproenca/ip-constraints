@@ -12,7 +12,7 @@ import common.beh.Utils
  */
 
 // So far Readers and Writers are equal
-class ChoReader(x:String,uid:Int,var size:Int) extends ChoBehaviour(List(x),uid) {
+class ChoReader(x:String,uid:Int,var size:Int) extends ChoConnector(List(x),uid) {
 
   useData = false
   useCC3 = false

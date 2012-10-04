@@ -13,7 +13,7 @@ import common.beh.guardedcommands._
  */
 
 @deprecated
-class GCWriterInt(val x: String, uid: Int, var data: List[Int]) extends GCBehaviour(List(x), uid) {
+class GCWriterInt(val x: String, uid: Int, var data: List[Int]) extends GCConnector(List(x), uid) {
   val xv = Var(flowVar(x,uid))
 
   val nfConstr = GuardedCommands(!xv)

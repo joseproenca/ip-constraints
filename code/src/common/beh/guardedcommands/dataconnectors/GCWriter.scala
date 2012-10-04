@@ -2,7 +2,6 @@ package common.beh.guardedcommands.dataconnectors
 
 import common.beh.guardedcommands._
 import common.beh.Utils._
-import common.beh.guardedcommands.Neg
 import common.beh.guardedcommands.Var
 
 /**
@@ -13,7 +12,7 @@ import common.beh.guardedcommands.Var
  * To change this template use File | Settings | File Templates.
  */
 
-class GCWriter (val x: String, uid: Int, var data: List[Any]) extends GCBehaviour(List(x), uid) {
+class GCWriter (val x: String, uid: Int, var data: List[Any]) extends GCConnector(List(x), uid) {
   val xv = Var(flowVar(x,uid))
 
   val nfConstr = GuardedCommands(!xv)

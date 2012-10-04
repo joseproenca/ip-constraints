@@ -2,9 +2,9 @@ package workers.connectors
 
 import actors.OutputChannel
 import workers.Node
-import common.beh.choco.{ChoConstraints, ChoSolution}
-import common.beh.choco.connectors.ChoMerger
 import scala.Predef._
+import common.beh.guardedcommands.{GuardedCommands, GCSolution}
+import common.beh.guardedcommands.dataconnectors.GCMerger
 
 /**
  * Created with IntelliJ IDEA.
@@ -14,13 +14,13 @@ import scala.Predef._
  * To change this template use File | Settings | File Templates.
  */
 
-class Merger (deployer: OutputChannel[Any]) extends Node[ChoSolution, ChoConstraints](deployer) {
+class Merger (deployer: OutputChannel[Any]) extends Node[GCSolution, GuardedCommands](deployer) {
   val uid = hashCode
-  val behaviour = new ChoMerger("a","b","c",uid)
+  val behaviour = new GCMerger("a","b","c",uid)
 
 
   // suggests which ends must have dataflow if "end" has also dataflow
-  def guessRequirements(nd: Node[ChoSolution, ChoConstraints]): Set[Node[ChoSolution,ChoConstraints]] =
+  def guessRequirements(nd: Node[GCSolution, GuardedCommands]): Set[Node[GCSolution,GuardedCommands]] =
     if (behaviour.connections contains nd) { // if the node nd is actually connected to nd
       for ((myend,_,_) <- behaviour.connections(nd)) {// set of ends
         if (myend == "a" || myend == "b") return invConnections("c")

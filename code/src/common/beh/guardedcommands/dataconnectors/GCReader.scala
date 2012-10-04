@@ -11,7 +11,7 @@ import common.beh.guardedcommands._
  * To change this template use File | Settings | File Templates.
  */
 
-class GCReader(x: String, uid: Int, var size: Int) extends GCBehaviour(List(x), uid) {
+class GCReader(x: String, uid: Int, var size: Int) extends GCConnector(List(x), uid) {
   //  val flowConstr = ChoConstraints(TrueC)
   val nfConstr = GuardedCommands(Neg((Var(flowVar(x, uid)))))
 

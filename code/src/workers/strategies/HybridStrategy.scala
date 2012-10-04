@@ -1,7 +1,7 @@
 package workers.strategies
 
 import common.beh.{Solution, Constraints}
-import common.beh.choco.{ChoConstraints, ChoSolution}
+import common.beh.guardedcommands.{GuardedCommands, GCSolution}
 
 // UNDER CONSTRUCTION
 
@@ -118,7 +118,7 @@ class HybridStrategy[S <: Solution, C <: Constraints[S, C]] extends Strategy[S,C
 
 
 object HybridStrategyBuilder
-  extends StrategyBuilder[ChoSolution, ChoConstraints, HybridStrategy[ChoSolution, ChoConstraints]] {
-  def apply = new HybridStrategy[ChoSolution, ChoConstraints]()
+  extends StrategyBuilder[GCSolution, GuardedCommands, HybridStrategy[GCSolution, GuardedCommands]] {
+  def apply = new HybridStrategy[GCSolution, GuardedCommands]()
 }
 

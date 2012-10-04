@@ -23,7 +23,7 @@ class AllSchedules
 object AllSchedules extends App {
 
   /// PARSE ARGUMENTS ///
-  Warmup.go
+//  Warmup.go
 
   val n = if (!args.isEmpty) Integer.parseInt(args(0))
   else               200
@@ -189,29 +189,29 @@ object AllSchedules extends App {
 //    else println("quick-z3  - no solution (in "+spent+" ms)")
     println("quick-z3  - "+spent)
 
-//      //// SAT-FULL ////
-//      time = System.currentTimeMillis()
-//      res = problem.solve
-//      spent = System.currentTimeMillis() - time
-//      //    if (res.isDefined) println("SAT-full - solved in "+spent+" ms:\n"+res.get.pretty)
-//      //    else println("SAT-full - no solution (in "+spent+" ms)")
-//      println("SAT-full  - "+spent)
-//
-//      //// SATC-FULL ////
-//      time = System.currentTimeMillis()
-//      res = problem.solveChocoSat
-//      spent = System.currentTimeMillis() - time
-//      //    if (res.isDefined) println("SATC-full - solved in "+spent+" ms:\n"+res.get.pretty)
-//      //    else println("SATC-full - no solution (in "+spent+" ms)")
-//      println("SATC-full - "+spent)
-//
-//      //// CHOCO ////
-//      time = System.currentTimeMillis()
-//      res = problem.solveChoco
-//      spent = System.currentTimeMillis() - time
-//      //    if (res.isDefined) println("Choco - solved in "+spent+" ms:\n"+res.get.pretty)
-//      //    else println("Choco - no solution (in "+spent+" ms)")
-//      println("Choco     - "+spent)
+      //// SAT-FULL ////
+      time = System.currentTimeMillis()
+      res = problem.solve
+      spent = System.currentTimeMillis() - time
+      //    if (res.isDefined) println("SAT-full - solved in "+spent+" ms:\n"+res.get.pretty)
+      //    else println("SAT-full - no solution (in "+spent+" ms)")
+      println("SAT-full  - "+spent)
+
+      //// SATC-FULL ////
+      time = System.currentTimeMillis()
+      res = problem.solveChocoSat
+      spent = System.currentTimeMillis() - time
+      //    if (res.isDefined) println("SATC-full - solved in "+spent+" ms:\n"+res.get.pretty)
+      //    else println("SATC-full - no solution (in "+spent+" ms)")
+      println("SATC-full - "+spent)
+
+      //// CHOCO ////
+      time = System.currentTimeMillis()
+      res = problem.solveChoco
+      spent = System.currentTimeMillis() - time
+      //    if (res.isDefined) println("Choco - solved in "+spent+" ms:\n"+res.get.pretty)
+      //    else println("Choco - no solution (in "+spent+" ms)")
+      println("Choco     - "+spent)
 
     /// Z3 ////
     val z3 = new Z3Context(new Z3Config("MODEL" -> true))
@@ -222,13 +222,13 @@ object AllSchedules extends App {
 //    else println("Z3 - no solution (in "+spent+" ms)")
     println("Z3        - "+spent)
 
-//    //// LAZY-SAT ////
-//    time = System.currentTimeMillis()
-//    res = problem.lazyDataSolve
-//    spent = System.currentTimeMillis() - time
-//    //    if (res.isDefined) println("lazy-sat - solved in "+spent+" ms:\n"+res.get.pretty)
-//    //    else println("lazy-sat - no solution (in "+spent+" ms)")
-//    println("lazy-sat  - "+spent)
+    //// LAZY-SAT ////
+    time = System.currentTimeMillis()
+    res = problem.lazyDataSolve
+    spent = System.currentTimeMillis() - time
+    //    if (res.isDefined) println("lazy-sat - solved in "+spent+" ms:\n"+res.get.pretty)
+    //    else println("lazy-sat - no solution (in "+spent+" ms)")
+    println("lazy-sat  - "+spent)
 
 
   }

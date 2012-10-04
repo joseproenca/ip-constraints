@@ -1,9 +1,9 @@
 package workers.connectors
 
 import workers.Node
-import common.beh.choco.{ChoSolution, ChoConstraints}
 import actors.OutputChannel
-import common.beh.choco.connectors.ChoWriter
+import common.beh.guardedcommands.{GuardedCommands, GCSolution}
+import common.beh.guardedcommands.dataconnectors.GCWriter
 
 /**
  * Created with IntelliJ IDEA.
@@ -13,12 +13,12 @@ import common.beh.choco.connectors.ChoWriter
  * To change this template use File | Settings | File Templates.
  */
 
-class Writer(var n:Int,deployer: OutputChannel[Any]) extends Node[ChoSolution, ChoConstraints](deployer) {
+class Writer(var n:Int,deployer: OutputChannel[Any]) extends Node[GCSolution, GuardedCommands](deployer) {
 
   val uid = hashCode()
 
-  val behaviour = new ChoWriter("w",uid,n)
+  val behaviour = new GCWriter("w",uid,(1 to n).toList)
 
   // suggests which ends must have dataflow if "end" has also dataflow
-  def guessRequirements(nd: Node[ChoSolution, ChoConstraints]) = Set()
+  def guessRequirements(nd: Node[GCSolution, GuardedCommands]) = Set()
 }

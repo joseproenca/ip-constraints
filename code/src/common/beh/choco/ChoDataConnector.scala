@@ -10,7 +10,7 @@ import common.beh.Utils
  * To change this template use File | Settings | File Templates.
  */
 
-abstract class ChoDataBehaviour(ends:List[String],uid:Int) extends ChoBehaviour(ends,uid) {
+abstract class ChoDataConnector(ends:List[String],uid:Int) extends ChoConnector(ends,uid) {
 
   override def sync(from:AnyRef,c:ChoConstraints) = {
     val c2 = super.sync(from,c)

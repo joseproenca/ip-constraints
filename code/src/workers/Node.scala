@@ -1,6 +1,6 @@
 package workers
 
-import common.beh.{Behaviour, Solution, Constraints}
+import common.beh.{Connector, Solution, Constraints}
 import actors.OutputChannel
 
 
@@ -18,7 +18,7 @@ abstract class Node[S<:Solution, C<:Constraints[S,C]]
 
 
   // abstract method:
-  val behaviour: Behaviour[S, C]
+  val behaviour: Connector[S, C]
 
   var invConnections: Map[String, Set[Node[S,C]]] = Map() withDefaultValue(Set[Node[S,C]]())
 

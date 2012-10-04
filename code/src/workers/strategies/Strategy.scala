@@ -55,6 +55,7 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
     c.solve
   }
 
+  // TODO: BROKEN!!! behaviour.sync connects local end "a" to neighbour ends "b" by "b:=a". Need the right order!
   private def neighbourConstr(node:Nd, basec:C): C = {
     var c = basec
 //    var i = included

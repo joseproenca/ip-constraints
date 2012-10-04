@@ -11,7 +11,7 @@ import common.beh.choco._
  * To change this template use File | Settings | File Templates.
  */
 
-class ChoFifoA(a: String, var data: Option[Int], uid: Int) extends ChoDataBehaviour(List(a), uid) {
+class ChoFifoA(a: String, var data: Option[Int], uid: Int) extends ChoDataConnector(List(a), uid) {
 
   useData = false
   useCC3 = false

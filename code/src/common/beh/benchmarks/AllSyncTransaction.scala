@@ -21,7 +21,7 @@ class AllSyncTransaction
 
 object AllSyncTransaction extends App {
 
-  Warmup.go
+//  Warmup.go
 
   val n = if (!args.isEmpty) Integer.parseInt(args(0))
   else               40 // 40 - 220
@@ -59,25 +59,26 @@ object AllSyncTransaction extends App {
     merger("c"+uid,"f"+uid,aborted)
   }
 
-  val invFunc = new InvFunc
-
-  def genTransaction(seed:Int): GuardedCommands =
-    genTransaction(new PreCond(seed),new PostCond(seed),new SomeFunc(seed),invFunc,
+  def genTransaction(seed:Int,invf: UnFunction): GuardedCommands =
+    genTransaction(new PreCond(seed),new PostCond(seed),new SomeFunc(seed),invf,
                   "x"+math.abs(seed),"x"+(math.abs(seed)+1),
                   "y"+math.abs(seed),"y"+(math.abs(seed)+1),math.abs(seed).toString)
 
+
+
+  ////// REMOVE!! /////
   def genTransations(max:Int,failAt:Int): GuardedCommands = {
-    var res = genTransaction(1)
+    var res = genTransaction(1,invFunc)
     for (seed <- 2 to max) {
-      if (seed == failAt) res ++= genTransaction(-1 * seed)
-      else                res ++= genTransaction(seed)
+      if (seed == failAt) res ++= genTransaction(-1 * seed,invFunc)
+      else                res ++= genTransaction(seed,invFunc)
     }
     res
   }
 
 
   // Sequential
-  def problem =
+  def problems =
 //    genTransations(n,((n-1)/2)+2) ++
 //    genTransations(n,2) ++
     genTransations(n,n) ++
@@ -86,16 +87,19 @@ object AllSyncTransaction extends App {
     sync("x2","RESULT") ++
     sync("y1","ABORTED")
 
+  //////// UNTIL HERE....//////////////
+
+  val invFunc = new InvFunc
 
   ////////////////////////
   def genParTransations(in:String,max:Int): GuardedCommands = {
-    var res = genTransaction(1) ++
+    var res = genTransaction(1,invFunc) ++
       sync(in,"x1") ++
 //    println("empty writer for y2")
       writer("y2",List())
 
     for (seed <- 3 to (max*2) by 2) {
-      res ++= genTransaction(seed)
+      res ++= genTransaction(seed,invFunc)
       res ++= sync(in,"x"+seed)
       res ++= writer("y"+(seed+1),List())
     }
@@ -103,7 +107,7 @@ object AllSyncTransaction extends App {
   }
 
   // parallel transactions
-  def problemp =
+  def problem =
     genParTransations("start",n) ++
     writer("start",List(2))
 
@@ -187,29 +191,29 @@ object AllSyncTransaction extends App {
 //        else println("quick-z3  - no solution (in "+spent+" ms)")
     println("quick-z3  - "+spent)
 
-//    //// SAT-FULL ////
-//    time = System.currentTimeMillis()
-//    res = problem.solve
-//    spent = System.currentTimeMillis() - time
-//    //    if (res.isDefined) println("SAT-full - solved in "+spent+" ms:\n"+res.get.pretty)
-//    //    else println("SAT-full - no solution (in "+spent+" ms)")
-//    println("SAT-full  - "+spent)
-//
-//    //// SATC-FULL ////
-//    time = System.currentTimeMillis()
-//    res = problem.solveChocoSat
-//    spent = System.currentTimeMillis() - time
-//    //    if (res.isDefined) println("SATC-full - solved in "+spent+" ms:\n"+res.get.pretty)
-//    //    else println("SATC-full - no solution (in "+spent+" ms)")
-//    println("SATC-full - "+spent)
+    //// SAT-FULL ////
+    time = System.currentTimeMillis()
+    res = problem.solve
+    spent = System.currentTimeMillis() - time
+    //    if (res.isDefined) println("SAT-full - solved in "+spent+" ms:\n"+res.get.pretty)
+    //    else println("SAT-full - no solution (in "+spent+" ms)")
+    println("SAT-full  - "+spent)
 
-//    //// CHOCO ////
-//    time = System.currentTimeMillis()
-//    res = problem.solveChoco
-//    spent = System.currentTimeMillis() - time
-//    //    if (res.isDefined) println("Choco - solved in "+spent+" ms:\n"+res.get.pretty)
-//    //    else println("Choco - no solution (in "+spent+" ms)")
-//    println("Choco     - "+spent)
+    //// SATC-FULL ////
+    time = System.currentTimeMillis()
+    res = problem.solveChocoSat
+    spent = System.currentTimeMillis() - time
+    //    if (res.isDefined) println("SATC-full - solved in "+spent+" ms:\n"+res.get.pretty)
+    //    else println("SATC-full - no solution (in "+spent+" ms)")
+    println("SATC-full - "+spent)
+
+    //// CHOCO ////
+    time = System.currentTimeMillis()
+    res = problem.solveChoco
+    spent = System.currentTimeMillis() - time
+    //    if (res.isDefined) println("Choco - solved in "+spent+" ms:\n"+res.get.pretty)
+    //    else println("Choco - no solution (in "+spent+" ms)")
+    println("Choco     - "+spent)
 
     /// Z3 ////
     val z3 = new Z3Context(new Z3Config("MODEL" -> true))
@@ -220,13 +224,13 @@ object AllSyncTransaction extends App {
 //        else println("Z3 - no solution (in "+spent+" ms)")
     println("Z3        - "+spent)
 
-//    //// LAZY-SAT ////
-//    time = System.currentTimeMillis()
-//    res = problem.lazyDataSolve
-//    spent = System.currentTimeMillis() - time
-//    //    if (res.isDefined) println("lazy-sat - solved in "+spent+" ms:\n"+res.get.pretty)
-//    //    else println("lazy-sat - no solution (in "+spent+" ms)")
-//    println("lazy-sat  - "+spent)
+    //// LAZY-SAT ////
+    time = System.currentTimeMillis()
+    res = problem.lazyDataSolve
+    spent = System.currentTimeMillis() - time
+    //    if (res.isDefined) println("lazy-sat - solved in "+spent+" ms:\n"+res.get.pretty)
+    //    else println("lazy-sat - no solution (in "+spent+" ms)")
+    println("lazy-sat  - "+spent)
 
 
   }

@@ -1,6 +1,6 @@
 package common.beh.choco
 
-import common.beh.{Utils, Behaviour}
+import common.beh.{Utils, Connector}
 
 
 /**
@@ -11,7 +11,7 @@ import common.beh.{Utils, Behaviour}
  * To change this template use File | Settings | File Templates.
  */
 
-abstract class ChoBehaviour(ends: List[String], uid: Int) extends Behaviour[ChoSolution,ChoConstraints](ends, uid) {
+abstract class ChoConnector(ends: List[String], uid: Int) extends Connector[ChoSolution,ChoConstraints](ends, uid) {
 //  def join(c1: ChoConstraints, c2: ChoConstraints) =
 //    c1 + c2
 
@@ -64,9 +64,9 @@ abstract class ChoBehaviour(ends: List[String], uid: Int) extends Behaviour[ChoS
   }
 }
 
-object ChoBehaviour {
-  def apply(ends:List[String],uid:Int, c:ChoConstraints,upd: ChoSolution => Unit): ChoBehaviour = {
-    new ChoBehaviour(ends,uid) {
+object ChoConnector {
+  def apply(ends:List[String],uid:Int, c:ChoConstraints,upd: ChoSolution => Unit): ChoConnector = {
+    new ChoConnector(ends,uid) {
       var constraints = c
       override def update(s:ChoSolution) { upd(s) }
 
@@ -74,23 +74,23 @@ object ChoBehaviour {
       def guessRequirements(end: String) = Set()
     }
   }
-  def apply(ends:List[String],uid:Int, c:ChoConstraints): ChoBehaviour = {
-    new ChoBehaviour(ends,uid) {
+  def apply(ends:List[String],uid:Int, c:ChoConstraints): ChoConnector = {
+    new ChoConnector(ends,uid) {
       var constraints = c
       // suggests which ends must have dataflow if "end" has also dataflow
       def guessRequirements(end: String) = Set()
     }
   }
-  def apply(ends:List[String],uid:Int, c:ConstrBuilder,upd: ChoSolution => Unit): ChoBehaviour = {
-    new ChoBehaviour(ends,uid) {
+  def apply(ends:List[String],uid:Int, c:ConstrBuilder,upd: ChoSolution => Unit): ChoConnector = {
+    new ChoConnector(ends,uid) {
       var constraints = ChoConstraints(c)
       override def update(s:ChoSolution) { upd(s) }
       // suggests which ends must have dataflow if "end" has also dataflow
       def guessRequirements(end: String) = Set()
     }
   }
-  def apply(ends:List[String],uid:Int, c:ConstrBuilder): ChoBehaviour = {
-    new ChoBehaviour(ends,uid) {
+  def apply(ends:List[String],uid:Int, c:ConstrBuilder): ChoConnector = {
+    new ChoConnector(ends,uid) {
       var constraints = ChoConstraints(c)
       // suggests which ends must have dataflow if "end" has also dataflow
       def guessRequirements(end: String) = Set()

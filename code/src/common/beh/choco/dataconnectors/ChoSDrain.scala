@@ -1,7 +1,7 @@
 package common.beh.choco.dataconnectors
 
 import common.beh.Utils._
-import common.beh.choco.{VarEq, ChoConstraints, ChoDataBehaviour}
+import common.beh.choco.{VarEq, ChoConstraints, ChoDataConnector}
 
 /**
  * Created with IntelliJ IDEA.
@@ -11,7 +11,7 @@ import common.beh.choco.{VarEq, ChoConstraints, ChoDataBehaviour}
  * To change this template use File | Settings | File Templates.
  */
 
-class ChoSDrain(a:String,b:String,uid:Int) extends ChoDataBehaviour(List(a,b),uid) {
+class ChoSDrain(a:String,b:String,uid:Int) extends ChoDataConnector(List(a,b),uid) {
 
   useData = true
   useCC3 = false

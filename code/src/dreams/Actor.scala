@@ -1,7 +1,7 @@
 package dreams
 
 import actors.OutputChannel
-import common.beh.{Constraints, Behaviour, Solution}
+import common.beh.{Constraints, Connector, Solution}
 
 /**
  * Created by IntelliJ IDEA.
@@ -17,7 +17,7 @@ abstract class Actor[S<:Solution, C<:Constraints[S,C]]
   var isIdle = false
 
   // to be overriden:
-  val behaviour: Behaviour[S, C]
+  val behaviour: Connector[S, C]
   val myrank = this.hashCode() // default ranking
   
 //  type Constr = behaviour.constraints.mytype

@@ -14,7 +14,7 @@ import common.beh.choco._
  * To change this template use File | Settings | File Templates.
  */
 
-class ChoMerger(x:String,y:String,z:String,uid:Int) extends ChoBehaviour(List(x,y),uid) {
+class ChoMerger(x:String,y:String,z:String,uid:Int) extends ChoConnector(List(x,y),uid) {
 
   useData = false
   useCC3 = false

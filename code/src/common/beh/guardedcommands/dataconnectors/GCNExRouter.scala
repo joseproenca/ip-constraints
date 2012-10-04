@@ -11,7 +11,7 @@ import common.beh.guardedcommands._
  * To change this template use File | Settings | File Templates.
  */
 
-class GCNExRouter(src: String, snks: List[String], uid: Int) extends GCBehaviour(src::snks, uid) {
+class GCNExRouter(src: String, snks: List[String], uid: Int) extends GCConnector(src::snks, uid) {
   def v(x:String) = Var(flowVar(x, uid))
 
 

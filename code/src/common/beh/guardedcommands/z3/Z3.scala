@@ -88,7 +88,7 @@ object Z3 {
       if (f.isInstanceOf[IntFunction])
         z3.mkEq(z3.mkIntConst(z3.mkStringSymbol(v1)),
           f.asInstanceOf[IntFunction].z3Fun(z3,z3.mkIntConst(z3.mkStringSymbol(v2))))
-      else throw new RuntimeException("General data functions have no associated z3 functions")
+      else throw new RuntimeException("General data functions have no associated z3 functions: "+f)
     case DataAssgn(v, d) => //throw new RuntimeException("General data assignments not handled with Z3")
       if (d.isInstanceOf[Int])
         z3.mkEq(z3.mkIntConst(z3.mkStringSymbol(v)),z3.mkInt(d.asInstanceOf[Int],z3.mkIntSort()))
@@ -155,6 +155,7 @@ object Z3 {
       for ((pred,fs) <- dom) {
         var newd: Any = d
         for (f<-fs.reverse) newd = f.calculate(newd)
+//        println("Adding data assignm.: "+predVar(v,pred,fs)+" to true/false")
         if  (pred.check(newd))
           res = z3.mkAnd(res,z3.mkBoolConst(z3.mkStringSymbol(predVar(v,pred,fs))))
         else
@@ -166,6 +167,7 @@ object Z3 {
       var res: Z3AST = z3.mkTrue()
       for((pred,fs) <- d1)
         if (d2 contains (pred,fs)) {
+//          println("Adding pred equiv: "+predVar(v1,pred,fs)+"<->"+predVar(v2,pred,fs))
           val t = gc2boolz3(Var(predVar(v1,pred,fs)) <-> Var(predVar(v2,pred,fs)),da,z3)
           res = z3.mkAnd(res,t)
         }
@@ -175,6 +177,7 @@ object Z3 {
       var res: Z3AST = z3.mkTrue()
       for((pred,fs) <- d1)
         if (d2 contains (pred,f::fs)) {
+//          println("Adding func assignm.: "+predVar(v1,pred,fs)+" <- "+predVar(v2,pred,f::fs))
           val t = gc2boolz3(Var(predVar(v1,pred,fs)) <-> Var(predVar(v2,pred,f::fs)),da,z3)
           res = z3.mkAnd(res,t)
         }

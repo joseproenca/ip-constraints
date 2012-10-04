@@ -11,9 +11,9 @@ import common.beh.guardedcommands._
  * To change this template use File | Settings | File Templates.
  */
 
-class GCFifo(a: String, b: String, var data: Option[Any], uid: Int) extends GCBehaviour(List(a,b), uid) {
-  val av = Var(flowVar(a,uid))
-  val bv = Var(flowVar(b,uid))
+class GCFifo(a: String, b: String, var data: Option[Any], uid: Int = 0) extends GCConnector(List(a,b), uid) {
+  val av = mkVar(a,uid)
+  val bv = mkVar(b,uid)
 
   val emptyFifo = GuardedCommands(!bv)
 
@@ -26,9 +26,7 @@ class GCFifo(a: String, b: String, var data: Option[Any], uid: Int) extends GCBe
     else GuardedCommands(Neg(av))
 
 
-  def loadConstraints = if (data.isDefined) fullFifo else emptyFifo
-
-  var constraints = loadConstraints
+  var constraints = if (data.isDefined) fullFifo else emptyFifo
 
   override def update(s: GCSolution) {
     if (s.hasFlow(flowVar(a,uid))) {

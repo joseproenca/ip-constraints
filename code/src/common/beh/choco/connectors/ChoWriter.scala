@@ -12,7 +12,7 @@ import common.beh.Utils
  * To change this template use File | Settings | File Templates.
  */
 
-class ChoWriter(x:String,uid:Int,var size:Int) extends ChoBehaviour(List(x),uid) {
+class ChoWriter(x:String,uid:Int,var size:Int) extends ChoConnector(List(x),uid) {
 
   useData = false
   useCC3 = false

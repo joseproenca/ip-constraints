@@ -13,7 +13,7 @@ import common.beh.choco.Var
  * To change this template use File | Settings | File Templates.
  */
 
-class ChoLossy(x:String,y:String,uid:Int) extends ChoBehaviour(List(x,y),uid) {
+class ChoLossy(x:String,y:String,uid:Int) extends ChoConnector(List(x,y),uid) {
 
   useData = false
   useCC3 = false

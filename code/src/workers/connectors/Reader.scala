@@ -2,8 +2,8 @@ package workers.connectors
 
 import actors.OutputChannel
 import workers.Node
-import common.beh.choco.{ChoConstraints, ChoSolution}
-import common.beh.choco.connectors.ChoReaderPassive
+import common.beh.guardedcommands.{GCSolution, GuardedCommands}
+import common.beh.guardedcommands.dataconnectors.GCReader
 
 /**
  * Created with IntelliJ IDEA.
@@ -13,12 +13,13 @@ import common.beh.choco.connectors.ChoReaderPassive
  * To change this template use File | Settings | File Templates.
  */
 
-class Reader (var n:Int,deployer: OutputChannel[Any]) extends Node[ChoSolution, ChoConstraints](deployer) {
+class Reader (var n:Int,deployer: OutputChannel[Any]) extends Node[GCSolution, GuardedCommands](deployer) {
 
   val uid = hashCode()
 
-  val behaviour = new ChoReaderPassive("r",uid,n)
+  val behaviour = //new ChoReaderPassive("r",uid,n)
+    new GCReader("r",uid,n) { override def isProactive = false }
 
   // suggests which ends must have dataflow if "end" has also dataflow
-  def guessRequirements(nd: Node[ChoSolution, ChoConstraints]) = Set()
+  def guessRequirements(nd: Node[GCSolution, GuardedCommands]) = Set()
 }

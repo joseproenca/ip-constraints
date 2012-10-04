@@ -1,6 +1,6 @@
 package common.beh.choco.dataconnectors
 
-import common.beh.choco.{ChoConstraints, ChoDataBehaviour}
+import common.beh.choco.{ChoConstraints, ChoDataConnector}
 import common.beh.Utils._
 import common.beh.choco.VarEq
 
@@ -12,7 +12,7 @@ import common.beh.choco.VarEq
  * To change this template use File | Settings | File Templates.
  */
 
-class ChoSSpout(a:String,b:String,uid:Int) extends ChoDataBehaviour(List(a,b),uid) {
+class ChoSSpout(a:String,b:String,uid:Int) extends ChoDataConnector(List(a,b),uid) {
 
   useData = true
   useCC3 = false
