@@ -19,7 +19,7 @@ class GCSync(a: String, b: String, uid: Int) extends GCConnector(List(a,b), uid)
     av <-> bv
   )
 
-  if (useData) constraints +=
+  if (useData) constraints ++=
 //    av --> (bv := av) //VarAssgn(dataVar(b,uid), dataVar(a,uid))
       (bv := av)
 
