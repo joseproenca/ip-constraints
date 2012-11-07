@@ -15,3 +15,21 @@ abstract class UnPredicate {
   //  }
 }
 
+object UnPredicate {
+  def apply(body: Any => Boolean): UnPredicate = new UnPredicate {
+    def check(x: Any) = try body(x)
+    catch {
+      case e: scala.MatchError => false
+      case e => throw e
+    }
+  }
+
+  def apply(name: String)(body: Any => Boolean): UnPredicate = new UnPredicate {
+    def check(x: Any) = try body(x)
+    catch {
+      case e: scala.MatchError => false
+      case e => throw e
+    }
+    override def toString = name
+  }
+}

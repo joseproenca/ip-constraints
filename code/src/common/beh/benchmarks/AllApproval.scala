@@ -103,7 +103,7 @@ object AllApproval extends App {
     for (wr <- genClients(size.toInt)) {
       srcs match {
         case hd::tl =>
-          res ++= (wr.constraints ++ sync(wr.x,hd))
+          res ++= (wr.getConstraints ++ sync(wr.x,hd))
           srcs = tl
         case Nil => {}
       }

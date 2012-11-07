@@ -16,7 +16,7 @@ class GCMerger(a: String, b: String, c: String, uid: Int) extends GCConnector(Li
   val bv = Var(flowVar(b,uid))
   val cv = Var(flowVar(c,uid))
 
-  var constraints = GuardedCommands(
+  private var constraints = GuardedCommands(
     cv --> (av \/ bv),
     (av \/ bv) --> cv,
     !(av and bv))
@@ -26,6 +26,8 @@ class GCMerger(a: String, b: String, c: String, uid: Int) extends GCConnector(Li
     bv --> (cv := bv))
   //    av --> VarAssgn(dataVar(c,uid),dataVar(a,uid)),
   //    bv --> VarAssgn(dataVar(c,uid),dataVar(b,uid))
+
+  def getConstraints = constraints
 
   if (useCC3) throw new Exception("CC3 not implemented")
 

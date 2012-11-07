@@ -25,12 +25,12 @@ class ChoFifo(a: String, b: String, dt: Option[Int], uid: Int) extends connector
       //      println("Writer: FLOW! new size: "+size)
       notifyflow()
       data = s.getVal(flowVar(a,uid))
-      constraints = loadConstraints
+//      constraints = loadConstraints
     }
     if (s.hasFlow(flowVar(b, uid))) {
       notifyflow()
       data = None
-      constraints = loadConstraints
+//      constraints = loadConstraints
     }
   }
 

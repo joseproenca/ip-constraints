@@ -17,9 +17,14 @@ class ChoLossy(x: String, y: String, uid: Int) extends connectors.ChoLossy(x, y,
   useData = true
   useCC3 = false
 
-  constraints impose (
-    VarEq(dataVar(x,uid),dataVar(y,uid))
-  )
+  override def getConstraints: ChoConstraints = {
+    val c = super.getConstraints
+    c impose ( VarEq(dataVar(x,uid),dataVar(y,uid)) )
+    c
+  }
+//  constraints impose (
+//    VarEq(dataVar(x,uid),dataVar(y,uid))
+//  )
 
   // suggests which ends must have dataflow if "end" has also dataflow
   //  def guessRequirements(end: String) = if (end == x) Set(y) else Set(x)

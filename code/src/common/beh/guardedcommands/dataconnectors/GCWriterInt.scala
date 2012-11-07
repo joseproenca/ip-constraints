@@ -18,11 +18,9 @@ class GCWriterInt(val x: String, uid: Int, var data: List[Int]) extends GCConnec
 
   val nfConstr = GuardedCommands(!xv)
 
-  var constraints = loadConstraints
-
-  protected def loadConstraints = {
+  def getConstraints: GuardedCommands = {
     if (!data.isEmpty) {
-      if(useData) GuardedCommands(xv --> IntAssgn(dataVar(x,uid),data.head)) //(xv := data.head))
+      if(useData) xv := data.head  //GuardedCommands(xv --> IntAssgn(dataVar(x,uid),data.head)) //(xv := data.head))
       else if (useCC3) throw new Exception("CC3 not implemented")
       else GuardedCommands()
     }
@@ -33,7 +31,7 @@ class GCWriterInt(val x: String, uid: Int, var data: List[Int]) extends GCConnec
     if (s.hasFlow(flowVar(x, uid))) {
       //      println("Writer: FLOW! new size: "+size)
       notifyflow()
-      constraints = loadConstraints
+//      constraints = loadConstraints
       data = data.tail
     }
   }

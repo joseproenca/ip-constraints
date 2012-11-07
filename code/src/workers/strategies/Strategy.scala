@@ -41,12 +41,12 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
 
     // collect it's constraints + neighbour constraints
 //    var  (c,included)  = neighbourConstr(init,Set(),beh.constraints)
-    var c = neighbourConstr(init,beh.constraints)
+    var c = neighbourConstr(init,beh.getConstraints)
 
     // collect the constraints + neighbour constraints of owned ports,
     // avoiding adding repeated neighbours (via "included") -- DROPPED (common neighbours of 2 nodes must be added 2x)
     for (n <- (owned - init)) {
-      c = c ++ n.behaviour.constraints
+      c = c ++ n.behaviour.getConstraints
       c = neighbourConstr(n,c)
 //      val pair = neighbourConstr(n,included,c)
 //      c = pair._1; included = pair._2

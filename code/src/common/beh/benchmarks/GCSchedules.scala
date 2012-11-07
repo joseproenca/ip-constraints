@@ -33,27 +33,27 @@ object GCSchedules extends App {
 
   def genSched(i:Int,on: Boolean): GuardedCommands = {
 
-//    new GCWriter("x",i,List(500)).constraints ++
+//    new GCWriter("x",i,List(500)).getConstraints ++
     val res =
-      new GCExRouter("x","a","b",i).constraints ++
-      new GCFilter("a","e",i,Neg(IntPred(dataVar("a",i),evening))).constraints ++
-      new GCFilter("a","f",i,IntPred(dataVar("a",i),evening)).constraints ++
-      new GCFilter("b","g",i,IntPred(dataVar("b",i),morning)).constraints ++
-      new GCMerger("e","g","m",i).constraints ++
-      new GCSDrain("a","c",i).constraints ++
-      new GCSDrain("b","d",i).constraints ++
-      new GCSDrain("g","b",i).constraints ++
-      new GCSync("e","disp",i).constraints ++
-      new GCSync("f","off",i).constraints ++
-      new GCSync("g","on",i).constraints ++
+      new GCExRouter("x","a","b",i).getConstraints ++
+      new GCFilter("a","e",i,Neg(IntPred(dataVar("a",i),evening))).getConstraints ++
+      new GCFilter("a","f",i,IntPred(dataVar("a",i),evening)).getConstraints ++
+      new GCFilter("b","g",i,IntPred(dataVar("b",i),morning)).getConstraints ++
+      new GCMerger("e","g","m",i).getConstraints ++
+      new GCSDrain("a","c",i).getConstraints ++
+      new GCSDrain("b","d",i).getConstraints ++
+      new GCSDrain("g","b",i).getConstraints ++
+      new GCSync("e","disp",i).getConstraints ++
+      new GCSync("f","off",i).getConstraints ++
+      new GCSync("g","on",i).getConstraints ++
       GuardedCommands(True --> Var(flowVar("x",i)))
 
     if (on) res ++
-      new GCSyncFifo("m","c",Some(0),i).constraints ++
-      new GCFifo("f","d",None,i).constraints
+      new GCSyncFifo("m","c",Some(0),i).getConstraints ++
+      new GCFifo("f","d",None,i).getConstraints
     else res ++
-      new GCSyncFifo("m","c",None,i).constraints ++
-      new GCFifo("f","d",Some(0),i).constraints
+      new GCSyncFifo("m","c",None,i).getConstraints ++
+      new GCFifo("f","d",Some(0),i).getConstraints
   }
 
 
@@ -74,18 +74,18 @@ object GCSchedules extends App {
 
 
 
-//  val problem = genSched(0,true)  ++ new GCWriter("x",0,List(500)).constraints ++ // on, morning  - display
+//  val problem = genSched(0,true)  ++ new GCWriter("x",0,List(500)).getConstraints ++ // on, morning  - display
 //                GuardedCommands(True --> SGuard(Var(flowVar("e",0))))
 
-//  val schedule = genSched(0,true)  ++ new GCWriter("x",0,List(1400)).constraints // on, evening  - turn off
-//  val schedule = genSched(0,false) ++ new GCWriter("x",0,List(500)).constraints  // off, morning - turn on
-//  val schedule = genSched(0,false) ++ new GCWriter("x",0,List(1400)).constraints // off, evening - no sol
+//  val schedule = genSched(0,true)  ++ new GCWriter("x",0,List(1400)).getConstraints // on, evening  - turn off
+//  val schedule = genSched(0,false) ++ new GCWriter("x",0,List(500)).getConstraints  // off, morning - turn on
+//  val schedule = genSched(0,false) ++ new GCWriter("x",0,List(1400)).getConstraints // off, evening - no sol
 
   val n2 = n / 2
 
   val problem = genScheds(1 to n2, "time",0,true) ++   // some will display
     genScheds(n2+1 to n, "time",0,false) ++            // and some will turn on
-    new GCWriter("time",0,List(500)).constraints ++    // (it is morning)
+    new GCWriter("time",0,List(500)).getConstraints ++    // (it is morning)
     GuardedCommands(True --> Var(flowVar("time",0))) // require some dataflow
 
   if (justInit) problem.justInit = true

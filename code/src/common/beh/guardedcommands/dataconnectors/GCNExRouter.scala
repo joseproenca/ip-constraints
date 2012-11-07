@@ -45,6 +45,8 @@ class GCNExRouter(src: String, snks: List[String], uid: Int) extends GCConnector
 
   if (useCC3) throw new Exception("CC3 not implemented")
 
+  def getConstraints = constraints
+
   //  var constraints = GuardedCommands(Set(
 //    av --> SGuard(bv or cv),
 //    (bv or cv) --> SGuard(av),

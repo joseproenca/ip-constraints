@@ -22,7 +22,7 @@ class ChoFilter(x: String, y: String, uid: Int, p: IntegerVariable => Constraint
   useData = true
   useCC3 = false
 
-  var constraints = ChoConstraints(List(
+  def getConstraints = ChoConstraints(List(
     // y -> x
     Var(flowVar(y,uid)) --> Var(flowVar(x,uid)),
     // y -> ^x = ^y /\ P(^y)

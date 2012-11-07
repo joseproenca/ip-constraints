@@ -10,7 +10,12 @@ package common.beh
 
 trait Solution {
   def hasFlow(end: String): Boolean
+  def dataOn(end: String): Option[Any]
   def pretty: String
+}
+
+trait EmptySol[A <: Solution] {
+  def sol: A
 }
 
 //object NoSol extends Solution{

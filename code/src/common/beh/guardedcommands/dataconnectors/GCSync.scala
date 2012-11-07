@@ -24,4 +24,6 @@ class GCSync(a: String, b: String, uid: Int) extends GCConnector(List(a,b), uid)
       (bv := av)
 
   if (useCC3) throw new Exception("CC3 not implemented")
+
+  def getConstraints = constraints
 }

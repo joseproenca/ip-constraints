@@ -40,7 +40,7 @@ class GCFilter(a: String, b: String, uid: Int,g: Guard) extends GCConnector(List
                     else      Neg(Pred(dataVar(a,uid),p)))
 }
 
-  var constraints = GuardedCommands(
+  def getConstraints = GuardedCommands(
     bv --> av,
     bv -->  (bv := av), //VarAssgn(dataVar(b,uid),dataVar(a,uid)),
 //    bv := av ,

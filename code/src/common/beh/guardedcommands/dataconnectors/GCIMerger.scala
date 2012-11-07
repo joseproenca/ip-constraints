@@ -20,7 +20,7 @@ class GCIMerger(a: String, b: String, c: String, uid: Int) extends GCConnector(L
   val cv = Var(flowVar(c,uid))
   val abv = Var(flowVar(a+b,uid))
 
-  var constraints = GuardedCommands(Set(
+  private var constraints = GuardedCommands(Set(
     cv --> (av or bv),
     (av or bv) --> cv
   ))
@@ -31,4 +31,6 @@ class GCIMerger(a: String, b: String, c: String, uid: Int) extends GCConnector(L
     (av and Neg(bv)) --> VarAssgn(dataVar(c,uid),dataVar(a,uid)),
     (bv and Neg(av)) --> VarAssgn(dataVar(c,uid),dataVar(b,uid))
   )
+
+  def getConstraints = constraints
 }

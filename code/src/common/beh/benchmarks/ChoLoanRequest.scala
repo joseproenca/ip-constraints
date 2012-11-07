@@ -25,60 +25,60 @@ object ChoLoanRequest extends App {
 //  Warmup.go
 
   val baseProblem =  // stateless part
-    new ChoSDrain("req1","req2",0).constraints ++
-      new ChoSDrain("appr1","appr2",0).constraints ++
-      new ChoIMerger("req2","auth2","pin",0).constraints ++
-      new ChoMerger("denied","appr2","out",0).constraints ++
+    new ChoSDrain("req1","req2",0).getConstraints ++
+      new ChoSDrain("appr1","appr2",0).getConstraints ++
+      new ChoIMerger("req2","auth2","pin",0).getConstraints ++
+      new ChoMerger("denied","appr2","out",0).getConstraints ++
       // filters
-      new ChoFilter("login","auth",0,new Authorised().choPred).constraints ++
-      new ChoFilter("isEn","denied",0,new Deny().choPred).constraints ++
-      new ChoFilter("isEn","appr1",0,new Approve().choPred).constraints
+      new ChoFilter("login","auth",0,new Authorised().choPred).getConstraints ++
+      new ChoFilter("isEn","denied",0,new Deny().choPred).getConstraints ++
+      new ChoFilter("isEn","appr1",0,new Approve().choPred).getConstraints
 
   var problems = for (bankclerk <- List(1,3)) yield baseProblem ++ // init state
-    new ChoWriter("start",0,List(3)).constraints ++
-    new ChoWriter("login",0,List(bankclerk)).constraints ++
-    new ChoFifo("start","isEn",None,0).constraints ++
-    new ChoFifo("start","req1",None,0).constraints ++
-    new ChoFifo("auth","auth2",None,0).constraints ++
-    new ChoFifo("pin","appr2",None,0).constraints ++
+    new ChoWriter("start",0,List(3)).getConstraints ++
+    new ChoWriter("login",0,List(bankclerk)).getConstraints ++
+    new ChoFifo("start","isEn",None,0).getConstraints ++
+    new ChoFifo("start","req1",None,0).getConstraints ++
+    new ChoFifo("auth","auth2",None,0).getConstraints ++
+    new ChoFifo("pin","appr2",None,0).getConstraints ++
     ChoConstraints(Var(flowVar("start",0))) ++ // force data on start
     ChoConstraints(Var(flowVar("login",0)))    // and on login
 
   // after success of 1
 //  problems :::= List(baseProblem ++
-//    new ChoWriter("start",0,List()).constraints ++
-//    new ChoWriter("login",0,List()).constraints ++
-//    new ChoFifo("start","isEn",Some(3),0).constraints ++
-//    new ChoFifo("start","req1",Some(3),0).constraints ++
-//    new ChoFifo("auth","auth2",Some(1),0).constraints ++
-//    new ChoFifo("pin","appr2",None,0).constraints ++
+//    new ChoWriter("start",0,List()).getConstraints ++
+//    new ChoWriter("login",0,List()).getConstraints ++
+//    new ChoFifo("start","isEn",Some(3),0).getConstraints ++
+//    new ChoFifo("start","req1",Some(3),0).getConstraints ++
+//    new ChoFifo("auth","auth2",Some(1),0).getConstraints ++
+//    new ChoFifo("pin","appr2",None,0).getConstraints ++
 //    ChoConstraints(Var(flowVar("pin",0)))    // force data on IMerger
 //  )
 
   // after success of only login
   problems :::= List(baseProblem ++
-    new ChoWriter("start",0,List()).constraints ++
-    new ChoWriter("login",0,List()).constraints ++
-    new ChoFifo("start","isEn",None,0).constraints ++
-    new ChoFifo("start","req1",None,0).constraints ++
-    new ChoFifo("auth","auth2",Some(1),0).constraints ++
-    new ChoFifo("pin","appr2",None,0).constraints ++
+    new ChoWriter("start",0,List()).getConstraints ++
+    new ChoWriter("login",0,List()).getConstraints ++
+    new ChoFifo("start","isEn",None,0).getConstraints ++
+    new ChoFifo("start","req1",None,0).getConstraints ++
+    new ChoFifo("auth","auth2",Some(1),0).getConstraints ++
+    new ChoFifo("pin","appr2",None,0).getConstraints ++
     ChoConstraints(Var(flowVar("pin",0)))    // force data on IMerger
   )
 
   // if only IMerger had flow before
 //  problems :::= (for (client <- List(1,2,3)) yield baseProblem ++
-//    new ChoWriter("start",0,List()).constraints ++
-//    new ChoWriter("login",0,List()).constraints ++
-//    new ChoFifo("start","isEn",Some(client),0).constraints ++
-//    new ChoFifo("start","req1",None,0).constraints ++
-//    new ChoFifo("auth","auth2",None,0).constraints ++
-//    new ChoFifo("pin","appr2",Some(1),0).constraints ++
+//    new ChoWriter("start",0,List()).getConstraints ++
+//    new ChoWriter("login",0,List()).getConstraints ++
+//    new ChoFifo("start","isEn",Some(client),0).getConstraints ++
+//    new ChoFifo("start","req1",None,0).getConstraints ++
+//    new ChoFifo("auth","auth2",None,0).getConstraints ++
+//    new ChoFifo("pin","appr2",Some(1),0).getConstraints ++
 //    ChoConstraints(Var(flowVar("isEn",0)))) // force data before filters
 
 //  problems = List(
-//    new ChoFilter("isEn","denied",0,new Deny().choPred).constraints ++
-//    new ChoWriter("isEn",0,List(3)).constraints ++
+//    new ChoFilter("isEn","denied",0,new Deny().choPred).getConstraints ++
+//    new ChoWriter("isEn",0,List(3)).getConstraints ++
 //      ChoConstraints(Var(flowVar("isEn",0))) ++ // force data before filters
 //      ChoConstraints(Var(flowVar("denied",0)))
 //  )

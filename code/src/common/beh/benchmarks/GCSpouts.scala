@@ -29,18 +29,18 @@ object GCSpouts extends App {
   def genFilters(times: Int): GuardedCommands = {
     var res = new GuardedCommands()
     for (i <- 0 to (times-1)) {
-      res ++= new GCFilter("a","b",i,IntPred(dataVar("a",i),gtwo)).constraints ++
-              new GCFilter("b","c",i,Neg(IntPred(dataVar("b",i),lfive))).constraints
+      res ++= new GCFilter("a","b",i,IntPred(dataVar("a",i),gtwo)).getConstraints ++
+              new GCFilter("b","c",i,Neg(IntPred(dataVar("b",i),lfive))).getConstraints
       // manual replicator from (startVar.startUid) to (x,i)
     }
-    res ++= new GCReader("c",times-1,1).constraints
+    res ++= new GCReader("c",times-1,1).getConstraints
     res
   }
 
   def genSpout(): GuardedCommands = {
-    new GCSSpout("x","a",0).constraints ++
-      new GCFilter("x","reader",0,(IntPred(dataVar("x",0),lfive))).constraints ++
-      new GCReader("reader",0,1).constraints
+    new GCSSpout("x","a",0).getConstraints ++
+      new GCFilter("x","reader",0,(IntPred(dataVar("x",0),lfive))).getConstraints ++
+      new GCReader("reader",0,1).getConstraints
   }
 
 
@@ -49,13 +49,13 @@ object GCSpouts extends App {
 //    GuardedCommands(True --> SGuard(Var(flowVar("reader",0)))) ++
     GuardedCommands(True --> VarAssgn(dataVar("x",0),dataVar("a",0)))
 
-  //  val schedule = genSched(0,true)  ++ new GCWriter("x",0,List(1400)).constraints // on, evening  - turn off
-  //  val schedule = genSched(0,false) ++ new GCWriter("x",0,List(500)).constraints  // off, morning - turn on
-  //  val schedule = genSched(0,false) ++ new GCWriter("x",0,List(1400)).constraints // off, evening - no sol
+  //  val schedule = genSched(0,true)  ++ new GCWriter("x",0,List(1400)).getConstraints // on, evening  - turn off
+  //  val schedule = genSched(0,false) ++ new GCWriter("x",0,List(500)).getConstraints  // off, morning - turn on
+  //  val schedule = genSched(0,false) ++ new GCWriter("x",0,List(1400)).getConstraints // off, evening - no sol
 
   //  val problem = genScheds(100 to 200, "time",0,true) ++ // some will display
   //    genScheds(500 to 600, "time",0,false) ++            // and some will turn on
-  //    new GCWriter("time",0,List(500)).constraints        // (it is morning)
+  //    new GCWriter("time",0,List(500)).getConstraints        // (it is morning)
 
 
 

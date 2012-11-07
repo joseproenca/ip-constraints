@@ -17,7 +17,7 @@ class ChoWriter(val x: String, uid: Int, var data: List[Int]) extends connectors
   useData = true
   useCC3 = false
 
-  override protected def loadConstraints =
+  override def getConstraints =
     if (!data.isEmpty) ChoConstraints(Var(flowVar(x,uid)) --> DataAssgn(dataVar(x,uid),data.head))
     else nfConstr
 
@@ -25,7 +25,7 @@ class ChoWriter(val x: String, uid: Int, var data: List[Int]) extends connectors
     if (s.hasFlow(flowVar(x, uid))) {
       //      println("Writer: FLOW! new size: "+size)
       notifyflow()
-      constraints = loadConstraints
+//      constraints = loadConstraints
       data = data.tail
     }
   }

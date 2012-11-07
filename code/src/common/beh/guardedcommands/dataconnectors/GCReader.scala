@@ -15,9 +15,7 @@ class GCReader(x: String, uid: Int, var size: Int) extends GCConnector(List(x), 
   //  val flowConstr = ChoConstraints(TrueC)
   val nfConstr = GuardedCommands(Neg((Var(flowVar(x, uid)))))
 
-  var constraints = loadConstraints
-
-  protected def loadConstraints =
+  def getConstraints =
     if (size > 0) GuardedCommands()
     else nfConstr
 
@@ -25,7 +23,7 @@ class GCReader(x: String, uid: Int, var size: Int) extends GCConnector(List(x), 
     if (s.hasFlow(flowVar(x, uid))) {
       //      println("Writer: FLOW! new size: "+size)
       notifyflow()
-      constraints = loadConstraints
+//      constraints = loadConstraints
       size -= 1
     }
   }

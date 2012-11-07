@@ -14,24 +14,24 @@ import scala.Some
  */
 
 object ConstraintGen {
-  def adrain(a: String, b: String, i: Int = 0) = new GCADrain(a,b,i).constraints
-  def fifo(a: String, b: String, data:Option[Any], i: Int = 0) = new GCFifo(a,b,data,i).constraints
-  def sfifo(a: String, b: String, data:Option[Any], i: Int = 0) = new GCSyncFifo(a,b,data,i).constraints
-  def filter(a: String, b: String, g:Guard) = new GCFilter(a,b,0,g).constraints
-  def filter(a: String, b: String, filter:UnPredicate, i: Int = 0) = new GCFilter(a,b,i,filter).constraints
-  def negfilter(a: String, b: String, filter:UnPredicate, i: Int = 0) = new GCFilter(a,b,i,filter,false).constraints
-  def imerger(a: String, b: String, c: String, i: Int = 0) = new GCIMerger(a,b,c,i).constraints
-  def merger(a: String, b: String, c: String, i: Int = 0) = new GCMerger(a,b,c,i).constraints
-  def nmerger(srcs: List[String], snk: String, i: Int = 0) = new GCNMerger(srcs,snk,i).constraints
-  def lossy(a: String, b: String, i: Int = 0) = new GCLossy(a,b,i).constraints
-  def sdrain(a: String, b: String, i: Int = 0) = new GCSDrain(a,b,i).constraints
-  def sspout(a: String, b: String, i: Int = 0) = new GCSSpout(a,b,i).constraints
-  def sync(a: String, b: String, i: Int = 0) = new GCSync(a,b,i).constraints
-  def transf(a: String, b: String, f: UnFunction, i: Int = 0) = new GCTransf(a,b,i,f).constraints
-  def exrouter(a: String, b: String, c: String, i: Int = 0) = new GCExRouter(a,b,c,i).constraints
-  def nexrouter(src: String, snks: List[String], i: Int = 0) = new GCNExRouter(src,snks,i).constraints
-  def reader(a: String,n: Int, i: Int = 0) = new GCReader(a,n,i).constraints
-  def writer(a: String, data: List[Any], i: Int = 0) = new GCWriter(a,i,data).constraints
+  def adrain(a: String, b: String, i: Int = 0) = new GCADrain(a,b,i).getConstraints
+  def fifo(a: String, b: String, data:Option[Any], i: Int = 0) = new GCFifo(a,b,data,i).getConstraints
+  def sfifo(a: String, b: String, data:Option[Any], i: Int = 0) = new GCSyncFifo(a,b,data,i).getConstraints
+  def filter(a: String, b: String, g:Guard) = new GCFilter(a,b,0,g).getConstraints
+  def filter(a: String, b: String, filter:UnPredicate, i: Int = 0) = new GCFilter(a,b,i,filter).getConstraints
+  def negfilter(a: String, b: String, filter:UnPredicate, i: Int = 0) = new GCFilter(a,b,i,filter,false).getConstraints
+  def imerger(a: String, b: String, c: String, i: Int = 0) = new GCIMerger(a,b,c,i).getConstraints
+  def merger(a: String, b: String, c: String, i: Int = 0) = new GCMerger(a,b,c,i).getConstraints
+  def nmerger(srcs: List[String], snk: String, i: Int = 0) = new GCNMerger(srcs,snk,i).getConstraints
+  def lossy(a: String, b: String, i: Int = 0) = new GCLossy(a,b,i).getConstraints
+  def sdrain(a: String, b: String, i: Int = 0) = new GCSDrain(a,b,i).getConstraints
+  def sspout(a: String, b: String, i: Int = 0) = new GCSSpout(a,b,i).getConstraints
+  def sync(a: String, b: String, i: Int = 0) = new GCSync(a,b,i).getConstraints
+  def transf(a: String, b: String, f: UnFunction, i: Int = 0) = new GCTransf(a,b,i,f).getConstraints
+  def exrouter(a: String, b: String, c: String, i: Int = 0) = new GCExRouter(a,b,c,i).getConstraints
+  def nexrouter(src: String, snks: List[String], i: Int = 0) = new GCNExRouter(src,snks,i).getConstraints
+  def reader(a: String,n: Int, i: Int = 0) = new GCReader(a,i,n).getConstraints
+  def writer(a: String, data: List[Any], i: Int = 0) = new GCWriter(a,i,data).getConstraints
 
   def flow(a: String, i: Int = 0) = GuardedCommands(True --> Var(Utils.flowVar(a,i)))
   def noflow(a: String, i: Int = 0) = GuardedCommands(True --> Neg(Var(Utils.flowVar(a,i))))

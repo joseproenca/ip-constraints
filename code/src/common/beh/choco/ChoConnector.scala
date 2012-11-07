@@ -12,7 +12,18 @@ import common.beh.{Utils, Connector}
  */
 
 abstract class ChoConnector(ends: List[String], uid: Int) extends Connector[ChoSolution,ChoConstraints](ends, uid) {
-//  def join(c1: ChoConstraints, c2: ChoConstraints) =
+
+
+  /**
+   * Combine two connectors, resulting in a composed connector.
+   *
+   * @param other The other connector to be composed
+   * @return The composed connector
+   */
+  def ++(other: Connector[ChoSolution, ChoConstraints]) = null
+
+
+  //  def join(c1: ChoConstraints, c2: ChoConstraints) =
 //    c1 + c2
 
   def sync(from:AnyRef,c:ChoConstraints) = {
@@ -41,13 +52,13 @@ abstract class ChoConnector(ends: List[String], uid: Int) extends Connector[ChoS
 //    for (x <- constraints.Utils.getVars)
 //  }
 
-  def dataOn(end:String,s:ChoSolution): Any = {
-    val data = s.getVal(Utils.dataVar(end,uid))
-    if (data.isDefined) data.get
-    else 0
-  }
+//  def dataOn(end:String,s:ChoSolution): Any = {
+//    val data = s.getVal(Utils.dataVar(end,uid))
+//    if (data.isDefined) data.get
+//    else 0
+//  }
 
-  def update(s: ChoSolution) {} // default implementation
+  //def update(s: ChoSolution) {} // default implementation
 
   def noSol = new ChoSolution(null, null) {
     override def getVal(v: String): Option[Int] =
@@ -67,7 +78,7 @@ abstract class ChoConnector(ends: List[String], uid: Int) extends Connector[ChoS
 object ChoConnector {
   def apply(ends:List[String],uid:Int, c:ChoConstraints,upd: ChoSolution => Unit): ChoConnector = {
     new ChoConnector(ends,uid) {
-      var constraints = c
+      def getConstraints = c
       override def update(s:ChoSolution) { upd(s) }
 
       // suggests which ends must have dataflow if "end" has also dataflow
@@ -76,14 +87,14 @@ object ChoConnector {
   }
   def apply(ends:List[String],uid:Int, c:ChoConstraints): ChoConnector = {
     new ChoConnector(ends,uid) {
-      var constraints = c
+      def getConstraints = c
       // suggests which ends must have dataflow if "end" has also dataflow
       def guessRequirements(end: String) = Set()
     }
   }
   def apply(ends:List[String],uid:Int, c:ConstrBuilder,upd: ChoSolution => Unit): ChoConnector = {
     new ChoConnector(ends,uid) {
-      var constraints = ChoConstraints(c)
+      def getConstraints = ChoConstraints(c)
       override def update(s:ChoSolution) { upd(s) }
       // suggests which ends must have dataflow if "end" has also dataflow
       def guessRequirements(end: String) = Set()
@@ -91,7 +102,7 @@ object ChoConnector {
   }
   def apply(ends:List[String],uid:Int, c:ConstrBuilder): ChoConnector = {
     new ChoConnector(ends,uid) {
-      var constraints = ChoConstraints(c)
+      def getConstraints = ChoConstraints(c)
       // suggests which ends must have dataflow if "end" has also dataflow
       def guessRequirements(end: String) = Set()
     }

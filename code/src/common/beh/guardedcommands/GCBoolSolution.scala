@@ -1,6 +1,6 @@
 package common.beh.guardedcommands
 
-import common.beh.Solution
+import common.beh.{EmptySol, Solution}
 
 /**
  * Created with IntelliJ IDEA.
@@ -21,6 +21,8 @@ class GCBoolSolution(var varMap: Map[String, Boolean]) extends Solution {
     res
   }
 
+  def dataOn(x:String) = None
+
   def apply(v:String) = //varMap(v)
     //if (varMap contains v) varMap(v) else false // if it is not mentioned, probably it was not relevant. Use default "false"
     hasFlow(v)
@@ -29,3 +31,10 @@ class GCBoolSolution(var varMap: Map[String, Boolean]) extends Solution {
   }
 
 }
+
+object GCBoolSolution {
+  implicit object NoSol extends EmptySol[GCBoolSolution] {
+    def sol = new GCBoolSolution(Map())
+  }
+}
+

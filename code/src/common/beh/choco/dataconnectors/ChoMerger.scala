@@ -16,10 +16,14 @@ class ChoMerger(x:String,y:String,z:String,uid:Int) extends connectors.ChoMerger
   useData = true
   useCC3 = false
 
-  constraints impose List(
-    xv --> VarEq(dataVar(x,uid),dataVar(z,uid)),
-    yv --> VarEq(dataVar(y,uid),dataVar(z,uid))
-  )
+  override def getConstraints: ChoConstraints = {
+    val c = super.getConstraints
+    c impose List(
+      xv --> VarEq(dataVar(x,uid),dataVar(z,uid)),
+      yv --> VarEq(dataVar(y,uid),dataVar(z,uid))
+    )
+    c
+  }
 
   // suggests which ends must have dataflow if "end" has also dataflow
 //  def guessRequirements(end: String) = end match {

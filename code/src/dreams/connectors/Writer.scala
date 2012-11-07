@@ -3,6 +3,7 @@ package dreams.connectors
 import dreams.Actor
 import common.beh.guardedcommands.{GuardedCommands, GCSolution}
 import common.beh.guardedcommands.dataconnectors.GCWriter
+import common.beh.Utils._
 
 /**
  * Created by IntelliJ IDEA.
@@ -18,6 +19,13 @@ class Writer(var n:Int) extends Actor[GCSolution, GuardedCommands] {
 //                      else stateIdle
   val uid = hashCode
 
-  val behaviour = new GCWriter("a",uid,(1 to n).toList)
+  val behaviour = new GCWriter("a",uid,(1 to n).toList) {
+    private var triedAndFailed = false
+    override def update(s: GCSolution) {
+      triedAndFailed = !s.hasFlow(flowVar(x, uid))
+      super.update(s)
+    }
+    override def isProactive: Boolean = super.isProactive && !triedAndFailed
+  }
 
 }

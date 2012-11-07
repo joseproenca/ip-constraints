@@ -20,12 +20,14 @@ class ChoIMerger(x:String,y:String,z:String,uid:Int) extends ChoDataConnector(Li
 
   val (xv,yv,zv) = (Var(flowVar(x,uid)) , Var(flowVar(y,uid)), Var(flowVar(z,uid)))
 
-  var constraints = ChoConstraints(List(
+  val constraints = ChoConstraints(List(
     (zv <-> (xv or yv)),
     (xv and yv) --> VarEq(dataVar(x,uid),dataVar(z,uid)) or VarEq(dataVar(y,uid),dataVar(z,uid)),
     (Neg(xv) and yv)  --> VarEq(dataVar(y,uid),dataVar(z,uid)),
     (xv and Neg(yv))  --> VarEq(dataVar(x,uid),dataVar(z,uid))
   ))
+
+  def getConstraints = constraints
 
   // suggests which ends must have dataflow if "end" has also dataflow
   def guessRequirements(end: String) = end match {

@@ -17,7 +17,7 @@ class ChoSync(x:String,y:String,uid:Int) extends ChoConnector(List(x,y),uid) {
   useData = false
   useCC3 = false
 
-  var constraints = ChoConstraints(VarEq(flowVar(x,uid),flowVar(y,uid)))
+  def getConstraints = ChoConstraints(VarEq(flowVar(x,uid),flowVar(y,uid)))
 
   // suggests which ends must have dataflow if "end" has also dataflow
 //  def guessRequirements(end: String) = if (end == x) Set(y) else Set(x)

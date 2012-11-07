@@ -16,70 +16,53 @@ class RunInteractive
 object RunInteractive extends App {
 
   /*
-   af0 --(hackUser)--> af1 --[checkPwd] --> bf1 --(recallUser)--> cf1 -_
+   af0 --(hackUser)--> af1 --[checkPwd] --> bf1 --(recallUser)--> cf1 -\
                                                                         >-> out
-                       af2 --[checkPwd] --> bf2 -----------------------'
+                       af2 --[checkPwd] --> bf2 -----------------------/
    */
 
 
   // Use "def" for different predicates: independent 'attempt' counts and buffer.
   // Use "val" for shared predicates: common attempt count and buffer.
-  def checkPwd = new UnPredicate {
-    var attempts = 2
-    val secret = Map("alex" -> "123", "bob" -> "asd", "guest" -> "")
+  val secret = Map("alex" -> "123", "bob" -> "asd", "guest" -> "")
 
-    def check(x: Any) = if (x.isInstanceOf[String]) {
-      val user = x.asInstanceOf[String]
-      if (attempts <= 0) {
-        println("No more attempts!")
-        false
-      }
-      else if (!(secret contains user)) {
-        println("Unknown user " + user)
-        false
-      }
-      else {
-        println("Password for user " + user + " ("+attempts+" attempts)")
-        var pass = readLine()
-        if (secret(user) == pass) {
-          println("#### OK ####")
-          true
-        }
-        else {
-          attempts -= 1
-          if (attempts <= 0) {
-            println("#### FAIL ####")
-            false
+  def checkPwd = UnPredicate("chkPwd") {
+    case user: String =>
+      var attempts = 2
+      var succeed = false
+
+      if (secret contains user)
+        while (attempts > 0) {
+          println("Password for user " + user + " ("+attempts+" attempts)")
+          var pass = readLine()
+          if (secret(user) == pass) {
+            println("#### OK ####")
+            succeed = true
+            attempts = 0
           }
-          else
-            check(x) // try again
+          attempts -= 1
         }
-      }
-    }
-    else false
-
-    override def toString = "chkPwd"
+      else println("Unknown user " + user)
+      succeed
   }
 
 
-  val hackUser = new UnFunction {
-    var lastUser = ""
-    def calculate(x: Any) = if (x.isInstanceOf[String]) {
+
+  // Replacing temporarily the user name for authentication
+  var lastUser = ""
+
+  val hackUser = UnFunction("hackUser") {
+    case x: String =>
       println("overriding username "+x)
       println("new user? (enter keeps old one)")
       lastUser = x.toString
       val p = readLine()
       if (p == "") x else p
-    }
-    override def toString = "hackUser"
   }
 
 
-  val recallUser = new UnFunction {
-    def calculate(x: Any) = if (x.isInstanceOf[String]) {
-      hackUser.lastUser
-    }
-    override def toString = "recallUser"
+  val recallUser = UnFunction("recallUser") {
+    case x:String => lastUser
   }
 
 
@@ -93,8 +76,7 @@ object RunInteractive extends App {
     merger("a3","b1","out") ++
     reader("out",1) ++
     // at least one should have flow
-    merger("alex","bob","forceFlow") ++
-    sdrain("forceFlow","out")
+    flow("out")
 
 
   // Run

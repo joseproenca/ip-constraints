@@ -3,6 +3,7 @@ package common.beh.choco
 import choco.kernel.model.variables.integer.IntegerVariable
 import choco.cp.solver.CPSolver
 import scala.collection.mutable.{Map => MuMap}
+import common.beh.{EmptySol, Solution}
 
 /**
  * Created by IntelliJ IDEA.
@@ -14,7 +15,10 @@ import scala.collection.mutable.{Map => MuMap}
 
 class ChoSolution(val choSol: CPSolver, varMap: Map[String, IntegerVariable]) extends common.beh.Solution {
   val extension = MuMap[String, Int]()
-  
+
+
+  def dataOn(v: String) = getVal(v)
+
   def getVal(v: String): Option[Int] = { 
     if (varMap contains v)
       if (choSol contains varMap(v))
@@ -73,3 +77,16 @@ class ChoSolution(val choSol: CPSolver, varMap: Map[String, IntegerVariable]) ex
       case None => 0
     }
 }
+
+object ChoSolution {
+  class MyEmptySol extends Solution {
+    def hasFlow(end: String) = false
+    def dataOn(end: String) = None
+    def pretty = ""
+  }
+
+  implicit object NoSol extends EmptySol[ChoSolution] {
+    def sol = new ChoSolution(new CPSolver(),Map())
+  }
+}
+

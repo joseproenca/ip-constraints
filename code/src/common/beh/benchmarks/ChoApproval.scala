@@ -41,7 +41,7 @@ object ChoApproval extends App {
     for (level <- 1 to height) {
       var newsrcs = List[String]()
       for (x <- srcs) {
-        res = res ++ new ChoMerger(x+1,x+2,x,0).constraints
+        res = res ++ new ChoMerger(x+1,x+2,x,0).getConstraints
         newsrcs :::= List(x+1,x+2)
       }
       srcs = newsrcs
@@ -49,7 +49,7 @@ object ChoApproval extends App {
     for (wr <- genClients(size.toInt)) {
       srcs match {
         case hd::tl =>
-          res ++= (wr.constraints ++ new ChoSync(wr.x,hd,0).constraints)
+          res ++= (wr.getConstraints ++ new ChoSync(wr.x,hd,0).getConstraints)
           srcs = tl
         case Nil => {}
       }
@@ -62,12 +62,12 @@ object ChoApproval extends App {
   val deny = new Deny()
 
   val problem = genMergers(n) ++
-    //    new ChoExRouter("x","app","y",0).constraints ++
-    //    new ChoExRouter("y","den","neither",0).constraints ++
-    new ChoFilter("x","app-ok",0,approve.choPred).constraints ++
-    new ChoFilter("x","den-ok",0,deny.choPred).constraints ++
+    //    new ChoExRouter("x","app","y",0).getConstraints ++
+    //    new ChoExRouter("y","den","neither",0).getConstraints ++
+    new ChoFilter("x","app-ok",0,approve.choPred).getConstraints ++
+    new ChoFilter("x","den-ok",0,deny.choPred).getConstraints ++
     new ChoFilter("x","neither-ok",0, (x:IntegerVariable) =>
-      Choco.and(Choco.not(approve.choPred(x)),Choco.not(deny.choPred(x)))).constraints ++
+      Choco.and(Choco.not(approve.choPred(x)),Choco.not(deny.choPred(x)))).getConstraints ++
     ChoConstraints(Var(flowVar("x",0))) // flow on one of the clients
 
 //  println("prob: "+problem.constrBuilders)

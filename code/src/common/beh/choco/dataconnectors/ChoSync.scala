@@ -16,10 +16,15 @@ class ChoSync(a:String,b:String,uid:Int) extends connectors.ChoSync(a,b,uid) {
   useData = true
   useCC3 = false
 
-  constraints impose List(
-    VarEq(flowVar(a,uid),flowVar(b,uid)),
-    Var(flowVar(a,uid)) --> VarEq(dataVar(a,uid),dataVar(b,uid))
-  )
+
+  override def getConstraints: ChoConstraints = {
+    val c = super.getConstraints
+    c impose List(
+      VarEq(flowVar(a,uid),flowVar(b,uid)),
+      Var(flowVar(a,uid)) --> VarEq(dataVar(a,uid),dataVar(b,uid))
+    )
+    c
+  }
 
 }
 

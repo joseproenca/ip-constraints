@@ -22,7 +22,7 @@ class ChoMerger(x:String,y:String,z:String,uid:Int) extends ChoConnector(List(x,
   val (xv,yv,zv) = (Var(flowVar(x,uid)) , Var(flowVar(y,uid)), Var(flowVar(z,uid)))
 
   //(z <-> (x \/ y))  /\ !(a/\b)
-  var constraints = ChoConstraints(List(
+  def getConstraints = ChoConstraints(List(
     zv <-> (xv or yv),
     Neg(xv and yv)
   ))

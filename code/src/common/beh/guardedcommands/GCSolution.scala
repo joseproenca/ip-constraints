@@ -1,6 +1,6 @@
 package common.beh.guardedcommands
 
-import common.beh.Solution
+import common.beh.{EmptySol, Solution}
 import common.beh.Utils.ppVar
 
 /**
@@ -23,6 +23,8 @@ class GCSolution(val boolSol: Solution, var varMap: Map[String, Any]) extends So
     res
   }
 
+  def dataOn(end: String) = varMap.get(end)
+
   def apply(v:String): Any = //varMap(v)
     if (varMap contains v) varMap(v)
     else if (boolSol hasFlow v) return true
@@ -31,4 +33,18 @@ class GCSolution(val boolSol: Solution, var varMap: Map[String, Any]) extends So
     varMap = varMap + (v -> b)
   }
 
+}
+
+object GCSolution {
+  class MyEmptySol extends Solution {
+    def hasFlow(end: String) = false
+    def dataOn(end: String) = None
+    def pretty = ""
+  }
+
+  implicit object NoSol extends EmptySol[GCSolution] {
+    def sol = {
+      new GCSolution(new MyEmptySol,Map())
+    }
+  }
 }

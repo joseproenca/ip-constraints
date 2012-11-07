@@ -15,7 +15,7 @@ class GCSDrain(a: String, b: String, uid: Int) extends GCConnector(List(a,b), ui
   val av = Var(flowVar(a,uid))
   val bv = Var(flowVar(b,uid))
 
-  var constraints = GuardedCommands( av <-> bv )
+  def getConstraints =  av <-> bv
 
   if (useCC3) throw new Exception("CC3 not implemented")
 

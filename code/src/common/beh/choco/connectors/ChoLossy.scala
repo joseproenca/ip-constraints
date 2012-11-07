@@ -25,7 +25,7 @@ class ChoLossy(x:String,y:String,uid:Int) extends ChoConnector(List(x,y),uid) {
 //    Impl(Var(ConstrBuilder.flowVar(y,uid)), Var(ConstrBuilder.flowVar(x,uid))),
 //    (Var(ConstrBuilder.flowVar(x,uid)))
 //  ))
-  var constraints = ChoConstraints(
+  def getConstraints = ChoConstraints(
     yv --> xv
   )
 

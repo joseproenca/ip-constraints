@@ -14,6 +14,29 @@ import common.beh.Utils._
 abstract class GCConnector(ends: List[String], uid: Int = 0) extends Connector[GCSolution,GuardedCommands](ends,uid) {
   useData = true // data by default
 
+
+  /**
+   * Combine two connectors, resulting in a composed connector.
+   * Note that the uid of the resulting connector is always given
+   * by the left ID (or only existing ComplexConnector).
+   *
+   * @param other The other connector to be composed
+   * @return The composed connector
+   */
+  def ++(other: Connector[GCSolution, GuardedCommands]): Connector[GCSolution,GuardedCommands] =
+    (this,other) match {
+      case (x:ComplexConnector,_) => x +++ other
+      case (_,x:ComplexConnector) => x +++ this
+      case _ => new ComplexConnector(List(this,other),ends ++ other.ends, uid)
+    }
+
+
+
+  /////////////////////////////////////////////////////////////////////////
+  // FROM HERE it should probably be dropped and moved to other class... //
+  /////////////////////////////////////////////////////////////////////////
+
+
   // adds to "c" the sync constraints wrt the ends shared with "from"
   // TODO: fix based on useData or not.
   // NOTE: direction IS important!
@@ -38,11 +61,7 @@ abstract class GCConnector(ends: List[String], uid: Int = 0) extends Connector[G
     else 0
   }
 
-  def noSol = null
-
-  def update(s: GCSolution) {}
-
-  // adds to "c" the border constraints wrt the ends shared with "from"
+// adds to "c" the border constraints wrt the ends shared with "from"
 //  def border(from: AnyRef, c: GuardedCommands) = null
   def border(from:AnyRef,c:GuardedCommands) = {
     var res = c

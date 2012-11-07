@@ -29,55 +29,55 @@ object GCLoanRequest extends App {
   Warmup.go
 
   val baseProblem =  // stateless part
-    new GCSDrain("req1","req2",0).constraints ++
-      new GCSDrain("appr1","appr2",0).constraints ++
-      new GCIMerger("req2","auth2","pin",0).constraints ++
-      new GCMerger("denied","appr2","out",0).constraints ++
+    new GCSDrain("req1","req2",0).getConstraints ++
+      new GCSDrain("appr1","appr2",0).getConstraints ++
+      new GCIMerger("req2","auth2","pin",0).getConstraints ++
+      new GCMerger("denied","appr2","out",0).getConstraints ++
       // filters
-      new GCFilter("login","auth",0,IntPred(dataVar("login",0),new Authorised)).constraints ++
-      new GCFilter("isEn","denied",0,IntPred(dataVar("isEn",0),new Deny)).constraints ++
-      new GCFilter("isEn","appr1",0,IntPred(dataVar("isEn",0),new Approve)).constraints
+      new GCFilter("login","auth",0,IntPred(dataVar("login",0),new Authorised)).getConstraints ++
+      new GCFilter("isEn","denied",0,IntPred(dataVar("isEn",0),new Deny)).getConstraints ++
+      new GCFilter("isEn","appr1",0,IntPred(dataVar("isEn",0),new Approve)).getConstraints
 
   var problems = for (bankclerk <- List(1,3)) yield baseProblem ++ // init state
-    new GCWriter("start",0,List(3)).constraints ++
-      new GCWriter("login",0,List(bankclerk)).constraints ++
-      new GCFifo("start","isEn",None,0).constraints ++
-      new GCFifo("start","req1",None,0).constraints ++
-      new GCFifo("auth","auth2",None,0).constraints ++
-      new GCFifo("pin","appr2",None,0).constraints ++
+    new GCWriter("start",0,List(3)).getConstraints ++
+      new GCWriter("login",0,List(bankclerk)).getConstraints ++
+      new GCFifo("start","isEn",None,0).getConstraints ++
+      new GCFifo("start","req1",None,0).getConstraints ++
+      new GCFifo("auth","auth2",None,0).getConstraints ++
+      new GCFifo("pin","appr2",None,0).getConstraints ++
       GuardedCommands(True --> Var(flowVar("start",0))) ++ // force data on start
       GuardedCommands(True --> Var(flowVar("login",0)))    // and on login
 
   // after success of 1
   problems :::= List(baseProblem ++
-    new GCWriter("start",0,List()).constraints ++
-    new GCWriter("login",0,List()).constraints ++
-    new GCFifo("start","isEn",Some(3),0).constraints ++
-    new GCFifo("start","req1",Some(3),0).constraints ++
-    new GCFifo("auth","auth2",Some(1),0).constraints ++
-    new GCFifo("pin","appr2",None,0).constraints ++
+    new GCWriter("start",0,List()).getConstraints ++
+    new GCWriter("login",0,List()).getConstraints ++
+    new GCFifo("start","isEn",Some(3),0).getConstraints ++
+    new GCFifo("start","req1",Some(3),0).getConstraints ++
+    new GCFifo("auth","auth2",Some(1),0).getConstraints ++
+    new GCFifo("pin","appr2",None,0).getConstraints ++
     GuardedCommands(True --> Var(flowVar("pin",0)))    // force data on IMerger
   )
 
   // after success of only login
   problems :::= List(baseProblem ++
-    new GCWriter("start",0,List()).constraints ++
-    new GCWriter("login",0,List()).constraints ++
-    new GCFifo("start","isEn",None,0).constraints ++
-    new GCFifo("start","req1",None,0).constraints ++
-    new GCFifo("auth","auth2",Some(1),0).constraints ++
-    new GCFifo("pin","appr2",None,0).constraints ++
+    new GCWriter("start",0,List()).getConstraints ++
+    new GCWriter("login",0,List()).getConstraints ++
+    new GCFifo("start","isEn",None,0).getConstraints ++
+    new GCFifo("start","req1",None,0).getConstraints ++
+    new GCFifo("auth","auth2",Some(1),0).getConstraints ++
+    new GCFifo("pin","appr2",None,0).getConstraints ++
     GuardedCommands(True --> Var(flowVar("pin",0)))    // force data on IMerger
   )
 
   // if only IMerger had flow before
   problems :::= (for (client <- List(1,2,3)) yield baseProblem ++
-    new GCWriter("start",0,List()).constraints ++
-      new GCWriter("login",0,List()).constraints ++
-      new GCFifo("start","isEn",Some(client),0).constraints ++
-      new GCFifo("start","req1",None,0).constraints ++
-      new GCFifo("auth","auth2",None,0).constraints ++
-      new GCFifo("pin","appr2",Some(1),0).constraints ++
+    new GCWriter("start",0,List()).getConstraints ++
+      new GCWriter("login",0,List()).getConstraints ++
+      new GCFifo("start","isEn",Some(client),0).getConstraints ++
+      new GCFifo("start","req1",None,0).getConstraints ++
+      new GCFifo("auth","auth2",None,0).getConstraints ++
+      new GCFifo("pin","appr2",Some(1),0).getConstraints ++
       GuardedCommands(True --> Var(flowVar("isEn",0)))) // force data before filters
 
   var time: Long = 0

@@ -38,7 +38,7 @@ object DetApproval extends App {
     for (level <- 1 to height) {
       var newsrcs = List[String]()
       for (x <- srcs) {
-        res = res ++ new GCMerger(x+1,x+2,x,0).constraints
+        res = res ++ new GCMerger(x+1,x+2,x,0).getConstraints
         newsrcs :::= List(x+1,x+2)
       }
       srcs = newsrcs

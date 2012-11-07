@@ -30,9 +30,7 @@ class GCSyncFifo(a: String, b: String, var data: Option[Any], uid: Int) extends 
     else GuardedCommands(av --> bv)
 
 
-  def loadConstraints = if (data.isDefined) fullFifo else emptyFifo
-
-  var constraints = loadConstraints
+  def getConstraints = if (data.isDefined) fullFifo else emptyFifo
 
   // update state not implemented
 }

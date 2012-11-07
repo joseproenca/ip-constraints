@@ -15,15 +15,14 @@ import common.beh.guardedcommands.Var
 class GCWriter (val x: String, uid: Int, var data: List[Any]) extends GCConnector(List(x), uid) {
   val xv = Var(flowVar(x,uid))
 
-  val nfConstr = GuardedCommands(!xv)
+  private val nfConstr: GuardedCommands = !xv
 
-  var constraints = loadConstraints
+  //var constraints = loadConstraints
 
-  protected def loadConstraints = {
+  def getConstraints = {
     if (!data.isEmpty) {
-      if(useData) GuardedCommands(
+      if(useData)
         xv --> (xv := data.head)//(Var(flowVar(x,uid)) --> DataAssgn(dataVar(x,uid),data.head))
-      )
 
       else if (useCC3) throw new Exception("CC3 not implemented")
       else GuardedCommands()
@@ -38,7 +37,7 @@ class GCWriter (val x: String, uid: Int, var data: List[Any]) extends GCConnecto
       // update state
       data = data.tail
       // update constraints
-      constraints = loadConstraints
+      // constraints = loadConstraints --- done by getConstraints by updating state
     }
   }
 

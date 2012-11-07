@@ -45,20 +45,20 @@ object Warmup {
 
     def genSched(i:Int,on: Boolean): GuardedCommands = {
       val res =
-        new GCExRouter("x","a","b",i).constraints ++
-        new GCFilter("a","e",i,Neg(IntPred(dataVar("a",i),evening))).constraints ++
-        new GCFilter("a","f",i,IntPred(dataVar("a",i),evening)).constraints ++
-        new GCFilter("b","g",i,IntPred(dataVar("b",i),morning)).constraints ++
-        new GCMerger("e","g","m",i).constraints ++
-        new GCSDrain("a","c",i).constraints ++
-        new GCSDrain("b","d",i).constraints ++
-        new GCSDrain("g","b",i).constraints ++
-        new GCSync("e","disp",i).constraints ++
-        new GCSync("f","off",i).constraints ++
-        new GCSync("g","on",i).constraints ++
+        new GCExRouter("x","a","b",i).getConstraints ++
+        new GCFilter("a","e",i,Neg(IntPred(dataVar("a",i),evening))).getConstraints ++
+        new GCFilter("a","f",i,IntPred(dataVar("a",i),evening)).getConstraints ++
+        new GCFilter("b","g",i,IntPred(dataVar("b",i),morning)).getConstraints ++
+        new GCMerger("e","g","m",i).getConstraints ++
+        new GCSDrain("a","c",i).getConstraints ++
+        new GCSDrain("b","d",i).getConstraints ++
+        new GCSDrain("g","b",i).getConstraints ++
+        new GCSync("e","disp",i).getConstraints ++
+        new GCSync("f","off",i).getConstraints ++
+        new GCSync("g","on",i).getConstraints ++
         GuardedCommands(True --> Var(flowVar("x",i)))
-        new GCSyncFifo("m","c",Some(0),i).constraints ++
-        new GCFifo("f","d",None,i).constraints
+        new GCSyncFifo("m","c",Some(0),i).getConstraints ++
+        new GCFifo("f","d",None,i).getConstraints
     }
 
 
@@ -83,7 +83,7 @@ object Warmup {
 
       val problem = genScheds(1 to n2, "time",0,true) ++   // some will display
         genScheds(n2+1 to n, "time",0,false) ++            // and some will turn on
-        new GCWriter("time",0,List(500)).constraints ++    // (it is morning)
+        new GCWriter("time",0,List(500)).getConstraints ++    // (it is morning)
         GuardedCommands(True --> Var(flowVar("time",0))) // require some dataflow
 
       val time = System.currentTimeMillis()

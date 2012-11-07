@@ -31,26 +31,26 @@ object ChoSchedules extends App {
 
     //    new ChoWriter("x",i,List(500)).constraints ++
     val res =
-      new ChoExRouter("x","a","b",i).constraints ++
-        new ChoFilter("a","e",i, (x:IntegerVariable) => Choco.not(evening.choPred(x))).constraints ++
-         //  Neg(Pred(evening,dataVar("a",i)))).constraints ++
-        new ChoFilter("a","f",i,evening.choPred).constraints ++
-        new ChoFilter("b","g",i,morning.choPred).constraints ++
-        new ChoMerger("e","g","m",i).constraints ++
-        new ChoSDrain("a","c",i).constraints ++
-        new ChoSDrain("b","d",i).constraints ++
-        new ChoSDrain("g","b",i).constraints ++
-        new ChoSync("e","disp",i).constraints ++
-        new ChoSync("f","off",i).constraints ++
-        new ChoSync("g","on",i).constraints ++
+      new ChoExRouter("x","a","b",i).getConstraints ++
+        new ChoFilter("a","e",i, (x:IntegerVariable) => Choco.not(evening.choPred(x))).getConstraints ++
+         //  Neg(Pred(evening,dataVar("a",i)))).getConstraints ++
+        new ChoFilter("a","f",i,evening.choPred).getConstraints ++
+        new ChoFilter("b","g",i,morning.choPred).getConstraints ++
+        new ChoMerger("e","g","m",i).getConstraints ++
+        new ChoSDrain("a","c",i).getConstraints ++
+        new ChoSDrain("b","d",i).getConstraints ++
+        new ChoSDrain("g","b",i).getConstraints ++
+        new ChoSync("e","disp",i).getConstraints ++
+        new ChoSync("f","off",i).getConstraints ++
+        new ChoSync("g","on",i).getConstraints ++
         ChoConstraints(Var(flowVar("x",i)))
 
     if (on) res ++
-      new ChoSyncFifo("m","c",Some(0),i).constraints ++
-      new ChoFifo("f","d",None,i).constraints
+      new ChoSyncFifo("m","c",Some(0),i).getConstraints ++
+      new ChoFifo("f","d",None,i).getConstraints
     else res ++
-      new ChoSyncFifo("m","c",None,i).constraints ++
-      new ChoFifo("f","d",Some(0),i).constraints
+      new ChoSyncFifo("m","c",None,i).getConstraints ++
+      new ChoFifo("f","d",Some(0),i).getConstraints
   }
 
 
@@ -70,15 +70,15 @@ object ChoSchedules extends App {
   }
 
 
-//  val problem = genSched(0,true)  ++ new ChoWriter("x",0,List(500)).constraints  // on, morning  - display
-//    val schedule = genSched(0,true)  ++ new ChoWriter("x",0,List(1400)).constraints // on, evening  - turn off
-//    val schedule = genSched(0,false) ++ new ChoWriter("x",0,List(500)).constraints  // off, morning - turn on
-//    val schedule = genSched(0,false) ++ new ChoWriter("x",0,List(1400)).constraints // off, evening - no sol
+//  val problem = genSched(0,true)  ++ new ChoWriter("x",0,List(500)).getConstraints  // on, morning  - display
+//    val schedule = genSched(0,true)  ++ new ChoWriter("x",0,List(1400)).getConstraints // on, evening  - turn off
+//    val schedule = genSched(0,false) ++ new ChoWriter("x",0,List(500)).getConstraints  // off, morning - turn on
+//    val schedule = genSched(0,false) ++ new ChoWriter("x",0,List(1400)).getConstraints // off, evening - no sol
 
   val n2: Int = n / 2
   val problem = genScheds(1 to n2, "time",0,true) ++ // some will display
     genScheds(n2+1 to n, "time",0,false) ++            // and some will turn on
-    new ChoWriter("time",0,List(500)).constraints       // (it is morning)
+    new ChoWriter("time",0,List(500)).getConstraints       // (it is morning)
 
 
   val time = System.currentTimeMillis()

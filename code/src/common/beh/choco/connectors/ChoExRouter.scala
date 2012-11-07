@@ -18,7 +18,7 @@ class ChoExRouter(x:String,y:String,z:String,uid:Int) extends ChoConnector(List(
 
   val (xv,yv,zv) = (Var(flowVar(x,uid)) , Var(flowVar(y,uid)), Var(flowVar(z,uid)))
 
-  var constraints = ChoConstraints(List((xv <-> (yv or zv)) , Neg(yv and zv)))
+  def getConstraints = ChoConstraints(List((xv <-> (yv or zv)) , Neg(yv and zv)))
 
   // suggests which ends must have dataflow if "end" has also dataflow
 //  def guessRequirements(end: String) = end match {

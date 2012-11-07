@@ -46,4 +46,6 @@ class GCNMerger(srcs: List[String], snk: String, uid: Int) extends GCConnector(s
   if (useData) constraints ++= genData(srcs)
 
   if (useCC3) throw new Exception("CC3 not implemented")
+
+  def getConstraints = constraints
 }

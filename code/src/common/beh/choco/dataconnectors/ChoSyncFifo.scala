@@ -26,16 +26,15 @@ class ChoSyncFifo(a: String, b: String, var data: Option[Int], uid: Int) extends
   ))
 
 
-  var constraints = loadConstraints
 
-  protected def loadConstraints = if (data.isDefined) fullFifo else emptyFifo
+  def getConstraints = if (data.isDefined) fullFifo else emptyFifo
 
   override def update(s: ChoSolution) {
     if (s.hasFlow(flowVar(a, uid))) {
       //      println("Writer: FLOW! new size: "+size)
       notifyflow()
       data = s.getVal(flowVar(a,uid))
-      constraints = loadConstraints
+//      constraints = loadConstraints
     }
   }
 

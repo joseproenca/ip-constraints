@@ -26,14 +26,14 @@ class GCFifo(a: String, b: String, var data: Option[Any], uid: Int = 0) extends 
     else GuardedCommands(Neg(av))
 
 
-  var constraints = if (data.isDefined) fullFifo else emptyFifo
+  def getConstraints = if (data.isDefined) fullFifo else emptyFifo
 
   override def update(s: GCSolution) {
     if (s.hasFlow(flowVar(a,uid))) {
       // update state
       data = Some(s(dataVar(a,uid)))
       // update constraints
-      constraints = fullFifo
+      //constraints = fullFifo  //---- constraints automatically updated with state.
       // println("FIFO: FLOW IN!")
       // notifyflow()
     }
@@ -41,7 +41,7 @@ class GCFifo(a: String, b: String, var data: Option[Any], uid: Int = 0) extends 
       // update state
       data = None
       // update constraints
-      constraints = emptyFifo
+      //constraints = emptyFifo //---- constraints automatically updated with state.
       // println("FIFO: FLOW OUT!")
       // notifyflow()
     }

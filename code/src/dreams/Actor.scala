@@ -1,7 +1,7 @@
 package dreams
 
 import actors.OutputChannel
-import common.beh.{Constraints, Connector, Solution}
+import common.beh.{EmptySol, Constraints, Connector, Solution}
 
 /**
  * Created by IntelliJ IDEA.
@@ -11,7 +11,7 @@ import common.beh.{Constraints, Connector, Solution}
  * To change this template use File | Settings | File Templates.
  */
 
-abstract class Actor[S<:Solution, C<:Constraints[S,C]]
+abstract class Actor[S<:Solution, C<:Constraints[S,C]](implicit noSol:EmptySol[S])
   extends scala.actors.Actor {
 
   var isIdle = false
@@ -32,11 +32,15 @@ abstract class Actor[S<:Solution, C<:Constraints[S,C]]
         a ! RequestBeh(myrank)
         invited += a -> myrank
       }
-      stateCommitting(myrank,None,invited,behaviour.constraints)
+      stateCommitting(myrank,None,invited,behaviour.getConstraints)
     }
     else stateIdle    
   }
-  
+
+
+//  def start(implicit nosol: EmptySol[S]) {
+//    super.start()
+//  }
   
   def act { stateSuspended(Set()) }
 
@@ -50,7 +54,7 @@ abstract class Actor[S<:Solution, C<:Constraints[S,C]]
     case RequestBeh(rank:Int) => {
       val children: Set[ActorRef] = neighbours - sender
       if (children.isEmpty) {
-        sender ! ReplyBeh[C](behaviour.constraints)
+        sender ! ReplyBeh[C](behaviour.getConstraints)
         stateCommitted
       }
       else {
@@ -58,7 +62,7 @@ abstract class Actor[S<:Solution, C<:Constraints[S,C]]
         for (c <- children)
           c ! RequestBeh(rank)
         val invited = Map() ++ (for (c <- children) yield c -> rank)
-        stateCommitting(rank,Some(sender),invited,behaviour.constraints)
+        stateCommitting(rank,Some(sender),invited,behaviour.getConstraints)
       }         
     }
     case Update(s:S) => stateIdle // when an update comes to a split channel
@@ -119,7 +123,7 @@ abstract class Actor[S<:Solution, C<:Constraints[S,C]]
       if (sol.isDefined)
         processSol(sol.get,true)
       else
-        processSol(behaviour.noSol,true)
+        processSol(noSol.sol,true)
     }
   }
 

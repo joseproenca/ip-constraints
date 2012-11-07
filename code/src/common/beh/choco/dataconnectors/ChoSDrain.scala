@@ -16,7 +16,7 @@ class ChoSDrain(a:String,b:String,uid:Int) extends ChoDataConnector(List(a,b),ui
   useData = true
   useCC3 = false
 
-  var constraints = ChoConstraints(
+  def getConstraints = ChoConstraints(
     VarEq(flowVar(a,uid),flowVar(b,uid))
   )
 

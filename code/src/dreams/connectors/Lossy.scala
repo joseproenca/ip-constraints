@@ -2,7 +2,7 @@ package dreams.connectors
 
 import dreams.Actor
 import common.beh.guardedcommands.{GCSolution, GuardedCommands}
-import common.beh.guardedcommands.dataconnectors.GCLossy
+import common.beh.guardedcommands.dataconnectors.{GCReader, GCFifo, GCLossy}
 
 /**
  * Created by IntelliJ IDEA.

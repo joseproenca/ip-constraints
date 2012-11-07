@@ -25,4 +25,6 @@ class GCTransf (a: String, b: String, uid: Int, f: UnFunction) extends GCConnect
     av --> (bv := (f,av))  // FunAssgn(dataVar(b,uid), dataVar(a,uid), f)
 
   if (useCC3) throw new Exception("CC3 not implemented")
+
+  def getConstraints = constraints
 }

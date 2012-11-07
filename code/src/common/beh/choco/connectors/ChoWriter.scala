@@ -21,16 +21,15 @@ class ChoWriter(x:String,uid:Int,var size:Int) extends ChoConnector(List(x),uid)
 //  val nfConstr = ChoConstraints(FalseC)
   val nfConstr = ChoConstraints(Neg(Var(Utils.flowVar(x,uid))))
 
-  var constraints = loadConstraints
+  def getConstraints = if (size>0) ChoConstraints(TrueC) else nfConstr
 
-  protected def loadConstraints = if (size>0) ChoConstraints(TrueC) else nfConstr
 
   override def update(s:ChoSolution) {
     if (s.hasFlow(Utils.flowVar(x,uid))) {
       size -= 1
 //      println("Writer: FLOW! new size: "+size)
       notifyflow()
-      constraints = loadConstraints
+//      constraints = loadConstraints
     }
   }
 

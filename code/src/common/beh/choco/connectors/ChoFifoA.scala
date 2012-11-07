@@ -22,16 +22,14 @@ class ChoFifoA(a: String, var data: Option[Int], uid: Int) extends ChoDataConnec
 
   def fullFifo = ChoConstraints(Neg(av))
 
-  var constraints = loadConstraints
-
-  protected def loadConstraints = if (data.isDefined) fullFifo else emptyFifo
+  def getConstraints = if (data.isDefined) fullFifo else emptyFifo
 
   override def update(s: ChoSolution) {
     if (s.hasFlow(flowVar(a, uid))) {
       //      println("Writer: FLOW! new size: "+size)
       notifyflow()
       data = Some(0)
-      constraints = loadConstraints
+//      constraints = loadConstraints
     }
   }
 

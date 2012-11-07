@@ -16,7 +16,7 @@ class GCExRouter(a: String, b: String, c: String, uid: Int) extends GCConnector(
   val bv = Var(flowVar(b,uid))
   val cv = Var(flowVar(c,uid))
 
-  var constraints = GuardedCommands(
+  private var constraints = GuardedCommands(
     av --> (bv or cv),
     (bv or cv) --> av,
     Neg(bv and cv)
@@ -29,4 +29,5 @@ class GCExRouter(a: String, b: String, c: String, uid: Int) extends GCConnector(
 
   if (useCC3) throw new Exception("CC3 not implemented")
 
+  def getConstraints = constraints
 }

@@ -80,18 +80,18 @@ object ChoPrimes extends App {
   )
 
   def genFilters(size: Int): ChoConstraints = {
-    var constr = new ChoSDrain("x","x"+size,0).constraints ++
-      new ChoFilter("x","x0",0,new GT(1).choPred).constraints
-//      new ChoSync("x","x0",0).constraints
-//        Pred(new GT(1),dataVar("x",0))).constraints
+    var constr = new ChoSDrain("x","x"+size,0).getConstraints ++
+      new ChoFilter("x","x0",0,new GT(1).choPred).getConstraints
+//      new ChoSync("x","x0",0).getConstraints
+//        Pred(new GT(1),dataVar("x",0))).getConstraints
     for (i <- 0 to (size-1)) constr = constr ++
-          new ChoFilter("x"+i,"x"+(i+1),0,(x:IntegerVariable) => Choco.not(new Divides(i).choPred(x))).constraints
-//      new ChoSync("x"+i,"x"+(i+1),0).constraints
+          new ChoFilter("x"+i,"x"+(i+1),0,(x:IntegerVariable) => Choco.not(new Divides(i).choPred(x))).getConstraints
+//      new ChoSync("x"+i,"x"+(i+1),0).getConstraints
     constr
   }
 
   def genSpout(): ChoConstraints = {
-    new ChoSSpout("reader","x",0).constraints
+    new ChoSSpout("reader","x",0).getConstraints
   }
 
 

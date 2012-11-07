@@ -32,20 +32,20 @@ object GCParSpouts extends App {
 
   if (n > 0)
     problem ++=
-      ( new GCSSpout("b1","c1",0).constraints ++
+      ( new GCSSpout("b1","c1",0).getConstraints ++
         GuardedCommands(True --> Var(flowVar("a1",0))) ++
         GuardedCommands(True --> Var(flowVar("d1",0))) ++
-        new GCFilter("b1","a1",0,IntPred(dataVar("b1",0),new LT(1))).constraints ++
-        new GCFilter("c1","d1",0,IntPred(dataVar("c1",0),new GT(1))).constraints
+        new GCFilter("b1","a1",0,IntPred(dataVar("b1",0),new LT(1))).getConstraints ++
+        new GCFilter("c1","d1",0,IntPred(dataVar("c1",0),new GT(1))).getConstraints
       )
 
   for (i <- 2 to n) {
     problem ++=
-      ( new GCSSpout("b"+i,"c"+i,0).constraints ++
-        new GCFilter("b"+i,"a"+i,0,IntPred(dataVar("b"+i,0),new LT(i))).constraints ++
-        new GCFilter("c"+i,"d"+i,0,IntPred(dataVar("c"+i,0),new GT(i))).constraints ++
-        new GCSDrain("a"+i,"a"+(i-1),0).constraints ++
-        new GCSDrain("d"+i,"d"+(i-1),0).constraints
+      ( new GCSSpout("b"+i,"c"+i,0).getConstraints ++
+        new GCFilter("b"+i,"a"+i,0,IntPred(dataVar("b"+i,0),new LT(i))).getConstraints ++
+        new GCFilter("c"+i,"d"+i,0,IntPred(dataVar("c"+i,0),new GT(i))).getConstraints ++
+        new GCSDrain("a"+i,"a"+(i-1),0).getConstraints ++
+        new GCSDrain("d"+i,"d"+(i-1),0).getConstraints
       )
   }
 

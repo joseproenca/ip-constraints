@@ -16,10 +16,14 @@ class ChoExRouter(x:String,y:String,z:String,uid:Int) extends connectors.ChoExRo
   useData = true
   useCC3 = false
 
-  constraints impose List(
-    yv --> VarEq(dataVar(x,uid),dataVar(y,uid)),
-    zv --> VarEq(dataVar(x,uid),dataVar(z,uid))
-  )
+  override def getConstraints: ChoConstraints = {
+    val c = super.getConstraints
+    c impose List(
+      yv --> VarEq(dataVar(x,uid),dataVar(y,uid)),
+      zv --> VarEq(dataVar(x,uid),dataVar(z,uid))
+    )
+    c
+  }
 
   // suggests which ends must have dataflow if "end" has also dataflow
 //  def guessRequirements(end: String) = end match {
