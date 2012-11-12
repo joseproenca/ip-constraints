@@ -34,6 +34,7 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
   val buf = new Buffer
   var closed = false
 
+  override def toString = commands.mkString("\n")
 
   /**
    * Collect the domain of every guarded command in field 'da'.
@@ -124,6 +125,7 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
    * Add SOME-FLOW and CC3 constraints.
    * CC3 not yet in use.
    */
+  @deprecated
   private def closeOld() {
     if (!closed) {
       var flowvars: Guard = !True

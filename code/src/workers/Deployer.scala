@@ -1,6 +1,6 @@
 package workers
 
-import common.beh.{Solution, Constraints}
+import common.beh.{CBuilder, Solution, Constraints}
 import strategies.{Strategy, StrategyBuilder}
 
 
@@ -12,8 +12,9 @@ import strategies.{Strategy, StrategyBuilder}
  * To change this template use File | Settings | File Templates.
  */
 
-class Deployer[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str], SB<:StrategyBuilder[S,C,Str]]
-  (maxWorkers: Int, sb: SB)
+class Deployer[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
+  (maxWorkers: Int)
+  (implicit builder: CBuilder[S,C], sb: StrategyBuilder[S,C,Str])
   extends scala.actors.Actor {
 //  val maxWorkers: Int
   var currentWorkers: Int = 0

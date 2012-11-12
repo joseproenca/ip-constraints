@@ -27,8 +27,10 @@ class CompleteStrategy[S <: Solution, C <: Constraints[S, C]] extends Strategy[S
   override def nextNodes: Iterable[Nd] = List()
 }
 
-object CompleteStrategyBuilder
-  extends StrategyBuilder[GCSolution, GuardedCommands, CompleteStrategy[GCSolution, GuardedCommands]] {
+object CompleteStrategy {
+  implicit object CompleteStrategyBuilder
+    extends StrategyBuilder[GCSolution, GuardedCommands, CompleteStrategy[GCSolution, GuardedCommands]] {
     def apply = new CompleteStrategy[GCSolution, GuardedCommands]()
 
   }
+}

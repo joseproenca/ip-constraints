@@ -47,24 +47,24 @@ abstract class Connector[S<: Solution, C <: Constraints[S,C]](val ends: List[Str
   ///////////////////////////////////////////////////////////////
   // FROM HERE it should probably be moved to other classes... //
   ///////////////////////////////////////////////////////////////
-
-
-  def compat(other: Connector[S,C]) =
-    useData == other.useData && useCC3 == other.useCC3
-
-
-  //////////////////////////////////////////////////////
-  // Connector as an independent piece (no shared ports)
-
-  // required by dreams or workers... connections from local ends to remote ends
-  var connections: Map[AnyRef,Set[(String,String,Int)]] = Map() // neighbours to pairs of sync'd ends
-
-  // adds to "c" the sync constraints wrt the ends shared with "from"
-  // required if connected to other nodes.
-  def sync(from:AnyRef,c:C): C
-
-  // adds to "c" the border constraints wrt the ends shared with "from"
-  def border(from:AnyRef,c:C): C
+//
+//
+//  def compat(other: Connector[S,C]) =
+//    useData == other.useData && useCC3 == other.useCC3
+//
+//
+//  //////////////////////////////////////////////////////
+//  // Connector as an independent piece (no shared ports)
+//
+//  // required by dreams or workers... connections from local ends to remote ends
+//  var connections: Map[AnyRef,Set[(String,String,Int)]] = Map() // neighbours to pairs of sync'd ends
+//
+//  // adds to "c" the sync constraints wrt the ends shared with "from"
+//  // required if connected to other nodes.
+//  def sync(from:AnyRef,c:C): C
+//
+//  // adds to "c" the border constraints wrt the ends shared with "from"
+//  def border(from:AnyRef,c:C): C
 
 
   ///////

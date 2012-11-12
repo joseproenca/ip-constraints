@@ -1,7 +1,7 @@
 package workers
 
 import actors.OutputChannel
-import common.beh.{Constraints, Solution}
+import common.beh.{CBuilder, Constraints, Solution}
 import strategies.Strategy
 
 /**
@@ -13,7 +13,8 @@ import strategies.Strategy
  */
 
 class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
-      (deployer: OutputChannel[Any], strat: Str) extends scala.actors.Actor {
+      (deployer: OutputChannel[Any], strat: Str)
+      (implicit builder: CBuilder[S,C]) extends scala.actors.Actor {
 
   // type alias
   type Nd = Node[S,C]
@@ -29,7 +30,7 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
 
 
   def work(node: Node[S,C]): Boolean = {
-    debug("starting node - "+node.behaviour.connections.values.head.head._1)
+    debug("starting node - "+node.connections.values.head.head._1)
     // ...
     val nodes = strat.initNodes(node)
     val claimed = claim(nodes)
@@ -348,7 +349,9 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
 }
 
 object Worker {
-  def apply[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]](node:Node[S,C],deployer: OutputChannel[Any], strat:Str) {
+  def apply[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
+      (node:Node[S,C],deployer: OutputChannel[Any], strat:Str)
+      (implicit builder: CBuilder[S,C]){
     val w = new Worker[S,C,Str](deployer,strat)
     w.work(node)
     w

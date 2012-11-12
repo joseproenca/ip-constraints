@@ -2,6 +2,7 @@ package common.beh.guardedcommands
 
 import common.beh.Connector
 import common.beh.Utils._
+import collection.mutable
 
 /**
  * Created with IntelliJ IDEA.
@@ -15,15 +16,19 @@ class ComplexConnector(val sub: List[Connector[GCSolution,GuardedCommands]], end
 
   /**
    * Collect the constraints and returns them, ready to be solved.
-   * Add sync rules: assume share variables for synchronisation,
-   *   and connect CC3-related variables (assuming all ends use the same uid!)
+   * Add sync rules: assume shared variables for synchronisation,
+   *   and connect CC3-related variables (assuming their original ids - good!)
    */
   def getConstraints = {
     var res = GuardedCommands()
     for (c <- sub) res ++= c.getConstraints
-    if (useCC3)
-      for (e <- ends)
-        res ++= GuardedCommands( Var(srcVar(e,uid)) \/ Var(snkVar(e,uid)) )
+    if (useCC3) {
+      val subends = mutable.Set[(String,Int)]()
+      for (c <- sub; e <- c.ends)
+        subends add (e,c.uid)
+      for ((e,id) <- subends)
+        res ++= GuardedCommands( Var(srcVar(e,id)) \/ Var(snkVar(e,id)) )
+    }
     res
   }
 

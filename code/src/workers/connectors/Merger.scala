@@ -21,8 +21,8 @@ class Merger (deployer: OutputChannel[Any]) extends Node[GCSolution, GuardedComm
 
   // suggests which ends must have dataflow if "end" has also dataflow
   def guessRequirements(nd: Node[GCSolution, GuardedCommands]): Set[Node[GCSolution,GuardedCommands]] =
-    if (behaviour.connections contains nd) { // if the node nd is actually connected to nd
-      for ((myend,_,_) <- behaviour.connections(nd)) {// set of ends
+    if (connections contains nd) { // if the node nd is actually connected to nd
+      for ((myend,_,_) <- connections(nd)) {// set of ends
         if (myend == "a" || myend == "b") return invConnections("c")
         else if (myend == "c") return invConnections("a")
       }

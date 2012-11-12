@@ -1,6 +1,7 @@
 package common.beh.choco
 
-import common.beh.{Utils, Connector}
+import common.beh.{CBuilder, Connector}
+import common.beh.Utils._
 
 
 /**
@@ -20,31 +21,39 @@ abstract class ChoConnector(ends: List[String], uid: Int) extends Connector[ChoS
    * @param other The other connector to be composed
    * @return The composed connector
    */
-  def ++(other: Connector[ChoSolution, ChoConstraints]) = null
-
-
-  //  def join(c1: ChoConstraints, c2: ChoConstraints) =
-//    c1 + c2
-
-  def sync(from:AnyRef,c:ChoConstraints) = {
-    if (connections contains from) {
-      var connConstr = for ((end,oend,ouid) <- connections(from))
-        yield VarEq(Utils.flowVar(oend,ouid),Utils.flowVar(end,uid))
-      if (useData) connConstr ++= (for ((end,oend,ouid) <- connections(from))
-        yield VarEq(Utils.dataVar(oend,ouid),Utils.dataVar(end,uid)))
-      c ++ connConstr
+  def ++(other: Connector[ChoSolution, ChoConstraints]) = {
+    val mycs = getConstraints
+    new ChoConnector(ends ::: other.ends, uid){
+      def getConstraints =  mycs ++ other.getConstraints
     }
-    else c
+    //throw new RuntimeException("Composition of choco-based connectors not defined.")
   }
 
-  def border(from:AnyRef,c:ChoConstraints) = {
-    if (connections contains from) {
-      val connConstr = for ((end,_,_) <- connections(from))
-        yield Neg(Var(Utils.flowVar(end,uid)))
-      c ++ connConstr
-    }
-    else c
-  }
+
+    //
+//
+//  //  def join(c1: ChoConstraints, c2: ChoConstraints) =
+////    c1 + c2
+//
+//  def sync(from:AnyRef,c:ChoConstraints) = {
+//    if (connections contains from) {
+//      var connConstr = for ((end,oend,ouid) <- connections(from))
+//        yield VarEq(Utils.flowVar(oend,ouid),Utils.flowVar(end,uid))
+//      if (useData) connConstr ++= (for ((end,oend,ouid) <- connections(from))
+//        yield VarEq(Utils.dataVar(oend,ouid),Utils.dataVar(end,uid)))
+//      c ++ connConstr
+//    }
+//    else c
+//  }
+//
+//  def border(from:AnyRef,c:ChoConstraints) = {
+//    if (connections contains from) {
+//      val connConstr = for ((end,_,_) <- connections(from))
+//        yield Neg(Var(Utils.flowVar(end,uid)))
+//      c ++ connConstr
+//    }
+//    else c
+//  }
 
   // adds to "c" the flow constraints: at least end must have dataflow
 //  def flow(c: ChoConstraints): ChoConstraints = {
@@ -107,4 +116,19 @@ object ChoConnector {
       def guessRequirements(end: String) = Set()
     }
   }
+
+  implicit object ChoBuilder extends CBuilder[ChoSolution,ChoConstraints] {
+    def sync(e1: String, id1: Int, e2: String, id2: Int): ChoConstraints = {
+      var res: ConstrBuilder = VarEq(flowVar(e1,id1),flowVar(e2,id2))
+//      if (useData)
+      res = And(res, VarEq(dataVar(e1,id1),dataVar(e2,id2)))
+      //res.toChoco()
+      //throw new RuntimeException("sync method not implemented for choco constraints.")
+      ChoConstraints(res)
+    }
+    def noflow(end: String, uid: Int): ChoConstraints =
+      ChoConstraints(Neg(Var(flowVar(end,uid))))
+  }
+
+
 }

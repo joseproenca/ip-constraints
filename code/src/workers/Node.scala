@@ -20,7 +20,11 @@ abstract class Node[S<:Solution, C<:Constraints[S,C]]
   // abstract method:
   val behaviour: Connector[S, C]
 
-  var invConnections: Map[String, Set[Node[S,C]]] = Map() withDefaultValue(Set[Node[S,C]]())
+  // neighbours to pairs of sync'd ends
+  var connections    = Map[Node[S,C],Set[(String,String,Int)]]()
+  var invConnections = Map[String, Set[Node[S,C]]]() withDefaultValue(Set[Node[S,C]]())
+
+  var flowconn = Set[(String,Int,String,Int)]()
 
   def getNeighbours(): Iterable[Node[S,C]] = invConnections.values.flatten
 
@@ -47,39 +51,70 @@ abstract class Node[S<:Solution, C<:Constraints[S,C]]
     if (behaviour.isProactive) deployer ! this
   }
 
+  def apply(e:String): End[S,C] = new End(this,e)
 
 
-  def connect(other:Node[S,C],ends:Set[(String,String)]) {
-    this.behaviour.connections +=
-      other -> (for ((myend,otherend) <- ends) yield (myend,otherend,other.behaviour.uid))
-    other.behaviour.connections +=
-      this -> (for ((myend,otherend) <- ends) yield (otherend,myend,this.behaviour.uid))
+//  /**
+//   * Add to connections from this and the other node, so we know how
+//   * to traverse the graph of nodes.
+//   * Also add to flow connection, to know how to plug ends to describe the behaviour.
+//   * ORDER MATTERS: (mysourceend,othersinkend)
+//   * @param other
+//   * @param ends
+//   */
+//  def connect(other:Node[S,C],ends:Set[(String,String)]) {
+//    // forward connections
+//    this.connections +=
+//      other -> (for ((myend,otherend) <- ends) yield (myend,otherend,other.behaviour.uid))
+//    other.connections +=
+//      this -> (for ((myend,otherend) <- ends) yield (otherend,myend,this.behaviour.uid))
+//
+//    // backward connections
+//    for ((myend,otherend) <- ends) {
+////      val myendNodes: Set[Node[S,C]] = this.invConnections(myend)
+//      val newMyEndNodes:Set[Node[S,C]] = this.invConnections(myend) ++ Set(other)
+//      val newOtherEndNodes:Set[Node[S,C]] = other.invConnections(otherend) ++ Set(this)
+//      this.invConnections  += myend -> newMyEndNodes //(this.invConnections(myend) ++ Set(other))
+//      other.invConnections += otherend -> newOtherEndNodes
+//    }
+//
+//    // flow connections
+//    for ((myend,otherend) <- ends)
+//      flowconn += ((myend,behaviour.uid,otherend,other.behaviour.uid))
+//
+////    this.neighbours ::= other
+////    other.neighbours ::= this
+//  }
 
-    for ((myend,otherend) <- ends) {
-//      val myendNodes: Set[Node[S,C]] = this.invConnections(myend)
-      val newMyEndNodes:Set[Node[S,C]] = this.invConnections(myend) ++ Set(other)
-      val newOtherEndNodes:Set[Node[S,C]] = other.invConnections(otherend) ++ Set(this)
-      this.invConnections  += myend -> newMyEndNodes //(this.invConnections(myend) ++ Set(other))
-      other.invConnections += otherend -> newOtherEndNodes
-    }
-//    this.neighbours ::= other
-//    other.neighbours ::= this
-  }
-
-  def connect(other:Node[S,C],myend:String,otherend:String) {
-    this.behaviour.connections +=
-      other -> Set((myend,otherend,other.behaviour.uid))
-    other.behaviour.connections +=
-      this -> Set((otherend,myend,this.behaviour.uid))
-
-    //      val myendNodes: Set[Node[S,C]] = this.invConnections(myend)
-    val newMyEndNodes:Set[Node[S,C]] = this.invConnections(myend) ++ Set(other)
-    val newOtherEndNodes:Set[Node[S,C]] = other.invConnections(otherend) ++ Set(this)
-    this.invConnections  += myend -> newMyEndNodes //(this.invConnections(myend) ++ Set(other))
-    other.invConnections += otherend -> newOtherEndNodes
-    //    this.neighbours ::= other
-//    other.neighbours ::= this
-  }
+//  /**
+//   * Add to connections from this and the other node, so we know how
+//   * to traverse the graph of nodes.
+//   * Also add to flow connection, to know how to plug ends to describe the behaviour.
+//   * ORDER MATTERS: (mysourceend,othersinkend)
+//   * @param other
+//   * @param myend
+//   * @param otherend
+//   */
+//  def connect(other:Node[S,C],myend:String,otherend:String) {
+//    //println("connecting "+otherend+"-->"+myend)
+//
+//    this.connections +=
+//      other -> Set((myend,otherend,other.behaviour.uid))
+//    other.connections +=
+//      this -> Set((otherend,myend,this.behaviour.uid))
+//
+//    //      val myendNodes: Set[Node[S,C]] = this.invConnections(myend)
+//    val newMyEndNodes:Set[Node[S,C]] = this.invConnections(myend) ++ Set(other)
+//    val newOtherEndNodes:Set[Node[S,C]] = other.invConnections(otherend) ++ Set(this)
+//    this.invConnections  += myend -> newMyEndNodes //(this.invConnections(myend) ++ Set(other))
+//    other.invConnections += otherend -> newOtherEndNodes
+//
+//    // flow connections
+//    flowconn += ((myend,behaviour.uid,otherend,other.behaviour.uid))
+//
+////    this.neighbours ::= other
+////    other.neighbours ::= this
+//  }
 
 
 //  def update(s:S) // to be overriden
@@ -87,4 +122,43 @@ abstract class Node[S<:Solution, C<:Constraints[S,C]]
 //    behaviour.update(s)
 //    init
 //  }
+}
+
+
+/////////////////////////
+// Elegant connections //
+/////////////////////////
+
+//  private val thisactor = this
+class End[S<:Solution, C<:Constraints[S,C]](val n: Node[S,C], val e: String) {
+  /**
+   * Add to connections from this and the other node, so we know how
+   * to traverse the graph of nodes.
+   * Also add to flow connection, to know how to plug ends to describe the behaviour.
+   * ORDER MATTERS: (mysourceend,othersinkend)
+   */
+  def <--(e2: End[S,C]) {
+    //a.connect(e2.a,e,e2.e)
+    //    println("connecting "+otherend+"-"+other.myrank+"-->"+myend+"-"+myrank)
+    val me = n
+    val other = e2.n
+    val otherend = e2.e
+    val myend = e
+
+
+    // better design: expose connections and flowconn only via an interface...
+    me.connections +=
+      other -> Set((myend,otherend,other.behaviour.uid))
+    other.connections +=
+      me -> Set((otherend,myend,me.behaviour.uid))
+
+    //      val myendNodes: Set[Node[S,C]] = this.invConnections(myend)
+    val newMyEndNodes:Set[Node[S,C]] = me.invConnections(myend) ++ Set(other)
+    val newOtherEndNodes:Set[Node[S,C]] = other.invConnections(otherend) ++ Set(me)
+    me.invConnections  += myend -> newMyEndNodes //(this.invConnections(myend) ++ Set(other))
+    other.invConnections += otherend -> newOtherEndNodes
+
+    // flow connections
+    me.flowconn += ((myend,me.behaviour.uid,otherend,other.behaviour.uid))
+  }
 }

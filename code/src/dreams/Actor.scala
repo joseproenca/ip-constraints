@@ -1,7 +1,9 @@
 package dreams
 
 import actors.OutputChannel
-import common.beh.{EmptySol, Constraints, Connector, Solution}
+import common.beh._
+import scala.Some
+import common.beh.guardedcommands.GCConnector.GCBuilder
 
 /**
  * Created by IntelliJ IDEA.
@@ -11,8 +13,10 @@ import common.beh.{EmptySol, Constraints, Connector, Solution}
  * To change this template use File | Settings | File Templates.
  */
 
-abstract class Actor[S<:Solution, C<:Constraints[S,C]](implicit noSol:EmptySol[S])
+abstract class Actor[S<:Solution, C<:Constraints[S,C]](implicit noSol:EmptySol[S], b:CBuilder[S,C])
   extends scala.actors.Actor {
+
+  val uid = hashCode()
 
   var isIdle = false
 
@@ -23,6 +27,32 @@ abstract class Actor[S<:Solution, C<:Constraints[S,C]](implicit noSol:EmptySol[S
 //  type Constr = behaviour.constraints.mytype
   type ActorRef = OutputChannel[Any]
   var neighbours = Set[OutputChannel[Any]]()
+  var connections    = Map[OutputChannel[Any],Set[(String,String,Int)]]()
+  var flowconn = Set[(String,Int,String,Int)]()
+
+
+//  /**
+//   * Add to connections from this and the other actor, so we know how
+//   * to traverse the graph of actors.
+//   * Also add to flow connection, to know how to plug ends to describe the behaviour.
+//   * ORDER MATTERS: (mysourceend,othersinkend)
+//   * @param other
+//   * @param myend
+//   * @param otherend
+//   */
+//  def connect(other:Actor[S,C],myend:String,otherend:String) {
+////    println("connecting "+otherend+"-"+other.myrank+"-->"+myend+"-"+myrank)
+//
+//    this.connections +=
+//      other -> Set((myend,otherend,other.behaviour.uid))
+//    other.connections +=
+//      this -> Set((otherend,myend,this.behaviour.uid))
+//
+//    // flow connections
+//    flowconn += ((myend,behaviour.uid,otherend,other.behaviour.uid))
+////    println("new flowconn: "+flowconn)
+//  }
+
 
 
   def init: Nothing = {
@@ -32,7 +62,7 @@ abstract class Actor[S<:Solution, C<:Constraints[S,C]](implicit noSol:EmptySol[S
         a ! RequestBeh(myrank)
         invited += a -> myrank
       }
-      stateCommitting(myrank,None,invited,behaviour.getConstraints)
+      stateCommitting(myrank,None,invited,sync(behaviour.getConstraints))
     }
     else stateIdle    
   }
@@ -54,7 +84,7 @@ abstract class Actor[S<:Solution, C<:Constraints[S,C]](implicit noSol:EmptySol[S
     case RequestBeh(rank:Int) => {
       val children: Set[ActorRef] = neighbours - sender
       if (children.isEmpty) {
-        sender ! ReplyBeh[C](behaviour.getConstraints)
+        sender ! ReplyBeh[C](sync(behaviour.getConstraints))
         stateCommitted
       }
       else {
@@ -62,7 +92,7 @@ abstract class Actor[S<:Solution, C<:Constraints[S,C]](implicit noSol:EmptySol[S
         for (c <- children)
           c ! RequestBeh(rank)
         val invited = Map() ++ (for (c <- children) yield c -> rank)
-        stateCommitting(rank,Some(sender),invited,behaviour.getConstraints)
+        stateCommitting(rank,Some(sender),invited,sync(behaviour.getConstraints))
       }         
     }
     case Update(s:S) => stateIdle // when an update comes to a split channel
@@ -75,18 +105,52 @@ abstract class Actor[S<:Solution, C<:Constraints[S,C]](implicit noSol:EmptySol[S
   ////////////////  
 
   def stateCommitting
-  (rank:Int, root:Option[ActorRef], invited:Map[ActorRef,Int],temp: C) : Nothing = {
+  (rank:Int, root:Option[ActorRef], invited:Map[ActorRef,Int],temp: C): Nothing = {
     debug("Committting."); isIdle = false; react {
     case RequestBeh(newrank:Int)  => processRequest(newrank,rank,root,invited,temp)
     case StrongerReq(newrank:Int) => processRequest(newrank,rank,root,invited,temp)
     case ReplyBeh(c:C) =>
-        updCommitting(rank,root,invited,behaviour.sync(sender,temp ++ c))
+        updCommitting(rank,root,invited, sync(temp ++ c)) //behaviour.sync(sender,temp ++ c))
     case Busy =>
         updCommitting(rank,root,invited,temp)
     // case Admin...
   }}
-  
-  
+
+
+  // TODO: TEST CODE!!!
+//  private def sync(otherref: OutputChannel[Any], basec: C)(implicit cbuilder: CBuilder[S,C]): C = {
+//    println("synching "+myrank+" <-> "+otherref.hashCode())
+//    println("connections: "+connections.keys.map(_.hashCode()))
+//    if (!(connections contains otherref))
+//      basec
+//    else {
+//      val other = connections(otherref)._1
+//      val otherid = other.behaviour.uid
+//      val me = behaviour.uid
+//      var res = basec
+//
+//      for ((e1,u1,e2,u2) <- flowconn)
+//        if (u2 == otherid) res ++= cbuilder.sync(e1,u1,e2,u2)
+//      for ((e2,u2,e1,u1) <- other.flowconn)
+//        if (u1 == me)      res ++= cbuilder.sync(e2,u2,e1,u1)
+//      println("## my flowconn:    "+flowconn)
+//      println("## other flowconn: "+other.flowconn)
+//      println("new constraints: "+res)
+//      res
+//    }
+//  }
+
+private def sync(basec: C)(implicit cbuilder: CBuilder[S,C]): C = {
+//  println("synching all source ends of "+myrank)
+  var res = basec
+  for ((e1,u1,e2,u2) <- flowconn)
+    res ++= cbuilder.sync(e1,u1,e2,u2)
+//  println("new constraints: "+res)
+  res
+}
+
+
+
   private def processRequest(newrank:Int,rank:Int,root:Option[ActorRef],invited:Map[ActorRef,Int],temp:C): Nothing = {
     assert(invited contains sender)
     val srank = invited(sender)
@@ -119,6 +183,7 @@ abstract class Actor[S<:Solution, C<:Constraints[S,C]](implicit noSol:EmptySol[S
     else if (root.isDefined)
       stateCommitted
     else { // proactive actor
+      println("found constraints:\n"+c.toString)
       val sol = c.solve
       if (sol.isDefined)
         processSol(sol.get,true)
@@ -177,7 +242,49 @@ abstract class Actor[S<:Solution, C<:Constraints[S,C]](implicit noSol:EmptySol[S
     }
   }}
 
+
+
+  def apply(e:String) : End[S,C] = new End(this,e)
+
+
   /// DEBUG
   val db = true
   private def debug(s:String) { if (db) println("["+hashCode()+"] "+s) }
+}
+
+
+
+/////////////////////////
+// Elegant connections //
+/////////////////////////
+
+//  private val thisactor = this
+class End[S<:Solution, C<:Constraints[S,C]](val a: Actor[S,C], val e: String) {
+  /**
+   * Add to connections from this and the other actor, so we know how
+   * to traverse the graph of actors.
+   * Also add to flow connection, to know how to plug ends to describe the behaviour.
+   * ORDER MATTERS: (mysourceend,othersinkend)
+//     * @param other
+//     * @param myend
+//     * @param otherend
+   */
+  def <--(e2: End[S,C]) {
+    //a.connect(e2.a,e,e2.e)
+    //    println("connecting "+otherend+"-"+other.myrank+"-->"+myend+"-"+myrank)
+    val me = a
+    val other = e2.a
+    val otherend = e2.e
+    val myend = e
+
+    // better design: expose connections and flowconn only via an interface...
+    me.connections +=
+      other -> Set((myend,otherend,other.behaviour.uid))
+    other.connections +=
+      me -> Set((otherend,myend,me.behaviour.uid))
+
+    // flow connections
+    me.flowconn += ((myend,me.behaviour.uid,otherend,other.behaviour.uid))
+    //    println("new flowconn: "+flowconn)
+  }
 }

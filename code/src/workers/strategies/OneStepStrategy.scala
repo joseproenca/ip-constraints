@@ -22,7 +22,9 @@ class OneStepStrategy[S<:Solution,C<:Constraints[S,C]] extends Strategy[S,C,OneS
   }
 }
 
-object OneStepStrategyBuilder
-  extends StrategyBuilder[GCSolution, GuardedCommands, OneStepStrategy[GCSolution, GuardedCommands]] {
+object OneStepStrategy {
+  implicit object OneStepStrategyBuilder
+    extends StrategyBuilder[GCSolution, GuardedCommands, OneStepStrategy[GCSolution, GuardedCommands]] {
     def apply = new OneStepStrategy[GCSolution, GuardedCommands]()
   }
+}

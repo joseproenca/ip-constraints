@@ -118,18 +118,6 @@ abstract sealed class Guard extends Statement{
     // TODO: under construction
     throw new RuntimeException("Under construction")
 
-  //  this match {
-//    case Var(name) =>
-//    case IntPred(v, p) =>
-//    case Pred(v, p) =>
-//    case And(g1, g2) =>
-//    case Or(g1, g2) =>
-//    case Neg(g1) =>
-//    case Impl(g1, g2) =>
-//    case Equiv(g1, g2) =>
-//    case True =>
-//  }
-
 
   override def fv: Set[String] = this match {
     case Var(name) => Set(name)
@@ -556,7 +544,7 @@ abstract sealed class Statement {
 }
 
 /// GUARDS
-case class Var(name: String) extends Guard {
+case class Var(val name: String) extends Guard {
   def :=(v:Var): Statement = VarAssgn(flow2data(name),flow2data(v.name))
   def :=(d:Any): Statement = DataAssgn(flow2data(name),d)
 //  def :=(d: Any): Statement = d match {
@@ -564,6 +552,7 @@ case class Var(name: String) extends Guard {
 //    case _ => DataAssgn(flow2data(name),d)
 //  }
   def :=(f:UnFunction,v:Var): Statement = FunAssgn(flow2data(name),flow2data(v.name),f)
+  def :< (p:UnPredicate): Statement = Pred(flow2data(name),p)
 }
 case class IntPred(v:String, p: IntPredicate) extends Guard
 case class Pred(v:String, p:UnPredicate) extends Guard
@@ -587,36 +576,37 @@ case class Seq(sts: List[Statement]) extends Statement
 object CNF {
   type Core = List[Array[Int]]
 
-  def fv(cnf: CNF.Core): Iterable[Int] = {
-    var s: MutSet[Int] = MutSet()
-    for (l <- cnf; v <- l)
-      if (v<0) s += (v * (-1))
-      else     s+= v
-    s
-  }
-
-  def not(s:String) = (-1) * s.hashCode
-  def v(s:String) = s.hashCode
+//  def fv(cnf: CNF.Core): Iterable[Int] = {
+//    var s: MutSet[Int] = MutSet()
+//    for (l <- cnf; v <- l)
+//      if (v<0) s += (v * (-1))
+//      else     s+= v
+//    s
+//  }
+//
+//  def not(s:String) = (-1) * s.hashCode
+//  def v(s:String) = s.hashCode
 }
 
-class CNF(val cnf:CNF.Core, val vars: Array[String])
+//class CNF(val cnf:CNF.Core, val vars: Array[String])
 
 
+// More efficient implementation with listbuffers, used in as intermediate
 object CNF2 {
   type Core = ListBuffer[Array[Int]]
-
-  def fv(cnf: CNF.Core): Iterable[Int] = {
-    var s: MutSet[Int] = MutSet()
-    for (l <- cnf; v <- l)
-      if (v<0) s += (v * (-1))
-      else     s+= v
-    s
-  }
-
-  def not(s:String) = (-1) * s.hashCode
-  def v(s:String) = s.hashCode
+//
+//  def fv(cnf: CNF.Core): Iterable[Int] = {
+//    var s: MutSet[Int] = MutSet()
+//    for (l <- cnf; v <- l)
+//      if (v<0) s += (v * (-1))
+//      else     s+= v
+//    s
+//  }
+//
+//  def not(s:String) = (-1) * s.hashCode
+//  def v(s:String) = s.hashCode
 }
-class CNF2(val cnf:CNF2.Core, val vars: Array[String])
+//class CNF2(val cnf:CNF2.Core, val vars: Array[String])
 
 
 

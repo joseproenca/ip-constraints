@@ -1,7 +1,7 @@
 package common.beh.guardedcommands
 
 import common.beh.{UnFunction, UnPredicate}
-import dataconnectors.ConstraintGen._
+import dataconnectors.ConnectorGen._
 
 /**
  * Created with IntelliJ IDEA.
@@ -16,9 +16,9 @@ class RunInteractive
 object RunInteractive extends App {
 
   /*
-   af0 --(hackUser)--> af1 --[checkPwd] --> bf1 --(recallUser)--> cf1 -\
+   af0 --(hackUser)--> af1 --[checkPwd] --> bf1 --(recallUser)--> cf1 -_
                                                                         >-> out
-                       af2 --[checkPwd] --> bf2 -----------------------/
+                       af2 --[checkPwd] --> bf2 -----------------------
    */
 
 
@@ -74,19 +74,29 @@ object RunInteractive extends App {
     filter("a1", "a2",checkPwd) ++
     filter("bob", "b1",checkPwd) ++
     merger("a3","b1","out") ++
-    reader("out",1) ++
+    reader("out",2) ++
     // at least one should have flow
     flow("out")
 
 
   // Run
 
-  val sol = connector.lazyDataSolve
+  val sol = connector.getConstraints.lazyDataSolve
 
 //  println("-----------\n" + c.commands.mkString("\n"))
 //  println("-----------")
 
 
   if (sol.isDefined) print("solved CS:\n" + sol.get.pretty)
-  else println("no solution")
+  else {
+    println("no solution")
+    sys.exit()
+  }
+
+  connector.update(sol.get)
+  val sol2 = connector.getConstraints.lazyDataSolve
+
+  if (sol2.isDefined) print("solved again CS:\n" + sol2.get.pretty)
+  else println("no solution this time")
+
 }

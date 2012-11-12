@@ -117,8 +117,10 @@ class HybridStrategy[S <: Solution, C <: Constraints[S, C]] extends Strategy[S,C
 
 
 
-object HybridStrategyBuilder
-  extends StrategyBuilder[GCSolution, GuardedCommands, HybridStrategy[GCSolution, GuardedCommands]] {
-  def apply = new HybridStrategy[GCSolution, GuardedCommands]()
+object HybridStrategy {
+  implicit object HybridStrategyBuilder
+    extends StrategyBuilder[GCSolution, GuardedCommands, HybridStrategy[GCSolution, GuardedCommands]] {
+    def apply = new HybridStrategy[GCSolution, GuardedCommands]()
+  }
 }
 

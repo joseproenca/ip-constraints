@@ -4,6 +4,7 @@ import dreams.Actor
 import common.beh.guardedcommands.{GuardedCommands, GCSolution}
 import common.beh.guardedcommands.dataconnectors.GCWriter
 import common.beh.Utils._
+import common.beh.guardedcommands.GCConnector.GCBuilder
 
 /**
  * Created by IntelliJ IDEA.
@@ -17,7 +18,7 @@ class Writer(var n:Int) extends Actor[GCSolution, GuardedCommands] {
 
 //  override def init = if (n>0) {  println("starting protocol! ["+n+","+uid+"]"); startProtocol}
 //                      else stateIdle
-  val uid = hashCode
+//  private val uid = hashCode
 
   val behaviour = new GCWriter("a",uid,(1 to n).toList) {
     private var triedAndFailed = false

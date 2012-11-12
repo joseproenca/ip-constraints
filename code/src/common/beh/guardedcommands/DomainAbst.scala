@@ -100,8 +100,10 @@ class DomainAbst {
         if (fun contains smaller)
           // new 3 - add functions to all paths
           res ++= (for ((p,fs) <- domain(smaller)) yield (p,fs ::: fun(smaller)))
-        else
+        else {
+//          println("smaller found - "+smaller)
           res ++= domain(smaller)
+        }
       }
 //      // 3 - add functions to all paths
 //      if (fun contains x)
