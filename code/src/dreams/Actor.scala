@@ -72,7 +72,7 @@ abstract class Actor[S<:Solution, C<:Constraints[S,C]](implicit noSol:EmptySol[S
 //    super.start()
 //  }
   
-  def act { stateSuspended(Set()) }
+  def act() { stateSuspended(Set()) }
 
   ////////////////  
   //    IDLE    //
@@ -186,9 +186,9 @@ private def sync(basec: C)(implicit cbuilder: CBuilder[S,C]): C = {
       println("found constraints:\n"+c.toString)
       val sol = c.solve
       if (sol.isDefined)
-        processSol(sol.get,true)
+        processSol(sol.get,freshSol = true)
       else
-        processSol(noSol.sol,true)
+        processSol(noSol.sol,freshSol = true)
     }
   }
 
@@ -203,7 +203,7 @@ private def sync(basec: C)(implicit cbuilder: CBuilder[S,C]): C = {
         sender ! Busy
         stateCommitted
       }
-      case ReplySol(s:S) => processSol(s,false)
+      case ReplySol(s:S) => processSol(s,freshSol = false)
       //    case ReplyData(d:Any) => processData(d)
       //    case ReplySolData(s:S,d:Any) => processSolData(s,d)
     }
@@ -252,6 +252,15 @@ private def sync(basec: C)(implicit cbuilder: CBuilder[S,C]): C = {
   private def debug(s:String) { if (db) println("["+hashCode()+"] "+s) }
 }
 
+object Actor {
+  def apply[S<:Solution, C<:Constraints[S,C]]
+  (conn : Int => Connector[S,C])
+  (implicit noSol:EmptySol[S], b:CBuilder[S,C]): Actor[S,C] =
+    new Actor[S,C]() {
+      //      val uid = this.hashCode()
+      val behaviour = conn(uid)
+    }
+}
 
 
 /////////////////////////

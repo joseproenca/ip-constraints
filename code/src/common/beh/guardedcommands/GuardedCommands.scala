@@ -57,7 +57,7 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
    * Combines the *boolean* free variables of all guarded commands efficiently
    * @return boolean free variables of all guarded commands
    */
-  def bfv(l:ListBuffer[String]) = for (c<-commands) c.bfv(l)
+  def bfv(l:ListBuffer[String]) { for (c<-commands) c.bfv(l) }
   //commands.map(_.bfv).foldRight[Set[String]](Set())(_++_)
 
   /**
@@ -146,12 +146,12 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
    * CC3 not yet in use.
    */
   def close() {
-    println("## closing...")
+//    println("## closing...")
     if (!closed) {
-      println("## not closed yet...")
+//      println("## not closed yet...")
       val bvars = new ListBuffer[String]()
       bfv(bvars)
-      println("## b vars: "+bvars.size)
+//      println("## b vars: "+bvars.size)
       if (!bvars.isEmpty) {
         val fst = bvars.head
         var flowConstraint: Guard = Var(fst)
@@ -398,7 +398,7 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
 
   /**
    * Same as @see(quickDataSolve), but using Z3 instead of SAT4J for SAT solving.
-   * @param z3
+   * @param z3 context required by Z3
    * @return
    */
   def quickDataSolve(z3: Z3Context): Option[GCSolution] = {
@@ -434,7 +434,7 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
    *         propagation returns a complete solution.
    */
   def lazyDataSolve : Option[GCSolution] = {
-    close
+    close()
     val builders = toBoolConstrBuilders
 //    val buf = new Buffer // using the same to solve boolean constraints and to get a solution while traversing the tree.
     val optSolBool = solveChocoBool(builders)

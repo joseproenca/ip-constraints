@@ -2,6 +2,7 @@ package common.beh.guardedcommands
 
 import common.beh.{UnFunction, UnPredicate}
 import dataconnectors.ConnectorGen._
+import common.beh.Utils.dataVar
 
 /**
  * Created with IntelliJ IDEA.
@@ -87,7 +88,9 @@ object RunInteractive extends App {
 //  println("-----------")
 
 
-  if (sol.isDefined) print("solved CS:\n" + sol.get.pretty)
+//  if (sol.isDefined) print("solved CS:\n" + sol.get.pretty)
+  if (sol.isDefined) print("\n-- data through 'out': " +
+    (sol.get dataOn dataVar("out")).get+" --\n")
   else {
     println("no solution")
     sys.exit()
@@ -96,7 +99,9 @@ object RunInteractive extends App {
   connector.update(sol.get)
   val sol2 = connector.getConstraints.lazyDataSolve
 
-  if (sol2.isDefined) print("solved again CS:\n" + sol2.get.pretty)
+//  if (sol2.isDefined) print("solved again CS:\n" + sol2.get.pretty)
+  if (sol2.isDefined) print("\n-- data through 'out': " +
+    (sol2.get dataOn dataVar("out")).get+" --\n")
   else println("no solution this time")
 
 }
