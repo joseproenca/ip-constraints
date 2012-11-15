@@ -26,7 +26,7 @@ abstract class Node[S<:Solution, C<:Constraints[S,C]]
 
   var flowconn = Set[(String,Int,String,Int)]()
 
-  def getNeighbours(): Iterable[Node[S,C]] = invConnections.values.flatten
+  def getNeighbours: Iterable[Node[S,C]] = invConnections.values.flatten
 
   //  var neighbours = List[Node[S,C]]() // order MUST be the same as the order of ends in behaviour
 //  var neighbours = Set[OutputChannel[Any]]()

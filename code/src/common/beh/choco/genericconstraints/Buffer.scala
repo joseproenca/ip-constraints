@@ -4,6 +4,7 @@ package common.beh.choco.genericconstraints
 import scala.collection.JavaConversions._
 import common.beh.{UnPredicate, UnFunction}
 import scala.collection.immutable.Map
+import common.beh.Solution
 
 
 /**
@@ -15,8 +16,9 @@ import scala.collection.immutable.Map
  */
 
 class Buffer {
-  var calculatedP: Map[(UnPredicate,Any),Boolean] = Map()
-  var calculatedF: Map[(UnFunction,Any),Any] = Map()
+//  println("buf: "+hashCode)
+  private var calculatedP: Map[(UnPredicate,Any),Boolean] = Map()
+  private var calculatedF: Map[(UnFunction,Any),Any] = Map()
 
 
   def calculate(functs:List[UnFunction],d:Any): Any = functs match {
@@ -28,7 +30,7 @@ class Buffer {
       }
       else {
         val res = f.calculate(d)
-//        println("# adding "+f+"("+d+") -> "+res+" to buffer")
+//        println("# adding "+f+"("+d+") -> "+res+" to buffer "+hashCode())
         calculatedF += (f,d) -> res
 //        print("# Calc func - "+res+" ")
         calculate(fs,res)
@@ -49,5 +51,24 @@ class Buffer {
 //        println("# Calc P - "+res+" ####")
         if (res) 1 else 0
     }
+  }
+
+  /**
+   * Apply 'undo' to data 'd' for every calculation of 'f'(d) except if 'd'='data'.
+   * Not optimised - Iterating over all buffered applications of functions.
+   * (We could modify the 'calculatedF' map to be a nested map to avoid iteration.)
+   * @param f function to be reverted
+   * @param undo reverting function
+   * @param data possible successful data, that must not be reverted
+   */
+  def rollback(f: UnFunction, undo: UnFunction, data: Option[Any]) {
+//    print("rollbacking "+f+"("+data+") with "+undo)
+//    print(" @"+hashCode+calculatedF.keys.mkString("[",",","]"))
+    for ((f2,d) <- calculatedF.keys) {
+//      print(" - "+f2+"("+d+")")
+      if (f2 == f)
+        if (!data.isDefined || (data.get != d)) undo.calculate(d)
+    }
+//    println(" done.")
   }
 }

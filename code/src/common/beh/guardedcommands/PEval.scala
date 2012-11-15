@@ -22,7 +22,7 @@ class PEval(
              var funcs: Map[String,GenSet[(String,UnFunction)]]) {
 
   def ++(other: PEval): PEval = {
-    return new PEval(
+    new PEval(
       data ++ other.data,
       rest ++ (
         for ((x,yset) <- other.rest) yield
@@ -40,6 +40,7 @@ class PEval(
   /**
    * After the initial partial eval, it simply consumes every element without partitioning.
    * Alternative to quotient
+   * @param buf possible intermediate buffer for function calculations.
    * @return If all data variables with some data assignment are defined.
    */
   def freshTraversal(buf: Option[Buffer]): Boolean = { //: Map[String,Int] = {
@@ -199,8 +200,8 @@ class PEval(
 
   /**
    * Searches for valid inhabitants of the domain of a variable.
-   * @param sol
-   * @param da
+   * @param sol boolean solution
+   * @param da domain abstraction (what needs to be precomputed - Dx)
    */
   def solveSimpleData(sol:GCBoolSolution, da: DomainAbst) {
 //    println("^^^^ solving simple data copy ^^^^")

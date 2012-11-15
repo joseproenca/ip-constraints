@@ -83,8 +83,8 @@ object GCSchedules extends App {
 
   val n2 = n / 2
 
-  val problem = genScheds(1 to n2, "time",0,true) ++   // some will display
-    genScheds(n2+1 to n, "time",0,false) ++            // and some will turn on
+  val problem = genScheds(1 to n2, "time",0,on = true) ++   // some will display
+    genScheds(n2+1 to n, "time",0,on = false) ++            // and some will turn on
     new GCWriter("time",0,List(500)).getConstraints ++    // (it is morning)
     GuardedCommands(True --> Var(flowVar("time",0))) // require some dataflow
 

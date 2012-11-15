@@ -76,8 +76,8 @@ object ChoSchedules extends App {
 //    val schedule = genSched(0,false) ++ new ChoWriter("x",0,List(1400)).getConstraints // off, evening - no sol
 
   val n2: Int = n / 2
-  val problem = genScheds(1 to n2, "time",0,true) ++ // some will display
-    genScheds(n2+1 to n, "time",0,false) ++            // and some will turn on
+  val problem = genScheds(1 to n2, "time",0,on = true) ++ // some will display
+    genScheds(n2+1 to n, "time",0,on = false) ++            // and some will turn on
     new ChoWriter("time",0,List(500)).getConstraints       // (it is morning)
 
 

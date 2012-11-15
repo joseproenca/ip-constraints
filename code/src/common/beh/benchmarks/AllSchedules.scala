@@ -103,8 +103,8 @@ object AllSchedules extends App {
 
   val n2 = n / 2
 
-  val problem = genScheds(1 to n2, "time",true) ++   // some will display
-    genScheds(n2+1 to n, "time",false) ++            // and some will turn on
+  val problem = genScheds(1 to n2, "time",on = true) ++   // some will display
+    genScheds(n2+1 to n, "time",on = false) ++            // and some will turn on
     writer("time",List(500)) ++                        // (it is morning)
     GuardedCommands(True --> Var(flowVar("time",0)))   // require some dataflow
 

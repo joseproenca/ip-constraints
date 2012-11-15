@@ -2,6 +2,7 @@ package common.beh.guardedcommands
 
 import common.beh.{EmptySol, Solution}
 import common.beh.Utils.ppVar
+import common.beh.choco.genericconstraints.Buffer
 
 /**
  * Created with IntelliJ IDEA.
@@ -12,6 +13,8 @@ import common.beh.Utils.ppVar
  */
 
 class GCSolution(val boolSol: Solution, var varMap: Map[String, Any]) extends Solution {
+  var buf: Option[Buffer] = None
+
   def hasFlow(end: String) =
     boolSol hasFlow end
   //if (boolSol contains end) varMap(end) else false
@@ -27,8 +30,8 @@ class GCSolution(val boolSol: Solution, var varMap: Map[String, Any]) extends So
 
   def apply(v:String): Any = //varMap(v)
     if (varMap contains v) varMap(v)
-    else if (boolSol hasFlow v) return true
-    else return false
+    else boolSol hasFlow v
+
   def update(v:String,b:Int) {
     varMap = varMap + (v -> b)
   }

@@ -27,12 +27,12 @@ class Double extends IntFunction {
   val choFun = (x:IntegerExpressionVariable) => Choco.mult(x,2)
   val funFun = 2 * (_:Int)
   val z3Fun = (z:Z3Context,t:Z3AST) => z.mkMul(z.mkInt(2,z.mkIntSort()),t)
-  override def toString() = "[*2]"
+  override def toString = "[*2]"
 }
 
 class Timesn(n: Int) extends IntFunction {
   val choFun = (x:IntegerExpressionVariable) => Choco.mult(x,n)
   val funFun = n * (_:Int)
   val z3Fun = (z:Z3Context,t:Z3AST) => z.mkMul(z.mkInt(n,z.mkIntSort()),t)
-  override def toString() = "[*"+n+"]"
+  override def toString = "[*"+n+"]"
 }

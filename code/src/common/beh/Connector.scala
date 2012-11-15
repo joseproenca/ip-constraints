@@ -38,6 +38,19 @@ abstract class Connector[S<: Solution, C <: Constraints[S,C]](val ends: List[Str
   def ++(other: Connector[S,C]): Connector[S,C]
 
 
+  /**
+   * Collect constraints, solve them, and update connector.
+   * Default solver for the constraints is used.
+   * @return Possible solution for the current step
+   */
+  def step: Option[S] = {
+    val s = getConstraints.solve
+    if (s.isDefined) update(s.get)
+    s
+  }
+
+
+
   // CONFIGURING POWER OF CONSTRAINTS!
   // not sure if it is the way to go...
   var useData = false

@@ -61,8 +61,7 @@ object GCSpouts extends App {
 
   val time = System.currentTimeMillis()
   //  val time = System.nanoTime()
-  val cnf = problem.toCNF
-  val res = problem.solveBool(cnf._1,cnf._2)
+  val res = problem.solveBool
   val spent = System.currentTimeMillis() - time
 
   if (res.isDefined) println("solved in "+spent+" ms.")

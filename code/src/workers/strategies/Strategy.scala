@@ -126,7 +126,7 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
     fringe += nd
   }
 
-  def restore2fringe {
+  def restore2fringe() {
     fringe ++= droppedFringe
     droppedFringe = Set()
   }

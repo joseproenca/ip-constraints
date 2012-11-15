@@ -22,19 +22,31 @@ import z3.Z3
 
 class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
 
-  var log = System.out
+  private var log = System.out
 //  val log = new java.io.PrintStream(new java.io.FileOutputStream("/dev/null"))
   var justInit = false
 
   var commands = Set[GuardedCom]()
 //  var eqvars = Set[(String,String)]()
   var da = DomainAbst()
-  var solvedDomain = false
+  private var solvedDomain = false
   //  var someVars: Option[MutMap[String,Int]] = None
-  val buf = new Buffer
-  var closed = false
+
+  private var closed = false
+
+
+  //  var buf = new Buffer
+  private var buf: Option[Buffer] = None
+//  def getBuf: Option[Buffer] = buf
 
   override def toString = commands.mkString("\n")
+
+
+  /**
+   * Default solving approach.
+   * @return possible data solution
+   */
+  def solve = lazyDataSolve
 
   /**
    * Collect the domain of every guarded command in field 'da'.
@@ -144,6 +156,8 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
   /**
    * Add SOME-FLOW and CC3 constraints.
    * CC3 not yet in use.
+   * Used before using Choco (predicate abstraction + lazy & Choco as SMT).
+   * Other approaches (Z3 and SAT4J) use optimised version.
    */
   def close() {
 //    println("## closing...")
@@ -226,8 +240,11 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
   }
 
 
-
-  def solve : Option[GCSolution] = {
+  /**
+   * Predicate abstraction + SAT + loop until data solution is found.
+   * @return Data solution for the constraints.
+   */
+  def solveIterative : Option[GCSolution] = {
     // solveDomain; toCNF; solveBool?; [partialEval; quotient; dataAssign(done?); solveData(done?); incrementAndSolve?]
     val t1 = System.currentTimeMillis()
     val cnf = toCNF
@@ -269,12 +286,23 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
     loopPartialEval(partialEval(optSol2.get),newcnf,optSol2.get,time)
   }
 
+
+  /**
+   * Predicate abstraction + SAT
+   * @return solution for the predicate abstraction
+   */
   def solveBool: Option[GCBoolSolution] = {
     val (cnf,vars) = toCNF
     solveBool(cnf,vars)
   }
 
-  def solveBool(c: CNF.Core, vars: MutMap[String,Int]): Option[GCBoolSolution] = {
+  /**
+   * Perform SAT over a given abstracted predicate (static function)
+   * @param c abstracted predicate in CNF form
+   * @param vars mapping between variable names and integers in the CNF
+   * @return solution for the predicate abstraction
+   */
+  private def solveBool(c: CNF.Core, vars: MutMap[String,Int]): Option[GCBoolSolution] = {
 
     // store variable names
     val varname = MutMap[Int,String]()
@@ -344,9 +372,9 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
   }
 
 
-  ///////////////
-  // OPTMISING //
-  ///////////////
+  ////////////////////////////
+  // OPTMISING - NOT IN USE //
+  ////////////////////////////
 
   def optimiseEqVars: Map[String,String] = {
     var vars = MutMap[String,String]()
@@ -363,12 +391,11 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
   /////////////////////////////////
 
   /**
-   *  Returns a solution for determined and closed connectors
-   * @return Data solution from the abstract predicates with a simple data propagation traversal, if the simple
-   *         propagation returns a complete solution.
+   * Predicate abstraction + SAT + direct data solution (no iteration)
+   * Assumes determined and closed connectors.
+   * @return Data solution or 'None' if there is no solution (maybe because the assumption does not hold.)
    */
   def quickDataSolve : Option[GCSolution] = {
-//    close
     val t0 = System.currentTimeMillis()
     solveDomain()
 
@@ -399,7 +426,7 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
   /**
    * Same as @see(quickDataSolve), but using Z3 instead of SAT4J for SAT solving.
    * @param z3 context required by Z3
-   * @return
+   * @return Data solution
    */
   def quickDataSolve(z3: Z3Context): Option[GCSolution] = {
     val t0 = System.currentTimeMillis()
@@ -429,11 +456,13 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
 
 
   /**
-   *  Returns a solution for determined and closed connectors using Lazy constraints in Choco and smart variable ordering.
-   * @return Data solution from the abstract predicates with a simple data propagation traversal, if the simple
-   *         propagation returns a complete solution.
+   *  Predicate abstraction + Optimised Choco (as SAT) + direct data solution (no iteration).
+   *  Assumes connector is determined and closed.
+   *  Optimised choco: Lazy constraints and smart variable ordering.
+   * @return Data solution
    */
   def lazyDataSolve : Option[GCSolution] = {
+    buf = Some(new Buffer)
     close()
     val builders = toBoolConstrBuilders
 //    val buf = new Buffer // using the same to solve boolean constraints and to get a solution while traversing the tree.
@@ -443,18 +472,45 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
       return None
 
     val pEval = partialEval(optSolBool.get)
-    val done = pEval.freshTraversal(Some(buf))
+    val done = pEval.freshTraversal(buf)
 
-    if (done)
-      Some(pEval.getSol(optSolBool.get))
+    if (done){
+      val sol = pEval.getSol(optSolBool.get)
+      sol.buf = buf
+      Some(sol)
+    }
     else
       None
+  }
+
+  /**
+   * Predicate abstraction + Choco (as SAT)
+   * Optimised Choco: lazy constraints + variable ordering
+   * Requires buf != None
+   * @return Boolean solution for the abstract constraints.
+   */
+  def solveChocoBool : Option[GCBoolSolution] = {
+    val builders = toBoolConstrBuilders
+    //    println("#> solving abst using choco SAT cnf - "+da.pp)
+    //    println("builder: "+builders.mkString("\n"))
+    solveChocoBool(builders)
+  }
+
+  /** Requires buf != None */
+  private def solveChocoBool(builders: Iterable[ConstrBuilder]) : Option[GCBoolSolution] = {
+    if (!buf.isDefined) throw new RuntimeException("Required buffer not defined.")
+    val choSol = ChoConstraints(builders).solve(da.guessOrder,buf.get)
+    for (s <- choSol) yield new GCBoolSolution(s.sol2map)
   }
 
   /////////////////////////
   // USING CHOCO FOR SMT //
   /////////////////////////
 
+  /**
+   * Choco as SMT
+   * @return Data constraints
+   */
   def solveChoco : Option[ChoSolution] = {
     // not closing constraints
     // NOW closing
@@ -463,7 +519,7 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
     choConstr.solve
   }
 
-  def toConstBuilders:Iterable[ConstrBuilder] = {
+  private def toConstBuilders:Iterable[ConstrBuilder] = {
     // not closing constraints
     for (com <- commands)
       yield com.toConstrBuilder
@@ -475,7 +531,12 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
   // USING CHOCO FOR SAT //
   /////////////////////////
 
+  /**
+   * Predicate abstraction + Choco (as SAT solver) + loop until data solution is found
+   * @return Data solution
+   */
   def solveChocoSat : Option[GCSolution] = {
+    buf = Some(new Buffer)
     // solveDomain; toCNF; solveBool?; [partialEval; quotient; dataAssign(done?); solveData(done?); incrementAndSolve?]
     val time = System.currentTimeMillis()
 //    val buf = new Buffer
@@ -492,6 +553,7 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
 
     val res = loopPartialEvalCho(partialEval(optSolBool.get),builders,optSolBool.get)
 //    log.println("[all solve]     "+(System.currentTimeMillis()-time))
+    if (res.isDefined) res.get.buf = buf
     res
   }
 
@@ -514,44 +576,9 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
     loopPartialEvalCho(partialEval(optSol2.get),newbuilders,optSol2.get)
   }
 
-
-  /**
-   * Calculate the choco integer constraints for the abstract (SAT) problem.
-   * @return A constraint builder for choco constraints.
-   */
-  def toBoolConstrBuilders : Iterable[ConstrBuilder] = {
-    solveDomain()
-
-//    println("&& domain solved: "+da.pp)
-
-    for (com <- commands)
-      yield com.toBoolConstrBuilder(da)
-  }
-
-
-
-  def solveChocoBool : Option[GCBoolSolution] = {
-    val builders = toBoolConstrBuilders
-    //    println("#> solving abst using choco SAT cnf - "+da.pp)
-//    println("builder: "+builders.mkString("\n"))
-    solveChocoBool(builders)
-  }
-
-
-    /**
-     * Same as "solveBool" but using choco constraints (from constraint builders).
-     * Optimised solver: lazy constraints and variable ordering!
-     * @param builders The SAT problem as a choco constraint (from a constraint builder)
-     * @return Solution for an abstract problem (using choco constraints).
-     */
-  def solveChocoBool(builders: Iterable[ConstrBuilder]) : Option[GCBoolSolution] = {
-    val choSol = ChoConstraints(builders).solve(da.guessOrder,buf)
-    for (s <- choSol) yield new GCBoolSolution(s.sol2map)
-  }
-
-  def incrementAndSolve(builders: Iterable[ConstrBuilder],
-                        sol: GCBoolSolution,
-                        pEval: PEval) : (Option[GCBoolSolution],Iterable[ConstrBuilder]) = {
+  private def incrementAndSolve(builders: Iterable[ConstrBuilder],
+                                sol: GCBoolSolution,
+                                pEval: PEval) : (Option[GCBoolSolution],Iterable[ConstrBuilder]) = {
     //                        sdelta: Map[String,Int],
     //                        srest: Set[MutSet[String]]) : Option[GCBoolSolution] = {// (Map[String,Int], Set[MutSet[String]]) = {
     // for each remaining group, negate it in the constraints
@@ -565,7 +592,7 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
           for ((pred,fs) <- da.domain(v)) {
             val pvar = predVar(v,pred,fs)
             avoid = avoid or (if (sol.hasFlow(pvar)) common.beh.choco.Neg(common.beh.choco.Var(pvar))
-                              else common.beh.choco.Var(pvar))
+            else common.beh.choco.Var(pvar))
           }
           newBuilders = newBuilders + avoid
           avoid = FalseC
@@ -574,6 +601,21 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
     }
     (solveChocoBool(newBuilders),newBuilders)
   }
+
+
+  /**
+   * Calculate the choco integer constraints for the abstract (SAT) problem.
+   * @return A constraint builder for choco constraints.
+   */
+  private def toBoolConstrBuilders : Iterable[ConstrBuilder] = {
+    solveDomain()
+
+//    println("&& domain solved: "+da.pp)
+
+    for (com <- commands)
+      yield com.toBoolConstrBuilder(da)
+  }
+
 
   ///////////////////////
 

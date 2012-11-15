@@ -3,7 +3,7 @@ package common.beh.guardedcommands.dataconnectors
 import common.beh.guardedcommands._
 import common.beh.Utils._
 import common.beh.guardedcommands.Var
-import common.beh.UnFunction
+import common.beh.{Solution, UnFunction}
 
 /**
  * Created with IntelliJ IDEA.

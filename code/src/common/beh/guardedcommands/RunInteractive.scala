@@ -61,6 +61,9 @@ object RunInteractive extends App {
       if (p == "") x else p
   }
 
+  val undohack = UnFunction("undo") {
+    x => println("-- hack on "+x+" not used --")
+  }
 
   val recallUser = UnFunction("recallUser") {
     case x:String => lastUser
@@ -70,7 +73,7 @@ object RunInteractive extends App {
   val connector =
     writer("alex",List("alex")) ++
     writer("bob", List("bob")) ++
-    transf("alex","a1",hackUser) ++
+    transf("alex","a1",hackUser,undohack) ++
     transf("a2", "a3",recallUser) ++
     filter("a1", "a2",checkPwd) ++
     filter("bob", "b1",checkPwd) ++
@@ -82,26 +85,26 @@ object RunInteractive extends App {
 
   // Run
 
-  val sol = connector.getConstraints.lazyDataSolve
+  val sol = connector.step // getConstraints.lazyDataSolve
 
 //  println("-----------\n" + c.commands.mkString("\n"))
 //  println("-----------")
 
 
 //  if (sol.isDefined) print("solved CS:\n" + sol.get.pretty)
-  if (sol.isDefined) print("\n-- data through 'out': " +
-    (sol.get dataOn dataVar("out")).get+" --\n")
+  if (sol.isDefined) println("-- data through 'out': " +
+    (sol.get dataOn dataVar("out")).get+" --")
   else {
     println("no solution")
     sys.exit()
   }
 
-  connector.update(sol.get)
-  val sol2 = connector.getConstraints.lazyDataSolve
+//  connector.update(sol.get)
+  val sol2 = connector.step  // getConstraints.lazyDataSolve
 
-//  if (sol2.isDefined) print("solved again CS:\n" + sol2.get.pretty)
-  if (sol2.isDefined) print("\n-- data through 'out': " +
-    (sol2.get dataOn dataVar("out")).get+" --\n")
+//  if (sol2.isDefined) println("solved again CS:\n" + sol2.get.pretty)
+  if (sol2.isDefined) println("-- data through 'out': " +
+    (sol2.get dataOn dataVar("out")).get+" --")
   else println("no solution this time")
 
 }

@@ -29,7 +29,7 @@ case class GuardedCom(g:Guard, st: Statement) {
 
   def fv:Set[String] = g.fv ++ st.fv
   def bfv(l:ListBuffer[String]) = g.bfv(l)
-  def solveDomain(da:DomainAbst) = {g.solveDomain(da); st.solveDomain(da)}
+  def solveDomain(da:DomainAbst)  { g.solveDomain(da); st.solveDomain(da) }
 
   def afv(dom: DomainAbst) :Set[String] = {
     var res = Set[String]()
@@ -47,7 +47,7 @@ case class GuardedCom(g:Guard, st: Statement) {
     }
     res
   }
-  def afv2(dom: DomainAbst,vars: MutMap[String,Int]) :Unit = {
+  def afv2(dom: DomainAbst,vars: MutMap[String,Int]) {
     g.afv2(dom,vars)
     st.afv2(dom,vars)
   }
@@ -61,7 +61,7 @@ case class GuardedCom(g:Guard, st: Statement) {
       list = (cl1 ++ cl2) :: list
     list
   }
-  def toCNF2(vars: MutMap[String,Int],da: DomainAbst, list: CNF2.Core): Unit =  {
+  def toCNF2(vars: MutMap[String,Int],da: DomainAbst, list: CNF2.Core) =  {
     // recalculate "not g or st"
     if (g != True) {
       val l1: ListBuffer[Array[Int]] = ListBuffer()
@@ -412,7 +412,7 @@ abstract sealed class Statement {
     case Seq(s::ss) => s.toCNF(vars,da) ++ Seq(ss).toCNF(vars,da)
   }
 
-  def toCNF2(vars: MutMap[String,Int],da: DomainAbst, l:CNF2.Core ): Unit= this match {
+  def toCNF2(vars: MutMap[String,Int],da: DomainAbst, l:CNF2.Core ): Unit = this match {
     case g: Guard => g.toCNF2(vars,da,l)
     case IntAssgn(v,d)  => DataAssgn(v,d).toCNF2(vars,da,l)
     case DataAssgn(v,d) =>
@@ -459,6 +459,13 @@ abstract sealed class Statement {
     case Seq(s::ss) => s.toConstrBuilder and Seq(ss).toConstrBuilder
   }
 
+  /**
+   * Similar to toCNF, performs predicate abstraction and returns a boolean formula.
+   * However, it produces a Choco constraint instead of a CNF formula.
+   * Uses lazy constraints.
+   * @param da domain abstraction (what needs to be precomputed)
+   * @return Boolean Choco constraint (constraint builder)
+   */
   def toBoolConstrBuilder(da: DomainAbst): ConstrBuilder = this match {
     case g: Guard => g.toBoolConstrBuilder
     case IntAssgn(v, d) => DataAssgn(v,d).toBoolConstrBuilder(da)
@@ -544,7 +551,7 @@ abstract sealed class Statement {
 }
 
 /// GUARDS
-case class Var(val name: String) extends Guard {
+case class Var(name: String) extends Guard {
   def :=(v:Var): Statement = VarAssgn(flow2data(name),flow2data(v.name))
   def :=(d:Any): Statement = DataAssgn(flow2data(name),d)
 //  def :=(d: Any): Statement = d match {
