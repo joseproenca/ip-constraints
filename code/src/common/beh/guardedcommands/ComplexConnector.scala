@@ -41,4 +41,9 @@ class ComplexConnector(val sub: List[Connector[GCSolution,GuardedCommands]], end
     case _ => new ComplexConnector(other :: sub, ends ++ other.ends, uid)
   }
 
+  override def isProactive: Boolean = {
+    for (c <- sub) if (c.isProactive) return true
+    false
+  }
+
 }

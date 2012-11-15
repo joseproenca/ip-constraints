@@ -15,7 +15,7 @@ import common.beh.guardedcommands.dataconnectors.GCReader
 
 class Reader (var n:Int,deployer: OutputChannel[Any]) extends Node[GCSolution, GuardedCommands](deployer) {
 
-  val uid = hashCode()
+//  val uid = hashCode()
 
   val behaviour = //new ChoReaderPassive("r",uid,n)
     new GCReader("r",uid,n) { override def isProactive = false }

@@ -2,7 +2,7 @@ package common.beh.guardedcommands.dataconnectors
 
 import common.beh.Utils._
 import common.beh.guardedcommands._
-import common.beh.UnPredicate
+import common.beh.Predicate
 
 /**
  * Created with IntelliJ IDEA.
@@ -23,7 +23,7 @@ class GCFilter(a: String, b: String, uid: Int,g: Guard) extends GCConnector(List
    * @param uid unique channel id
    * @param p predicate
    */
-  def this(a: String, b:String, uid: Int, p: UnPredicate) {
+  def this(a: String, b:String, uid: Int, p: Predicate) {
     this(a,b,uid,Pred(dataVar(a,uid),p))
   }
 
@@ -35,7 +35,7 @@ class GCFilter(a: String, b: String, uid: Int,g: Guard) extends GCConnector(List
    * @param p predicate
    * @param positive if false consider the negation of the predicate
    */
-  def this(a: String, b:String, uid: Int, p: UnPredicate, positive: Boolean) {
+  def this(a: String, b:String, uid: Int, p: Predicate, positive: Boolean) {
     this(a, b, uid, if (positive) Pred(dataVar(a,uid),p)
                     else      Neg(Pred(dataVar(a,uid),p)))
 }

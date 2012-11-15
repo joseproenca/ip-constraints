@@ -2,7 +2,7 @@ package common.beh.guardedcommands.dataconnectors
 
 import common.beh.guardedcommands._
 import common.beh.Utils._
-import common.beh.UnPredicate
+import common.beh.Predicate
 
 
 /**
@@ -12,7 +12,7 @@ import common.beh.UnPredicate
  * Time: 16:52
  * To change this template use File | Settings | File Templates.
  */
-class GCSimpleVarFilter(an : String, bn : String, pred: UnPredicate, uid: Int)
+class GCSimpleVarFilter(an : String, bn : String, pred: Predicate, uid: Int)
   extends GCConnector(List(an,bn),uid) {
 
   val a = mkVar(an,uid)

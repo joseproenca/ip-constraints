@@ -4,7 +4,7 @@ import collection.mutable.{Set => MutSet}
 import collection.{Set => GenSet}
 import common.beh.Utils._
 import common.beh.choco.{ChoConstraints, FlowPred, ConstrBuilder}
-import common.beh.{Solution, UnFunction, IntFunction, IntPredicate}
+import common.beh.{Solution, Function, IntFunction, IntPredicate}
 import choco.kernel.model.variables.integer.IntegerExpressionVariable
 import common.beh.choco.genericconstraints.Buffer
 
@@ -19,7 +19,7 @@ import common.beh.choco.genericconstraints.Buffer
 class PEval(
              var data: Map[String,Any],
              var rest: Map[String,GenSet[String]],
-             var funcs: Map[String,GenSet[(String,UnFunction)]]) {
+             var funcs: Map[String,GenSet[(String,Function)]]) {
 
   def ++(other: PEval): PEval = {
     new PEval(

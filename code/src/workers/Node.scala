@@ -1,6 +1,6 @@
 package workers
 
-import common.beh.{Connector, Solution, Constraints}
+import common.beh._
 import actors.OutputChannel
 
 
@@ -15,7 +15,7 @@ import actors.OutputChannel
 abstract class Node[S<:Solution, C<:Constraints[S,C]]
     (deployer: OutputChannel[Any]) {
 
-
+  val uid = hashCode()
 
   // abstract method:
   val behaviour: Connector[S, C]
@@ -122,6 +122,39 @@ abstract class Node[S<:Solution, C<:Constraints[S,C]]
 //    behaviour.update(s)
 //    init
 //  }
+}
+
+object Node {
+  def apply[S<:Solution, C<:Constraints[S,C]]
+      (deployer: OutputChannel[Any],map: Iterable[(String,String)],conn : Int => Connector[S,C])
+      (implicit noSol:EmptySol[S], b:CBuilder[S,C]): Node[S,C] =
+    new Node[S,C](deployer) {
+      //      val uid = this.hashCode()
+      val behaviour = conn(uid)
+
+      // suggests which ends must have dataflow if "end" has also dataflow
+      def guessRequirements(nd: Node[S, C]) =
+        if (map.isEmpty || !connections.contains(nd)) Set()
+        else {
+          var res: Set[Node[S,C]] = Set()
+          for ((a,b) <- map)
+            if (invConnections contains a)
+              res ++= invConnections(b)
+          res
+        }
+    }
+
+
+  def apply[S<:Solution, C<:Constraints[S,C]]
+  (deployer: OutputChannel[Any],conn : Int => Connector[S,C])
+  (implicit noSol:EmptySol[S], b:CBuilder[S,C]): Node[S,C] =
+    apply[S,C](deployer, Set[(String,String)](), conn)
+
+  def apply[S<:Solution, C<:Constraints[S,C]]
+  (deployer: OutputChannel[Any],conn : Int => Connector[S,C], map: (String,String)*)
+  (implicit noSol:EmptySol[S], b:CBuilder[S,C]): Node[S,C] =
+    apply[S,C](deployer, map.toIterable, conn)
+
 }
 
 

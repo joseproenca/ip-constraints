@@ -3,7 +3,7 @@ package common.beh.choco
 import choco.kernel.model.variables.integer.{IntegerExpressionVariable, IntegerVariable}
 import choco.Choco
 import choco.kernel.model.constraints.{Constraint => ChocoConstr}
-import common.beh.{UnPredicate, UnFunction, Utils}
+import common.beh.{Predicate, Function, Utils}
 import genericconstraints.{Buffer, PredManager}
 import scala.collection.JavaConversions._
 
@@ -254,6 +254,6 @@ case class Equiv(c1: ConstrBuilder, c2: ConstrBuilder) extends ConstrBuilder
 case class FlowPred(p: IntegerVariable => ChocoConstr, v: String) extends ConstrBuilder
 case class DataAssgn(v: String, d: Int) extends ConstrBuilder
 case class FunAssgn(v1: String, v2: String, f: IntegerVariable => IntegerExpressionVariable) extends ConstrBuilder
-case class LazyPred(v1:String, v2:String, v3:String, d:Any, p:UnPredicate, fs: List[UnFunction]) extends ConstrBuilder
+case class LazyPred(v1:String, v2:String, v3:String, d:Any, p:Predicate, fs: List[Function]) extends ConstrBuilder
 case object FalseC extends ConstrBuilder
 case object TrueC  extends ConstrBuilder

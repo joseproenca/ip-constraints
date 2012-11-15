@@ -21,7 +21,10 @@ class GCReader(x: String, uid: Int, var size: Int) extends GCConnector(List(x), 
 
   override def update(s: GCSolution) {
     if (s.hasFlow(flowVar(x, uid))) {
-      //      println("Writer: FLOW! new size: "+size)
+      println("//////////////////")
+      println("// Got data - "+x+": "+s.dataOn(dataVar(x,uid)).get)
+//      println("// new size: "+size)
+      println("//////////////////")
       notifyflow()
 //      constraints = loadConstraints
       size -= 1

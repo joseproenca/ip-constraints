@@ -13,12 +13,12 @@ class CompleteStrategy[S <: Solution, C <: Constraints[S, C]] extends Strategy[S
 
   override def initNodes(n: Nd): Iterable[Nd] = {
     var included = Set(n)
-    var missing: Set[Nd] = n.getNeighbours().toSet
+    var missing: Set[Nd] = n.getNeighbours.toSet
     while (!missing.isEmpty) {
       val node = missing.head
       missing = missing.tail
       included += node
-      missing ++= node.getNeighbours().filterNot(x => included contains x)
+      missing ++= node.getNeighbours.filterNot(x => included contains x)
         //node.neighbours.filterNot(x => included contains x)
     }
     included

@@ -7,8 +7,8 @@ import choco.kernel.model.constraints.Constraint;
 import choco.kernel.model.variables.integer.IntegerVariable;
 import choco.kernel.solver.Solver;
 import choco.kernel.solver.constraints.SConstraint;
-import common.beh.UnFunction;
-import common.beh.UnPredicate;
+import common.beh.Function;
+import common.beh.Predicate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,8 +32,8 @@ public class PredManager extends IntConstraintManager {
 //                    solver.getVar(((ArrayList<IntegerVariable>) parameters).get(3)),
                     ((ArrayList<Object>) parameters).get(0),
                     ((ArrayList<Buffer>) parameters).get(1),
-                    ((ArrayList<UnPredicate>) parameters).get(2),
-                    ((ArrayList<List<UnFunction>>) parameters).get(3)
+                    ((ArrayList<Predicate>) parameters).get(2),
+                    ((ArrayList<List<Function>>) parameters).get(3)
             );
         }
         return null;
@@ -43,7 +43,7 @@ public class PredManager extends IntConstraintManager {
     /// STATIC AUXILIARY ///
 
 
-    static public Constraint genConstr(IntegerVariable xpred, IntegerVariable xflow, IntegerVariable yflow, Object d, Buffer buf, UnPredicate pred, List<UnFunction> funcs) {
+    static public Constraint genConstr(IntegerVariable xpred, IntegerVariable xflow, IntegerVariable yflow, Object d, Buffer buf, Predicate pred, List<Function> funcs) {
 //        System.out.println("Creating generic predicate - "+xpred.getName()+" - "+pred);
         ArrayList<Object> parameters = new ArrayList<Object>();
         parameters.add(0,d);

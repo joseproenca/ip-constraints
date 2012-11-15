@@ -14,7 +14,7 @@ import common.beh.guardedcommands.dataconnectors.GCLossy
  */
 
 class Lossy(deployer: OutputChannel[Any]) extends Node[GCSolution, GuardedCommands](deployer) {
-  val uid = hashCode
+//  val uid = hashCode
   val behaviour = new GCLossy("a","b",uid)
 
 //  // what ends depend on "end" - just a guess to decide when to search for a solution

@@ -1,6 +1,6 @@
 package common.beh.guardedcommands.dataconnectors
 
-import common.beh.UnFunction
+import common.beh.Function
 import common.beh.guardedcommands.GCSolution
 import common.beh.Utils.dataVar
 
@@ -11,7 +11,7 @@ import common.beh.Utils.dataVar
  * Time: 11:41
  * To change this template use File | Settings | File Templates.
  */
-class GCTransfUndo (a: String, b: String, uid: Int, f: UnFunction, undo: UnFunction) extends GCTransf(a,b,uid,f) {
+class GCTransfUndo (a: String, b: String, uid: Int, f: Function, undo: Function) extends GCTransf(a,b,uid,f) {
   override def update(s: GCSolution) {
     if (s.buf.isDefined)
       s.buf.get.rollback(f,undo,s dataOn dataVar(a,uid))

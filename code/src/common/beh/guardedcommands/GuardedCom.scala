@@ -474,16 +474,17 @@ abstract sealed class Statement {
       var res:ConstrBuilder = TrueC
       for ((pred,fs,xflow) <- da.domainWithEnd(v)) {
 
-//        var newd = d
-//        for (f<-fs.reverse) newd = f.calculate(newd)
-//        if (pred.check(newd))
-//          res = res and common.beh.choco.Var(predVar(v,pred,fs))
-//        else
-//          res = res and common.beh.choco.Neg(common.beh.choco.Var(predVar(v,pred,fs)))
-
 //        println("added LazyPred("+predVar(v,pred,fs)+","+data2flow(v)+","+data2flow(xflow)+","+fs+")")
         res = res and LazyPred(predVar(v,pred,fs),data2flow(v),data2flow(xflow),d,pred,fs)
       }
+
+      //        var newd = d
+      //        for (f<-fs.reverse) newd = f.calculate(newd)
+      //        if (pred.check(newd))
+      //          res = res and common.beh.choco.Var(predVar(v,pred,fs))
+      //        else
+      //          res = res and common.beh.choco.Neg(common.beh.choco.Var(predVar(v,pred,fs)))
+
       res
 
     case VarAssgn(v1, v2) =>
@@ -558,11 +559,11 @@ case class Var(name: String) extends Guard {
 //    case (v:Var) => VarAssgn(flow2data(name),flow2data(v.name))
 //    case _ => DataAssgn(flow2data(name),d)
 //  }
-  def :=(f:UnFunction,v:Var): Statement = FunAssgn(flow2data(name),flow2data(v.name),f)
-  def :< (p:UnPredicate): Statement = Pred(flow2data(name),p)
+  def :=(f:Function,v:Var): Statement = FunAssgn(flow2data(name),flow2data(v.name),f)
+  def :< (p:Predicate): Statement = Pred(flow2data(name),p)
 }
 case class IntPred(v:String, p: IntPredicate) extends Guard
-case class Pred(v:String, p:UnPredicate) extends Guard
+case class Pred(v:String, p:Predicate) extends Guard
 case class And(g1: Guard, g2: Guard) extends Guard
 case class Or(g1: Guard, g2: Guard) extends Guard
 case class Neg(g1: Guard) extends Guard
@@ -574,7 +575,7 @@ case object True extends Guard
 //case class SGuard(g: Guard) extends Statement
 case class IntAssgn(v: String, d: Int) extends Statement
 case class VarAssgn(v1: String, v2: String) extends Statement
-case class FunAssgn(v1:String, v2:String, f: UnFunction) extends Statement
+case class FunAssgn(v1:String, v2:String, f: Function) extends Statement
 case class DataAssgn(v: String, d: Any) extends Statement
 case class Seq(sts: List[Statement]) extends Statement
 

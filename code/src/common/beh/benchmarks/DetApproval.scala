@@ -52,7 +52,7 @@ object DetApproval extends App {
     res
   }
 
-  val approve = new UnPredicate {
+  val approve = new Predicate {
     def check(x: Any) = x match {
       case v: (Int,Int,Int,Int) => (v._2*2 + v._3*3 + v._4*5) >= 140
       case _ =>throw new RuntimeException("checking an unknown type")
@@ -60,7 +60,7 @@ object DetApproval extends App {
     override def toString = "Approve"
   }
 
-  val deny = new UnPredicate() {
+  val deny = new Predicate() {
     def check(x: Any) = x match {
       case v: (Int,Int,Int,Int) => (v._2*2 + v._3*3 + v._4*5) <= 90
       case _ => throw new RuntimeException("checking an unknown type")

@@ -20,7 +20,7 @@ class HybridStrategy[S <: Solution, C <: Constraints[S, C]] extends Strategy[S,C
 
   // Find the initial nodes based on a prefered node "n".
   def initNodes(n: Nd): Set[Nd] = {
-    val nbs = n.getNeighbours()
+    val nbs = n.getNeighbours
     // set all neigbours as priority! (and fringe), even before owning anything.
     fringe ++= nbs
 //    priorityQueue ++= n.neighbours

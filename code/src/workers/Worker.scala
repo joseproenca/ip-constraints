@@ -99,7 +99,7 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
       n.owner = None // cleaning locks (before any init)
     }
     for (n <- strat.owned)
-      n.init()
+      n.init
 
 //    deployer ! 'DONE
   }

@@ -1,7 +1,7 @@
 package common.beh.guardedcommands.dataconnectors
 
 import common.beh.guardedcommands._
-import common.beh.{Utils, UnFunction, UnPredicate}
+import common.beh.{Utils, Function, Predicate}
 import common.beh.guardedcommands.Var
 
 /**
@@ -16,8 +16,8 @@ object ConnectorGen {
   def fifo(a: String, b: String, data:Option[Any], i: Int = 0) = new GCFifo(a,b,data,i)
   def sfifo(a: String, b: String, data:Option[Any], i: Int = 0) = new GCSyncFifo(a,b,data,i)
   def filter(a: String, b: String, g:Guard) = new GCFilter(a,b,0,g)
-  def filter(a: String, b: String, filter:UnPredicate, i: Int = 0) = new GCFilter(a,b,i,filter)
-  def negfilter(a: String, b: String, filter:UnPredicate, i: Int = 0) = new GCFilter(a,b,i,filter,false)
+  def filter(a: String, b: String, filter:Predicate, i: Int = 0) = new GCFilter(a,b,i,filter)
+  def negfilter(a: String, b: String, filter:Predicate, i: Int = 0) = new GCFilter(a,b,i,filter,false)
   def imerger(a: String, b: String, c: String, i: Int = 0) = new GCIMerger(a,b,c,i)
   def merger(a: String, b: String, c: String, i: Int = 0) = new GCMerger(a,b,c,i)
   def nmerger(srcs: List[String], snk: String, i: Int = 0) = new GCNMerger(srcs,snk,i)
@@ -25,9 +25,9 @@ object ConnectorGen {
   def sdrain(a: String, b: String, i: Int = 0) = new GCSDrain(a,b,i)
   def sspout(a: String, b: String, i: Int = 0) = new GCSSpout(a,b,i)
   def sync(a: String, b: String, i: Int = 0) = new GCSync(a,b,i)
-  def transf(a: String, b: String, f: UnFunction) = new GCTransf(a,b,0,f)
-  def transf(a: String, b: String, f: UnFunction, i: Int) = new GCTransf(a,b,i,f)
-  def transf(a: String, b: String, f: UnFunction, undo: UnFunction, i: Int = 0) = new GCTransfUndo(a,b,i,f,undo)
+  def transf(a: String, b: String, f: Function) = new GCTransf(a,b,0,f)
+  def transf(a: String, b: String, f: Function, i: Int) = new GCTransf(a,b,i,f)
+  def transf(a: String, b: String, f: Function, undo: Function, i: Int = 0) = new GCTransfUndo(a,b,i,f,undo)
   def exrouter(a: String, b: String, c: String, i: Int = 0) = new GCExRouter(a,b,c,i)
   def nexrouter(src: String, snks: List[String], i: Int = 0) = new GCNExRouter(src,snks,i)
   def reader(a: String,n: Int, i: Int = 0) = new GCReader(a,i,n)

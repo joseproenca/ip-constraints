@@ -2,7 +2,7 @@ package common.beh.choco.genericconstraints
 
 //import java.util.List
 import scala.collection.JavaConversions._
-import common.beh.{UnPredicate, UnFunction}
+import common.beh.{Predicate, Function}
 import scala.collection.immutable.Map
 import common.beh.Solution
 
@@ -17,13 +17,13 @@ import common.beh.Solution
 
 class Buffer {
 //  println("buf: "+hashCode)
-  private var calculatedP: Map[(UnPredicate,Any),Boolean] = Map()
-  private var calculatedF: Map[(UnFunction,Any),Any] = Map()
+  private var calculatedP: Map[(Predicate,Any),Boolean] = Map()
+  private var calculatedF: Map[(Function,Any),Any] = Map()
 
 
-  def calculate(functs:List[UnFunction],d:Any): Any = functs match {
+  def calculate(functs:List[Function],d:Any): Any = functs match {
     case Nil => d
-    case (f: UnFunction)::(fs: List[UnFunction]) =>
+    case (f: Function)::(fs: List[Function]) =>
       if (calculatedF contains (f,d)) {
 //        println("# buffered func #")
         calculate(fs,calculatedF((f,d)))
@@ -37,7 +37,7 @@ class Buffer {
       }
   }
 
-  def check(p:UnPredicate, fs:java.util.List[UnFunction], d:Any) = {
+  def check(p:Predicate, fs:java.util.List[Function], d:Any) = {
     println("#### checking "+p+"-"+fs.reverse.mkString(".")+"-"+d+"... ")
     val newd = calculate(asJavaIterable(fs).toList.reverse,d)
     calculatedP.get((p, newd)) match {
@@ -61,7 +61,7 @@ class Buffer {
    * @param undo reverting function
    * @param data possible successful data, that must not be reverted
    */
-  def rollback(f: UnFunction, undo: UnFunction, data: Option[Any]) {
+  def rollback(f: Function, undo: Function, data: Option[Any]) {
 //    print("rollbacking "+f+"("+data+") with "+undo)
 //    print(" @"+hashCode+calculatedF.keys.mkString("[",",","]"))
     for ((f2,d) <- calculatedF.keys) {

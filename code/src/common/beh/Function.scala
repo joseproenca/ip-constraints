@@ -8,13 +8,15 @@ package common.beh
  * To change this template use File | Settings | File Templates.
  */
 
-abstract class UnFunction {
+abstract class Function extends Computation {
+  override val isLazy = true
+
   def calculate(x: Any): Any
 }
 
-object UnFunction {
-  def apply(body: Any => Any): UnFunction =
-    new UnFunction {
+object Function {
+  def apply(body: Any => Any): Function =
+    new Function {
       def calculate(x: Any) = try body(x)
         catch {
           case e: scala.MatchError => {}
@@ -22,8 +24,8 @@ object UnFunction {
         }
     }
 
-  def apply(name:String)(body: Any => Any): UnFunction =
-    new UnFunction {
+  def apply(name:String)(body: Any => Any): Function =
+    new Function {
       def calculate(x: Any) = try body(x)
       catch {
         case e: scala.MatchError => {}

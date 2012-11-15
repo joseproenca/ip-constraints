@@ -7,7 +7,7 @@ import choco.Choco
 import choco.kernel.solver.Solver
 import choco.cp.solver.CPSolver
 import java.util
-import common.beh.{UnPredicate, UnFunction}
+import common.beh.{Predicate, Function}
 
 /**
  * Created with IntelliJ IDEA.
@@ -31,16 +31,16 @@ object TestGenericConstr extends App {
   val xflow: IntegerVariable = Choco.makeBooleanVar("xflow")
   val yflow: IntegerVariable = Choco.makeBooleanVar("yflow")
 
-  val gt5 = new UnPredicate {
+  val gt5 = new Predicate {
     def check(x: Any) = x.asInstanceOf[Int] > 5
     override def toString = "[>5]"
   }
-  val twicePlusOne = new util.ArrayList[UnFunction]
-  twicePlusOne.add(new UnFunction {
+  val twicePlusOne = new util.ArrayList[Function]
+  twicePlusOne.add(new Function {
     def calculate(x: Any) = x.asInstanceOf[Int] * 2
     override def toString = "[*2]"
   })
-  twicePlusOne.add(new UnFunction {
+  twicePlusOne.add(new Function {
     def calculate(x: Any) = x.asInstanceOf[Int] + 1
     override def toString = "[+1]"
   })

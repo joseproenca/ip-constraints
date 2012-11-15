@@ -7,7 +7,7 @@ package common.beh
  * Time: 10:47
  * To change this template use File | Settings | File Templates.
  */
-abstract class UnPredicate {
+abstract class Predicate {
   def check(x: Any): Boolean
 
   //  def opposite = new UnPred {
@@ -15,8 +15,8 @@ abstract class UnPredicate {
   //  }
 }
 
-object UnPredicate {
-  def apply(body: Any => Boolean): UnPredicate = new UnPredicate {
+object Predicate {
+  def apply(body: Any => Boolean): Predicate = new Predicate {
     def check(x: Any) = try body(x)
     catch {
       case e: scala.MatchError => false
@@ -24,7 +24,7 @@ object UnPredicate {
     }
   }
 
-  def apply(name: String)(body: Any => Boolean): UnPredicate = new UnPredicate {
+  def apply(name: String)(body: Any => Boolean): Predicate = new Predicate {
     def check(x: Any) = try body(x)
     catch {
       case e: scala.MatchError => false

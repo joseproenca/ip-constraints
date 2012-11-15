@@ -52,6 +52,7 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
 //      c = pair._1; included = pair._2
     }
 
+//    println("solving: "+c)
     c.solve
   }
 
@@ -92,9 +93,9 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
 
     if (n1.connections contains n2)
       for ((end,_,_) <- n1.connections(n2))
-        res ++ cbuilder.noflow(end,uid1)
+        res ++= cbuilder.noflow(end,uid1)
 
-//    println("added borded. New constraints: "+c.commands.mkString(","))
+    //    println("added borded. New constraints: "+c.commands.mkString(","))
     res
   }
 

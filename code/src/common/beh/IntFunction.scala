@@ -12,7 +12,7 @@ import z3.scala.{Z3AST, Z3Context}
  * To change this template use File | Settings | File Templates.
  */
 
-abstract class IntFunction extends UnFunction {
+abstract class IntFunction extends Function {
   val choFun: IntegerExpressionVariable => IntegerExpressionVariable
   val z3Fun: (Z3Context,Z3AST) => Z3AST
   val funFun: Int => Int

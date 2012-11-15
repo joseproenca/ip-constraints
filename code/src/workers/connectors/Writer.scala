@@ -15,7 +15,7 @@ import common.beh.guardedcommands.dataconnectors.GCWriter
 
 class Writer(var n:Int,deployer: OutputChannel[Any]) extends Node[GCSolution, GuardedCommands](deployer) {
 
-  val uid = hashCode()
+  //val uid = hashCode()
 
   val behaviour = new GCWriter("w",uid,(1 to n).toList)
 

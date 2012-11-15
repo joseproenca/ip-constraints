@@ -6,8 +6,8 @@ import choco.kernel.solver.Solver;
 import choco.kernel.solver.constraints.AbstractSConstraint;
 import choco.kernel.solver.constraints.integer.AbstractUnIntSConstraint;
 import choco.kernel.solver.variables.integer.IntDomainVar;
-import common.beh.UnFunction;
-import common.beh.UnPredicate;
+import common.beh.Function;
+import common.beh.Predicate;
 
 import java.util.List;
 
@@ -24,8 +24,8 @@ class NegLazyPredSConstraint extends AbstractUnIntSConstraint {
 
   final Object data;
   final Buffer buffer;
-  final UnPredicate predicate;
-  final List<UnFunction> functions;
+  final Predicate predicate;
+  final List<Function> functions;
   final IntDomainVar xflow;
   final IntDomainVar yflow;
 
@@ -34,8 +34,8 @@ class NegLazyPredSConstraint extends AbstractUnIntSConstraint {
                                 IntDomainVar yflow, // for information, not for restriction
                                 Object data,
                                 Buffer buffer,
-                                UnPredicate predicate,
-                                List<UnFunction> functions) {
+                                Predicate predicate,
+                                List<Function> functions) {
     super(xpred);
     this.data = data;
     this.buffer = buffer;

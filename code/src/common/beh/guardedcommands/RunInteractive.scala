@@ -1,8 +1,13 @@
 package common.beh.guardedcommands
 
-import common.beh.{UnFunction, UnPredicate}
+import common.beh.{Function, Predicate}
 import dataconnectors.ConnectorGen._
-import common.beh.Utils.dataVar
+import workers.{Deployer, Node}
+import workers.strategies.HybridStrategy
+import workers.strategies.HybridStrategy.HybridStrategyBuilder
+import GCConnector.GCBuilder
+import common.beh.guardedcommands.{GuardedCommands => C,GCSolution => S}
+import common.beh.Utils._
 
 /**
  * Created with IntelliJ IDEA.
@@ -27,7 +32,7 @@ object RunInteractive extends App {
   // Use "val" for shared predicates: common attempt count and buffer.
   val secret = Map("alex" -> "123", "bob" -> "asd", "guest" -> "")
 
-  def checkPwd = UnPredicate("chkPwd") {
+  def checkPwd = Predicate("chkPwd") {
     case user: String =>
       var attempts = 2
       var succeed = false
@@ -52,7 +57,7 @@ object RunInteractive extends App {
   // Replacing temporarily the user name for authentication
   var lastUser = ""
 
-  val hackUser = UnFunction("hackUser") {
+  val hackUser = Function("hackUser") {
     case x: String =>
       println("overriding username "+x)
       println("new user? (enter keeps old one)")
@@ -61,11 +66,11 @@ object RunInteractive extends App {
       if (p == "") x else p
   }
 
-  val undohack = UnFunction("undo") {
+  val undohack = Function("undo") {
     x => println("-- hack on "+x+" not used --")
   }
 
-  val recallUser = UnFunction("recallUser") {
+  val recallUser = Function("recallUser") {
     case x:String => lastUser
   }
 
@@ -81,6 +86,37 @@ object RunInteractive extends App {
     reader("out",2) ++
     // at least one should have flow
     flow("out")
+
+
+//  // create and run deployer
+//  val deployer = new Deployer[S,C,HybridStrategy[S,C]](2)
+//  deployer.start()
+//
+//  val node_a = Node[S,C](deployer, (uid:Int) =>
+//    writer("alex",List("alex"),uid) ++
+//    transf("alex","a1",hackUser,undohack,uid) ++
+//    filter("a1", "a2",checkPwd,uid) ++
+//    transf("a2", "a3",recallUser,uid)
+//  , "a3" -> "alex" // if "a3" has flow, check if "alex" also has...
+//  )
+//  val node_b = Node[S,C](deployer, (uid:Int) =>
+//    writer("bob", List("bob"),uid) ++
+//    filter("bob", "b1",checkPwd,uid)
+//  , "b1" -> "bob"
+//  )
+//  val node_c = Node[S,C](deployer, (uid:Int) =>
+//    merger("a3","b1","out",uid) ++
+//    reader("out",2,uid) ++
+//    flow("out",uid)
+//  , "out" -> "a3"
+//  )
+//
+//  node_c("a3") <-- node_a("a3")
+//  node_c("b1") <-- node_b("b1")
+//
+//  node_c.init()
+//  node_b.init()
+//  node_a.init()
 
 
   // Run

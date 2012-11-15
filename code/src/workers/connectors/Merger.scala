@@ -15,7 +15,7 @@ import common.beh.guardedcommands.dataconnectors.GCMerger
  */
 
 class Merger (deployer: OutputChannel[Any]) extends Node[GCSolution, GuardedCommands](deployer) {
-  val uid = hashCode
+//  val uid = hashCode
   val behaviour = new GCMerger("a","b","c",uid)
 
 

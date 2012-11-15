@@ -6,8 +6,8 @@ import choco.kernel.solver.Solver;
 import choco.kernel.solver.constraints.AbstractSConstraint;
 import choco.kernel.solver.constraints.integer.AbstractTernIntSConstraint;
 import choco.kernel.solver.variables.integer.IntDomainVar;
-import common.beh.UnFunction;
-import common.beh.UnPredicate;
+import common.beh.Function;
+import common.beh.Predicate;
 
 import java.util.List;
 
@@ -22,8 +22,8 @@ public class LazyPredSConstraint extends AbstractTernIntSConstraint {
 
     final Object data;
     final Buffer buffer;
-    final UnPredicate predicate;
-    final List<UnFunction> functions;
+    final Predicate predicate;
+    final List<Function> functions;
 //    final IntDomainVar xflow;
 
     public LazyPredSConstraint(IntDomainVar xpred,
@@ -31,8 +31,8 @@ public class LazyPredSConstraint extends AbstractTernIntSConstraint {
                                IntDomainVar yflow, // for information, not for restriction
                                Object data,
                                Buffer buffer,
-                               UnPredicate predicate,
-                               List<UnFunction> functions) {
+                               Predicate predicate,
+                               List<Function> functions) {
         super(xpred,xflow,yflow);
         this.data = data;
         this.buffer = buffer;

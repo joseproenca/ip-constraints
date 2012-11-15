@@ -47,7 +47,7 @@ object AllSyncTransaction extends App {
   /// Define the problem ///
   //////////////////////////
 
-  def genTransaction(pre: UnPredicate, post: UnPredicate, f: UnFunction, finv: UnFunction,
+  def genTransaction(pre: Predicate, post: Predicate, f: Function, finv: Function,
                       in: String, out: String, aborted: String, abort: String, uid: String): GuardedCommands = {
     filter(in,"a"+uid,pre) ++
     transf("a"+uid,"b"+uid,f) ++
@@ -59,7 +59,7 @@ object AllSyncTransaction extends App {
     merger("c"+uid,"f"+uid,aborted)
   }
 
-  def genTransaction(seed:Int,invf: UnFunction): GuardedCommands =
+  def genTransaction(seed:Int,invf: Function): GuardedCommands =
     genTransaction(new PreCond(seed),new PostCond(seed),new SomeFunc(seed),invf,
                   "x"+math.abs(seed),"x"+(math.abs(seed)+1),
                   "y"+math.abs(seed),"y"+(math.abs(seed)+1),math.abs(seed).toString)

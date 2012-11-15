@@ -19,8 +19,8 @@ class DomainAbst {
   val greater: Map[String,immutable.Set[String]] = Map() // eg, x -> yz --- y > x, z > x
   val less: Map[String,immutable.Set[String]] = Map()
   val max: Set[String] = Set()
-  val inv: Map[String,immutable.Set[UnPredicate]] = Map().withDefaultValue(immutable.Set()) // eg, x -> PQR
-  val fun: Map[String,List[UnFunction]] = Map().withDefaultValue(List()) // eg, x -> fgh
+  val inv: Map[String,immutable.Set[Predicate]] = Map().withDefaultValue(immutable.Set()) // eg, x -> PQR
+  val fun: Map[String,List[Function]] = Map().withDefaultValue(List()) // eg, x -> fgh
 
   // NOT USED in the end...
 //  @deprecated
@@ -57,10 +57,10 @@ class DomainAbst {
    * @param x name of the variable representing the end - of shape "F$..."
    * @return a set of predicates that must be evaluated, and a list of functions that must be applied before
    */
-  def domainWithEnd(x:String): Set[(UnPredicate,List[UnFunction],String)] = {
+  def domainWithEnd(x:String): Set[(Predicate,List[Function],String)] = {
     // 1 - start with current predicates
     //    var res = inv(x) map ((_,List[UnFunction]()))
-    var res = Set[(UnPredicate,List[UnFunction],String)]()
+    var res = Set[(Predicate,List[Function],String)]()
 //    for (p <- inv(x)) res += ((p,fun(x),x))
     for (p <- inv(x)) res += ((p,List(),x))
 
@@ -89,10 +89,10 @@ class DomainAbst {
    * @param x name of the variable representing the end - of shape "F$..."
    * @return a set of predicates that must be evaluated, and a list of functions that must be applied before
    */
-  def domain(x:String): immutable.Set[(UnPredicate,List[UnFunction])] = {
+  def domain(x:String): immutable.Set[(Predicate,List[Function])] = {
 //    println("asking domain of "+x+". Here is the DA: "+pp)
     // 1 - start with current predicates
-    var res = inv(x) map ((_,List[UnFunction]()))
+    var res = inv(x) map ((_,List[Function]()))
 
     if (less contains x) {
       // 2 - add domain of following paths
@@ -119,8 +119,8 @@ class DomainAbst {
    * @param x name of the variable representing the end - of shape "F$..."
    * @return a set of sequences of functions that will be applied
    */
-  def pre(x: String): Set[List[UnFunction]] = {
-    var res = Set[List[UnFunction]]()
+  def pre(x: String): Set[List[Function]] = {
+    var res = Set[List[Function]]()
     if (greater contains x)
       for (larger <- greater(x))
         res ++= (for (fs <- pre(larger)) yield fs ::: fun(x))
@@ -170,11 +170,11 @@ class DomainAbst {
 //    max.filterNot(greater contains _)
 //  }
 
-  def += (v:String,p:UnPredicate) {
+  def += (v:String,p:Predicate) {
     inv(v) += p
   }
 
-  def += (v:String,f:UnFunction) {
+  def += (v:String,f:Function) {
     fun += v -> (fun(v) ::: List(f))
   }
 
@@ -251,14 +251,14 @@ object DomainAbst {
   }
   def apply(v: String, pred:IntPredicate): DomainAbst = {
     val res = new DomainAbst()
-    val p:UnPredicate = pred
+    val p:Predicate = pred
     res.inv(v) = immutable.Set(p)
     res
 //    {
 //      override val inv = Map(v -> Set(pred)).withDefaultValue(Set())
 //    }
   }
-  def apply(v: String, pred:UnPredicate): DomainAbst = {
+  def apply(v: String, pred:Predicate): DomainAbst = {
     val res = new DomainAbst()
     res.inv(v) = immutable.Set(pred)
     res
@@ -266,7 +266,7 @@ object DomainAbst {
 //      override val inv = Map(v -> Set(pred)).withDefaultValue(Set())
 //    }
   }
-  def apply(v: String, f:UnFunction): DomainAbst = {
+  def apply(v: String, f:Function): DomainAbst = {
     val res = new DomainAbst()
     res.fun(v) = List(f)
     res

@@ -3,7 +3,7 @@ package common.beh.guardedcommands.dataconnectors
 import common.beh.guardedcommands._
 import common.beh.Utils._
 import common.beh.guardedcommands.Var
-import common.beh.{Solution, UnFunction}
+import common.beh.{Solution, Function}
 
 /**
  * Created with IntelliJ IDEA.
@@ -13,7 +13,7 @@ import common.beh.{Solution, UnFunction}
  * To change this template use File | Settings | File Templates.
  */
 
-class GCTransf (a: String, b: String, uid: Int, f: UnFunction) extends GCConnector(List(a,b), uid) {
+class GCTransf (a: String, b: String, uid: Int, f: Function) extends GCConnector(List(a,b), uid) {
   val av = Var(flowVar(a,uid))
   val bv = Var(flowVar(b,uid))
 

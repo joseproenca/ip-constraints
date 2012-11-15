@@ -13,7 +13,7 @@ import z3.scala.{Z3Context, Z3AST}
  * To change this template use File | Settings | File Templates.
  */
 
-abstract class IntPredicate extends UnPredicate {
+abstract class IntPredicate extends Predicate {
   val choPred: IntegerExpressionVariable => Constraint
   val z3Pred: (Z3Context,Z3AST) => Z3AST
   val funPred: Int => Boolean
