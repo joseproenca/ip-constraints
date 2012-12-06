@@ -23,7 +23,7 @@ class Writer(var n:Int) extends Actor[GCSolution, GuardedCommands] {
   val behaviour = new GCWriter("a",uid,(1 to n).toList) {
     private var triedAndFailed = false
     override def update(s: GCSolution) {
-      triedAndFailed = !s.hasFlow(flowVar(x, uid))
+      triedAndFailed = !s.hasFlowOn(flowVar(x, uid))
       super.update(s)
     }
     override def isProactive: Boolean = super.isProactive && !triedAndFailed

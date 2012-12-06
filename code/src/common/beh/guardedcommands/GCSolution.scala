@@ -15,8 +15,8 @@ import common.beh.choco.genericconstraints.Buffer
 class GCSolution(val boolSol: Solution, var varMap: Map[String, Any]) extends Solution {
   var buf: Option[Buffer] = None
 
-  def hasFlow(end: String) =
-    boolSol hasFlow end
+  def hasFlowOn(end: String) =
+    boolSol hasFlowOn end
   //if (boolSol contains end) varMap(end) else false
 
   def pretty: String = {
@@ -26,11 +26,11 @@ class GCSolution(val boolSol: Solution, var varMap: Map[String, Any]) extends So
     res
   }
 
-  def dataOn(end: String) = varMap.get(end)
+  def getDataOn(end: String) = varMap.get(end)
 
   def apply(v:String): Any = //varMap(v)
     if (varMap contains v) varMap(v)
-    else boolSol hasFlow v
+    else boolSol hasFlowOn v
 
   def update(v:String,b:Int) {
     varMap = varMap + (v -> b)
@@ -40,8 +40,8 @@ class GCSolution(val boolSol: Solution, var varMap: Map[String, Any]) extends So
 
 object GCSolution {
   class MyEmptySol extends Solution {
-    def hasFlow(end: String) = false
-    def dataOn(end: String) = None
+    def hasFlowOn(end: String) = false
+    def getDataOn(end: String) = None
     def pretty = ""
   }
 

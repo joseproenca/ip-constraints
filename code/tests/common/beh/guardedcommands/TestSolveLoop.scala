@@ -15,7 +15,7 @@ import common.beh.{LT, GT}
 
 class TestSolveLoop extends FunSpec {
 
-  describe ("Choco - Writer, 2 Filters (<5, >2), and a reader.") {
+  describe ("GC - Writer, 2 Filters (<5, >2), and a reader.") {
 
     val lfive = new LT(5)
     val gtwo= new GT(2)
@@ -24,28 +24,28 @@ class TestSolveLoop extends FunSpec {
     def gtwox(x:String) = IntPred(dataVar(x,0),gtwo)
 
     println("--- data provided - no CSP solving ---")
-    val c1= new GCFilter("a","b",0,lfivex("a")).constraints ++
-      new GCFilter("b","c",0,gtwox("b")).constraints ++
+    val c1= new GCFilter("a","b",0,lfivex("a")).getConstraints ++
+      new GCFilter("b","c",0,gtwox("b")).getConstraints ++
       GuardedCommands(True --> IntAssgn(dataVar("a",0),3)) ++
-      GuardedCommands(True --> SGuard(Var(flowVar("b",0))))
+      GuardedCommands(True --> Var(flowVar("b",0)))
     val res1 = c1.solve
     if (res1.isDefined) println("solved:\n"+res1.get.pretty)
     else println("no sol")
 
 
     println("--- data not provided - CSP has a sol ---")
-    val c2= new GCFilter("a","b",0,lfivex("a")).constraints ++
-      new GCFilter("b","c",0,gtwox("b")).constraints ++
-      GuardedCommands(True --> SGuard(Var(flowVar("b",0))))
+    val c2= new GCFilter("a","b",0,lfivex("a")).getConstraints ++
+      new GCFilter("b","c",0,gtwox("b")).getConstraints ++
+      GuardedCommands(True --> Var(flowVar("b",0)))
     val res2 = c2.solve
     if (res2.isDefined) println("solved:\n"+res2.get.pretty)
     else println("no sol")
 
 
     println("--- data not provided - CSP needs reiteration ---")
-    val c3= new GCFilter("a","b",0,lfivex("a")).constraints ++
-      new GCFilter("b","c",0,gtwox("b")).constraints ++
-      GuardedCommands(True --> SGuard(Var(flowVar("a",0))))
+    val c3= new GCFilter("a","b",0,lfivex("a")).getConstraints ++
+      new GCFilter("b","c",0,gtwox("b")).getConstraints ++
+      GuardedCommands(True --> Var(flowVar("a",0)))
     val res3 = c3.solve
     if (res3.isDefined) println("solved:\n"+res3.get.pretty)
     else println("no sol")
@@ -54,26 +54,26 @@ class TestSolveLoop extends FunSpec {
     // using CHOCO
 
     println("--- data provided - no CSP solving ---")
-    val c4= new GCFilter("a","b",0,lfivex("a")).constraints ++
-      new GCFilter("b","c",0,gtwox("b")).constraints ++
+    val c4= new GCFilter("a","b",0,lfivex("a")).getConstraints ++
+      new GCFilter("b","c",0,gtwox("b")).getConstraints ++
       GuardedCommands(True --> IntAssgn(dataVar("a",0),3)) ++
-      GuardedCommands(True --> SGuard(Var(flowVar("b",0))))
+      GuardedCommands(True --> Var(flowVar("b",0)))
     val res4 = c4.solveChocoSat
     if (res4.isDefined) println("solved:\n"+res4.get.pretty)
     else println("no sol")
 
     println("--- data not provided - CSP has a sol ---")
-    val c5= new GCFilter("a","b",0,lfivex("a")).constraints ++
-      new GCFilter("b","c",0,gtwox("b")).constraints ++
-      GuardedCommands(True --> SGuard(Var(flowVar("b",0))))
+    val c5= new GCFilter("a","b",0,lfivex("a")).getConstraints ++
+      new GCFilter("b","c",0,gtwox("b")).getConstraints ++
+      GuardedCommands(True --> Var(flowVar("b",0)))
     val res5 = c5.solveChocoSat
     if (res5.isDefined) println("solved:\n"+res5.get.pretty)
     else println("no sol")
 
     println("--- data not provided - CSP needs reiteration ---")
-    val c6= new GCFilter("a","b",0,lfivex("a")).constraints ++
-      new GCFilter("b","c",0,gtwox("b")).constraints ++
-      GuardedCommands(True --> SGuard(Var(flowVar("a",0))))
+    val c6= new GCFilter("a","b",0,lfivex("a")).getConstraints ++
+      new GCFilter("b","c",0,gtwox("b")).getConstraints ++
+      GuardedCommands(True --> Var(flowVar("a",0)))
     val res6 = c6.solveChocoSat
     if (res6.isDefined) println("solved:\n"+res6.get.pretty)
     else println("no sol")
@@ -93,7 +93,7 @@ class TestSolveLoop extends FunSpec {
       assert (sol(dataVar("a",0)).isInstanceOf[Int])
       assert (sol(dataVar("b",0)).isInstanceOf[Int])
       assert (sol(dataVar("a",0)).asInstanceOf[Int] < 5)
-      assert (if (sol.hasFlow(flowVar("c",0)))
+      assert (if (sol.hasFlowOn(flowVar("c",0)))
         sol(dataVar("b",0)).asInstanceOf[Int] > 2
       else sol(dataVar("b",0)).asInstanceOf[Int] <= 2)
     }
@@ -101,10 +101,10 @@ class TestSolveLoop extends FunSpec {
     it ("c3 should have sol") {
       assert (res3.isDefined)
       val sol = res3.get
-      assert (if (sol.hasFlow(flowVar("b",0))) sol(dataVar("b",0)).asInstanceOf[Int] < 5
+      assert (if (sol.hasFlowOn(flowVar("b",0))) sol(dataVar("b",0)).asInstanceOf[Int] < 5
       else                             sol(dataVar("a",0)).asInstanceOf[Int] >= 5)
-      assert (if (sol.hasFlow(flowVar("c",0))) sol(dataVar("c",0)).asInstanceOf[Int] > 2
-      else if (sol.hasFlow(flowVar("b",0))) sol(dataVar("b",0)).asInstanceOf[Int] <= 2
+      assert (if (sol.hasFlowOn(flowVar("c",0))) sol(dataVar("c",0)).asInstanceOf[Int] > 2
+      else if (sol.hasFlowOn(flowVar("b",0))) sol(dataVar("b",0)).asInstanceOf[Int] <= 2
       else true)
     }
 
@@ -119,7 +119,7 @@ class TestSolveLoop extends FunSpec {
       assert (res5.isDefined)
       val sol = res5.get
       assert (sol(dataVar("a",0)).asInstanceOf[Int] < 5)
-      assert (if (sol.hasFlow(flowVar("c",0)))
+      assert (if (sol.hasFlowOn(flowVar("c",0)))
         sol(dataVar("b",0)).asInstanceOf[Int] > 2
       else sol(dataVar("b",0)).asInstanceOf[Int] <= 2)
     }
@@ -127,10 +127,10 @@ class TestSolveLoop extends FunSpec {
     it ("c6 should have sol") {
       assert (res6.isDefined)
       val sol = res6.get
-      assert (if (sol.hasFlow(flowVar("b",0))) sol(dataVar("b",0)).asInstanceOf[Int] < 5
+      assert (if (sol.hasFlowOn(flowVar("b",0))) sol(dataVar("b",0)).asInstanceOf[Int] < 5
       else                             sol(dataVar("a",0)).asInstanceOf[Int] >= 5)
-      assert (if (sol.hasFlow(flowVar("c",0))) sol(dataVar("c",0)).asInstanceOf[Int] > 2
-      else if (sol.hasFlow(flowVar("b",0))) sol(dataVar("b",0)).asInstanceOf[Int] <= 2
+      assert (if (sol.hasFlowOn(flowVar("c",0))) sol(dataVar("c",0)).asInstanceOf[Int] > 2
+      else if (sol.hasFlowOn(flowVar("b",0))) sol(dataVar("b",0)).asInstanceOf[Int] <= 2
       else true)
     }
 

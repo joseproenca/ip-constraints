@@ -149,6 +149,25 @@ public class RunTests {
 //            runPairwiseAsync(tries,900,4,new LazyExpansionStrategy(), 5000);
 //            runPairwiseAsync(tries,1000,4,new LazyExpansionStrategy(),5000);
             }
+
+            System.out.println("## 8 cores: Merge and PairwiseAsync ##");
+            if (mode < 9) {
+                label = "T8";
+                for (int i=0; i<=7; i++) {
+                    runMergeTree(tries, i,8,new LazyExpansionStrategy(),220000);
+                }
+            }
+
+            if (mode < 10) {
+                label = "T8";
+                runPairwiseAsync(tries,  2,8,new LazyExpansionStrategy(),  600);
+                runPairwiseAsync(tries, 50,8,new LazyExpansionStrategy(), 1000);
+                runPairwiseAsync(tries,100,8,new LazyExpansionStrategy(), 1000);
+                runPairwiseAsync(tries,150,8,new LazyExpansionStrategy(), 1000);
+                runPairwiseAsync(tries,200,8,new LazyExpansionStrategy(), 1000);
+                runPairwiseAsync(tries,250,8,new LazyExpansionStrategy(), 1000);
+            }
+
             System.out.println("#tests completed");
         } catch (InterruptedException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.

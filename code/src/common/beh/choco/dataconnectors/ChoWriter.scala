@@ -22,7 +22,7 @@ class ChoWriter(val x: String, uid: Int, var data: List[Int]) extends connectors
     else nfConstr
 
   override def update(s: ChoSolution) {
-    if (s.hasFlow(flowVar(x, uid))) {
+    if (s.hasFlowOn(flowVar(x, uid))) {
       //      println("Writer: FLOW! new size: "+size)
       notifyflow()
 //      constraints = loadConstraints

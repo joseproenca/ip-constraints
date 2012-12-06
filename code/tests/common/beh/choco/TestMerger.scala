@@ -3,6 +3,7 @@ package common.beh.choco
 import connectors.{ChoReader, ChoMerger, ChoWriter}
 import org.scalatest.FunSpec
 import common.beh.Utils
+import common.beh.choco.ChoConnector.ChoBuilder._
 
 /**
  * Created with IntelliJ IDEA.
@@ -16,20 +17,28 @@ class TestMerger extends FunSpec {
 
   describe ("Choco - 2Writers, merger, and a reader") {
 
-    val w1: ChoBehaviour = new ChoWriter("w",42,1)
-    val w2: ChoBehaviour = new ChoWriter("w",43,1)
-    val m: ChoBehaviour = new ChoMerger("x","y","a",44)
-    val r2: ChoBehaviour = new ChoReader("r",45,2)
+    val w1: ChoConnector = new ChoWriter("w",42,1)
+    val w2: ChoConnector = new ChoWriter("w",43,1)
+    val m: ChoConnector = new ChoMerger("x","y","a",44)
+    val r2: ChoConnector = new ChoReader("r",45,2)
 
 
-    var c = w1.constraints ++ w2.constraints ++ m.constraints ++ r2.constraints
-    w1.connections += m -> Set(("w","x",44))
-    w2.connections += m -> Set(("w","y",44))
-    m.connections += r2 -> Set(("a","r",45))
-    c = w1.sync(m,c)
-    c = w2.sync(m,c)
-    c = m.sync(r2,c)
-    c = c ++ Set(Var(Utils.flowVar("x",44)))
+    var c = w1.getConstraints ++ w2.getConstraints ++ m.getConstraints ++ r2.getConstraints
+//    w1.connections += m -> Set(("w","x",44))
+//    w2.connections += m -> Set(("w","y",44))
+//    m.connections += r2 -> Set(("a","r",45))
+//    c = w1.sync(m,c)
+//    c = w2.sync(m,c)
+//    c = m.sync(r2,c)
+//    c = c ++ Set(Var(Utils.flowVar("x",44)))
+
+    c ++=
+      sync("x",44,"w",42) ++
+      sync("y",44,"w",43) ++
+      sync("r",45,"a",44)
+
+    c.close()
+
 
     println(c.constrBuilders)
 
@@ -43,8 +52,8 @@ class TestMerger extends FunSpec {
     it ("should have 3 variables in the solution")
     {assert(r.get.sizeModel == 3)}
 
-    it ("should have 6 known variables")
-    {assert(r.get.size == 6)}
+    it ("should have 12 known variables")
+    {assert(r.get.size == 12)}
 
   }
 }

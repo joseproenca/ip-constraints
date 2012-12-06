@@ -148,7 +148,7 @@ sealed abstract class ConstrBuilder {
       val (vars2, nv1) = ConstrBuilder.getVar(vars , v1)
       val (vars3, nv2) = ConstrBuilder.getVar(vars2, v2)
       val (vars4, nv3) = ConstrBuilder.getVar(vars3, v3)
-      val c = PredManager.genConstr(nv1, nv2, nv3, d, buf, p, fs)
+      val c = PredManager.genConstr(nv1, nv2, nv3, d, buf, p, fs) // c is a ComponentConstraint
       (vars4,c)
 
     case FalseC => (vars, Choco.FALSE)

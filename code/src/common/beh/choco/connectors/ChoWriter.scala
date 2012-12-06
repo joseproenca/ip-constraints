@@ -25,7 +25,7 @@ class ChoWriter(x:String,uid:Int,var size:Int) extends ChoConnector(List(x),uid)
 
 
   override def update(s:ChoSolution) {
-    if (s.hasFlow(Utils.flowVar(x,uid))) {
+    if (s hasFlowOn Utils.flowVar(x,uid)) {
       size -= 1
 //      println("Writer: FLOW! new size: "+size)
       notifyflow()

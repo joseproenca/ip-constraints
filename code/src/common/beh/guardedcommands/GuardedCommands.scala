@@ -591,7 +591,7 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
         if (da.max contains v) {
           for ((pred,fs) <- da.domain(v)) {
             val pvar = predVar(v,pred,fs)
-            avoid = avoid or (if (sol.hasFlow(pvar)) common.beh.choco.Neg(common.beh.choco.Var(pvar))
+            avoid = avoid or (if (sol hasFlowOn pvar) common.beh.choco.Neg(common.beh.choco.Var(pvar))
             else common.beh.choco.Var(pvar))
           }
           newBuilders = newBuilders + avoid

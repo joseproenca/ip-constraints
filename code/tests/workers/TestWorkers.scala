@@ -3,6 +3,9 @@ package workers
 import org.scalatest.FunSpec
 import common.beh.choco.{ChoConstraints, ChoSolution}
 import strategies._
+import common.beh.guardedcommands.{GCSolution, GuardedCommands}
+import common.beh.guardedcommands.GCConnector.GCBuilder
+
 
 /**
  * Created with IntelliJ IDEA.
@@ -15,13 +18,13 @@ import strategies._
 class TestWorkers extends FunSpec {
   describe ("Workers full traversal - Writer to a lossy") {
     //    val x = scala.actors.Actor.self
-    type S = ChoSolution
-    type C = ChoConstraints
+    type S = GCSolution
+    type C = GuardedCommands
     type St = HybridStrategy[S,C]
-    type SB = StrategyBuilder[S,C,St]
+    //type SB = StrategyBuilder[S,C,St]
 
     // create and run deployer
-    val deployer = new Deployer[S,C,St,SB](2,HybridStrategyBuilder)
+    val deployer = new Deployer[S,C,St](2)
     deployer.start()
 
     // create nodes
@@ -40,7 +43,8 @@ class TestWorkers extends FunSpec {
 //      wr -> Set((lossy.behaviour.ends.head,wr.behaviour.ends.head,wr.behaviour.uid))
 //    lossy.neighbours ::= wr
 
-    wr.connect(lossy , wr.behaviour.ends.head , lossy.behaviour.ends.head)
+//    wr.connect(lossy , wr.behaviour.ends.head , lossy.behaviour.ends.head)
+    lossy(lossy.behaviour.ends.head) <-- wr(wr.behaviour.ends.head)
 
     // trigger all primitives (only proactive ones will start)
     wr.init

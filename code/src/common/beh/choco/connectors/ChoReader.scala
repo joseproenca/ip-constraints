@@ -26,7 +26,7 @@ class ChoReader(x:String,uid:Int,var size:Int) extends ChoConnector(List(x),uid)
 
   override def update(s:ChoSolution) {
 //    println("Reader: updating? (has flow?) "+s.getVal(ConstrBuilder.flowVar(x,uid)))
-    if (s hasFlow Utils.flowVar(x, uid)) {
+    if (s hasFlowOn Utils.flowVar(x, uid)) {
       size -= 1
 //      println("Reader: FLOW! new size: "+size)
       notifyflow()

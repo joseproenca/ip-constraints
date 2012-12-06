@@ -129,7 +129,7 @@ object RunInteractive extends App {
 
 //  if (sol.isDefined) print("solved CS:\n" + sol.get.pretty)
   if (sol.isDefined) println("-- data through 'out': " +
-    (sol.get dataOn dataVar("out")).get+" --")
+    (sol.get getDataOn dataVar("out")).get+" --")
   else {
     println("no solution")
     sys.exit()
@@ -140,7 +140,7 @@ object RunInteractive extends App {
 
 //  if (sol2.isDefined) println("solved again CS:\n" + sol2.get.pretty)
   if (sol2.isDefined) println("-- data through 'out': " +
-    (sol2.get dataOn dataVar("out")).get+" --")
+    (sol2.get getDataOn dataVar("out")).get+" --")
   else println("no solution this time")
 
 }

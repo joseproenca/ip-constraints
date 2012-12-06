@@ -73,7 +73,7 @@ abstract class ChoConnector(ends: List[String], uid: Int) extends Connector[ChoS
     override def getVal(v: String): Option[Int] =
       extension.get(v)
 
-    override def hasFlow(v: String) = false
+    override def hasFlowOn(v: String) = false
 
     override def pretty: String = {
       var res: String = ""

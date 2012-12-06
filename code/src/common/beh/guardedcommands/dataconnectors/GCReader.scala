@@ -20,9 +20,9 @@ class GCReader(x: String, uid: Int, var size: Int) extends GCConnector(List(x), 
     else nfConstr
 
   override def update(s: GCSolution) {
-    if (s.hasFlow(flowVar(x, uid))) {
+    if (s hasFlowOn flowVar(x, uid)) {
       println("//////////////////")
-      println("// Got data - "+x+": "+s.dataOn(dataVar(x,uid)).get)
+      println("// Got data - "+x+": "+s.getDataOn(dataVar(x,uid)).get)
 //      println("// new size: "+size)
       println("//////////////////")
       notifyflow()

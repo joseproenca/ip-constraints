@@ -14,7 +14,7 @@ import common.beh.Utils.dataVar
 class GCTransfUndo (a: String, b: String, uid: Int, f: Function, undo: Function) extends GCTransf(a,b,uid,f) {
   override def update(s: GCSolution) {
     if (s.buf.isDefined)
-      s.buf.get.rollback(f,undo,s dataOn dataVar(a,uid))
+      s.buf.get.rollback(f,undo,s getDataOn dataVar(a,uid))
 //    else {
 //      println("===== buffer not defined!!!!")
 //    }

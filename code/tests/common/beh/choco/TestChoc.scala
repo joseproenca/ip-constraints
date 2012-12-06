@@ -55,12 +55,13 @@ class TestChoc extends FunSpec {
 
   describe ("Choco - Writer to a lossy") {
 
-    val s1: ChoBehaviour = new ChoWriter("a",42,2)
-    val s2: ChoBehaviour = new ChoLossy("b","c",43)
+    val s1: ChoConnector = new ChoWriter("a",42,2)
+    val s2: ChoConnector = new ChoLossy("b","c",43)
 
-    val c = s1.constraints ++ s2.constraints
-    s1.connections += this -> Set(("a","b",43))
-    val c2 = s1.sync(this,c)
+    val c = s1.getConstraints++ s2.getConstraints
+    //s1.connections += this -> Set(("a","b",43))
+    val c2 = c ++ ChoConnector.ChoBuilder.sync("b",43,"a",42) //s1.sync(this,c)
+    c2.close()
 
     println(c2)
 
@@ -68,7 +69,8 @@ class TestChoc extends FunSpec {
     if (r.isDefined) {
       println(r.get.choSol.getModel.pretty())
       println("solved:\n"+r.get.pretty)
-      println("r.size: "+r.get.size)
+      println("r.size (known vars): "+r.get.size)
+      println("r.sizeModel (vars in the solution): "+r.get.sizeModel)
     }
     else println("no solution")
 
@@ -79,8 +81,8 @@ class TestChoc extends FunSpec {
       it ("should have 2 variables in the solution")
       {assert(r.get.sizeModel == 2)}
 
-      it ("should have 6 known variables")
-      {assert(r.get.size == 3)}
+      it ("should have 5 known variables")
+      {assert(r.get.size == 5)}
     }
 
   }

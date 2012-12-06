@@ -15,7 +15,7 @@ import common.beh.Utils._
 
 class TestFunctIteration extends FunSpec {
 
-  describe ("Choco - [x2].Writer.[<5].[>2].") {
+  describe ("GC - [x2].Writer.[<5].[>2].") {
 
     val lfive = new LT(5)
     val gtwo= new GT(2)
@@ -27,12 +27,12 @@ class TestFunctIteration extends FunSpec {
 
     println("--- 1: data provided - no CSP solving ---")
     val c1 =
-      new GCTransf("z","a",0,double).constraints ++
-      new GCFilter("a","b",0,lfivex("a")).constraints ++
-      new GCFilter("b","c",0,gtwox("b")).constraints ++
-      new GCTransf("c","d",0,double).constraints ++
+      new GCTransf("z","a",0,double).getConstraints ++
+      new GCFilter("a","b",0,lfivex("a")).getConstraints ++
+      new GCFilter("b","c",0,gtwox("b")).getConstraints ++
+      new GCTransf("c","d",0,double).getConstraints ++
       GuardedCommands(True --> IntAssgn(dataVar("z",0),2)) ++
-      GuardedCommands(True --> SGuard(Var(flowVar("z",0))))
+      GuardedCommands(True --> Var(flowVar("z",0)))
     val res1 = c1.solve
     if (res1.isDefined) println("solved:\n"+res1.get.pretty)
     else println("no sol")
@@ -40,11 +40,11 @@ class TestFunctIteration extends FunSpec {
 
     println("--- 2: data not provided - CSP has a sol ---")
     val c2=
-      new GCTransf("z","a",0,double).constraints ++
-      new GCFilter("a","b",0,lfivex("a")).constraints ++
-      new GCFilter("b","c",0,gtwox("b")).constraints ++
-      new GCTransf("c","d",0,double).constraints ++
-      GuardedCommands(True --> SGuard(Var(flowVar("b",0))))
+      new GCTransf("z","a",0,double).getConstraints ++
+      new GCFilter("a","b",0,lfivex("a")).getConstraints ++
+      new GCFilter("b","c",0,gtwox("b")).getConstraints ++
+      new GCTransf("c","d",0,double).getConstraints ++
+      GuardedCommands(True --> Var(flowVar("b",0)))
     val res2 = c2.solve
     if (res2.isDefined) println("solved:\n"+res2.get.pretty)
     else println("no sol")
@@ -52,11 +52,11 @@ class TestFunctIteration extends FunSpec {
 
     println("--- 3: data not provided - CSP needs reiteration ---")
     val c3=
-      new GCTransf("z","a",0,double).constraints ++
-      new GCFilter("a","b",0,lfivex("a")).constraints ++
-      new GCFilter("b","c",0,gtwox("b")).constraints ++
-      new GCTransf("c","d",0,double).constraints ++
-      GuardedCommands(True --> SGuard(Var(flowVar("a",0))))
+      new GCTransf("z","a",0,double).getConstraints ++
+      new GCFilter("a","b",0,lfivex("a")).getConstraints ++
+      new GCFilter("b","c",0,gtwox("b")).getConstraints ++
+      new GCTransf("c","d",0,double).getConstraints ++
+      GuardedCommands(True --> Var(flowVar("a",0)))
     val res3 = c3.solve
     if (res3.isDefined) println("solved:\n"+res3.get.pretty)
     else println("no sol")
@@ -120,20 +120,20 @@ class TestFunctIteration extends FunSpec {
 
     println("--- 4: data provided (SMT) ---")
     val c4=
-      new GCTransf("z","a",0,double).constraints ++
-      new GCFilter("a","b",0,lfivex("a")).constraints ++
-      new GCFilter("b","c",0,gtwox("b")).constraints ++
-      new GCTransf("c","d",0,double).constraints ++
+      new GCTransf("z","a",0,double).getConstraints ++
+      new GCFilter("a","b",0,lfivex("a")).getConstraints ++
+      new GCFilter("b","c",0,gtwox("b")).getConstraints ++
+      new GCTransf("c","d",0,double).getConstraints ++
       GuardedCommands(True --> IntAssgn(dataVar("z",0),2)) ++
-      GuardedCommands(True --> SGuard(Var(flowVar("b",0))))
+      GuardedCommands(True --> Var(flowVar("b",0)))
     val res4 = c4.solveChoco
     if (res4.isDefined) println("solved:\n"+res4.get.pretty)
     else println("no sol")
 
 //    println("--- data not provided - CSP has a sol ---")
 //    val c5=
-//      new GCFilter("a","b",0,lfivex("a")).constraints ++
-//      new GCFilter("b","c",0,gtwox("b")).constraints ++
+//      new GCFilter("a","b",0,lfivex("a")).getConstraints ++
+//      new GCFilter("b","c",0,gtwox("b")).getConstraints ++
 //      GuardedCommands(True --> SGuard(Var(flowVar("b",0))))
 //    val res5 = c5.solveChocoSat
 //    if (res5.isDefined) println("solved:\n"+res5.get.pretty)
@@ -141,11 +141,11 @@ class TestFunctIteration extends FunSpec {
 
     println("--- 6: data not provided (SMT)  ---")
     val c6=
-      new GCTransf("z","a",0,double).constraints ++
-      new GCFilter("a","b",0,lfivex("a")).constraints ++
-      new GCFilter("b","c",0,gtwox("b")).constraints ++
-      new GCTransf("c","d",0,double).constraints ++
-      GuardedCommands(True --> SGuard(Var(flowVar("d",0))))
+      new GCTransf("z","a",0,double).getConstraints ++
+      new GCFilter("a","b",0,lfivex("a")).getConstraints ++
+      new GCFilter("b","c",0,gtwox("b")).getConstraints ++
+      new GCTransf("c","d",0,double).getConstraints ++
+      GuardedCommands(True --> Var(flowVar("d",0)))
     val res6 = c6.solveChoco
     if (res6.isDefined) println("solved:\n"+res6.get.pretty)
     else println("no sol")
@@ -165,7 +165,7 @@ class TestFunctIteration extends FunSpec {
       assert (res2.isDefined)
       val sol = res2.get
       assert (sol(dataVar("a",0)).asInstanceOf[Int] < 5)
-      assert (if (sol.hasFlow(flowVar("c",0)))
+      assert (if (sol.hasFlowOn(flowVar("c",0)))
         sol(dataVar("b",0)).asInstanceOf[Int] > 2
       else sol(dataVar("b",0)).asInstanceOf[Int] <= 2)
     }
@@ -173,10 +173,10 @@ class TestFunctIteration extends FunSpec {
     it ("c3 should have sol") {
       assert (res3.isDefined)
       val sol = res3.get
-      assert (if (sol.hasFlow(flowVar("b",0))) sol(dataVar("b",0)).asInstanceOf[Int] < 5
+      assert (if (sol.hasFlowOn(flowVar("b",0))) sol(dataVar("b",0)).asInstanceOf[Int] < 5
       else                             sol(dataVar("a",0)).asInstanceOf[Int] >= 5)
-      assert (if (sol.hasFlow(flowVar("c",0))) sol(dataVar("c",0)).asInstanceOf[Int] > 2
-      else if (sol.hasFlow(flowVar("b",0))) sol(dataVar("b",0)).asInstanceOf[Int] <= 2
+      assert (if (sol.hasFlowOn(flowVar("c",0))) sol(dataVar("c",0)).asInstanceOf[Int] > 2
+      else if (sol.hasFlowOn(flowVar("b",0))) sol(dataVar("b",0)).asInstanceOf[Int] <= 2
       else true)
     }
 
@@ -201,9 +201,9 @@ class TestFunctIteration extends FunSpec {
     it ("c6 should have sol (SMT)") {
       assert (res6.isDefined)
       val sol = res6.get
-      assert (if (sol.hasFlow(flowVar("b",0))) sol.getVal(dataVar("b",0)).get < 5
+      assert (if (sol.hasFlowOn(flowVar("b",0))) sol.getVal(dataVar("b",0)).get < 5
       else                             sol.getVal(dataVar("a",0)).get >= 5)
-      assert (if (sol.hasFlow(flowVar("c",0))) sol.getVal(dataVar("c",0)).get > 2
+      assert (if (sol.hasFlowOn(flowVar("c",0))) sol.getVal(dataVar("c",0)).get > 2
       else                             sol.getVal(dataVar("b",0)).get <= 2)
     }
 

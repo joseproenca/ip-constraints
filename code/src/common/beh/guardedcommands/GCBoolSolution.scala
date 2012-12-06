@@ -11,7 +11,7 @@ import common.beh.{EmptySol, Solution}
  */
 
 class GCBoolSolution(var varMap: Map[String, Boolean]) extends Solution {
-  def hasFlow(end: String) =
+  def hasFlowOn(end: String) =
     if (varMap contains end) varMap(end) else false
 
   def pretty: String = {
@@ -21,11 +21,11 @@ class GCBoolSolution(var varMap: Map[String, Boolean]) extends Solution {
     res
   }
 
-  def dataOn(x:String) = None
+  def getDataOn(x:String) = None
 
   def apply(v:String) = //varMap(v)
     //if (varMap contains v) varMap(v) else false // if it is not mentioned, probably it was not relevant. Use default "false"
-    hasFlow(v)
+    hasFlowOn(v)
   def update(v:String,b:Boolean) {
     varMap = varMap + (v -> b)
   }

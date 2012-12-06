@@ -4,6 +4,8 @@ import connectors.Merger
 import org.scalatest.FunSpec
 import common.beh.choco.{ChoConstraints, ChoSolution}
 import strategies._
+import common.beh.guardedcommands.{GuardedCommands, GCSolution}
+import common.beh.guardedcommands.GCConnector.GCBuilder
 
 /**
  * Created with IntelliJ IDEA.
@@ -14,20 +16,20 @@ import strategies._
  */
 
 class TestMergersHybrid extends FunSpec {
-  type S = ChoSolution
-  type C = ChoConstraints
+  type S = GCSolution
+  type C = GuardedCommands
   type St = HybridStrategy[S,C]
-  type SB = StrategyBuilder[S,C,St]
-  type D = Deployer[S,C,St,SB]
+//  type SB = StrategyBuilder[S,C,St]
+  type D = Deployer[S,C,St]
   type Nd = Node[S,C]
 
-  var size = 3
+  var size = 2
   var workers = 20
   var endtime = 0
 
   describe ("Workers hybrid strategy - tree of merges.") {
     // create and run deployer
-    val deployer = new Deployer[S,C,St,SB](workers,HybridStrategyBuilder)
+    val deployer = new Deployer[S,C,St](workers)
     deployer.start()
 
     println("height: "+size)
@@ -49,7 +51,7 @@ class TestMergersHybrid extends FunSpec {
     //    println(" - "+rd.hashCode())
 
     // create and connect mergers
-    val ends = createBranches[St,SB,D](size,Set((rd,rd.behaviour.ends.head)),deployer)
+    val ends = createBranches[St,D](size,Set((rd,rd.behaviour.ends.head)),deployer)
 
     // create and connect writers
     var writers = List[Nd]()
@@ -59,7 +61,9 @@ class TestMergersHybrid extends FunSpec {
 //      println("writer: "+wr.behaviour.uid)
       //      println(" - "+wr.hashCode())
 
-      node.connect(wr,end,wr.behaviour.ends.head)
+      // ORDER IMPORTANT: source then sink!
+      //node.connect(wr,end,wr.behaviour.ends.head)
+      node(end) <-- wr(wr.behaviour.ends.head)
     }
 
     // start readers and writers
@@ -86,26 +90,29 @@ class TestMergersHybrid extends FunSpec {
 
 
 
-  private def createBranch[Stt<:Strategy[S,C,Stt],SBB<:StrategyBuilder[S,C,Stt],DD<:Deployer[S,C,Stt,SBB]]
+  private def createBranch[Stt<:Strategy[S,C,Stt],DD<:Deployer[S,C,Stt]]
   (from:Nd, end:String, deployer:DD): (Nd,String,String) = {
     val merger: Nd = new Merger(deployer)
     //    println(" - "+merger.hashCode())
 
-    from.connect(merger,end,"c")
+//    from.connect(merger,end,"c")
+//    merger.connect(from,"c",end) // order important (sink then source)
+
+    from(end) <-- merger("c")
 
     (merger,"a","b")
   }
 
-  private def createBranches[Stt<:Strategy[S,C,Stt],SBB<:StrategyBuilder[S,C,Stt],DD<:Deployer[S,C,Stt,SBB]]
+  private def createBranches[Stt<:Strategy[S,C,Stt],DD<:Deployer[S,C,Stt]]
   (n:Int,sinks:Set[(Nd,String)],deployer:DD): Set[(Nd,String)] = {
     if (n<=0) sinks
     else {
       var sources = Set[(Nd,String)]()
       for (sk <- sinks) {
-        val (n,e1,e2) = createBranch[Stt,SBB,DD](sk._1,sk._2,deployer)
+        val (n,e1,e2) = createBranch[Stt,DD](sk._1,sk._2,deployer)
         sources = sources ++ Set((n,e1),(n,e2))
       }
-      createBranches[Stt,SBB,DD](n-1,sources,deployer)
+      createBranches[Stt,DD](n-1,sources,deployer)
     }
   }
 }

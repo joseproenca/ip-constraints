@@ -29,7 +29,7 @@ class GCFifo(a: String, b: String, var data: Option[Any], uid: Int = 0) extends 
   def getConstraints = if (data.isDefined) fullFifo else emptyFifo
 
   override def update(s: GCSolution) {
-    if (s.hasFlow(flowVar(a,uid))) {
+    if (s hasFlowOn flowVar(a,uid)) {
       // update state
       data = Some(s(dataVar(a,uid)))
       // update constraints
@@ -37,7 +37,7 @@ class GCFifo(a: String, b: String, var data: Option[Any], uid: Int = 0) extends 
       // println("FIFO: FLOW IN!")
       // notifyflow()
     }
-    else if (s.hasFlow(flowVar(b,uid))) {
+    else if (s hasFlowOn flowVar(b,uid)) {
       // update state
       data = None
       // update constraints

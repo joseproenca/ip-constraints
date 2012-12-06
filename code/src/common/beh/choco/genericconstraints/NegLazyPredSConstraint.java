@@ -29,7 +29,7 @@ class NegLazyPredSConstraint extends AbstractUnIntSConstraint {
   final IntDomainVar xflow;
   final IntDomainVar yflow;
 
-    public NegLazyPredSConstraint(IntDomainVar xpred,
+  public NegLazyPredSConstraint(IntDomainVar xpred,
                                 IntDomainVar xflow, // for information, not for restriction
                                 IntDomainVar yflow, // for information, not for restriction
                                 Object data,

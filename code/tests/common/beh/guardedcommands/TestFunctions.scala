@@ -5,6 +5,7 @@ import common.beh.Utils._
 import common.beh.Double
 import dataconnectors.{GCTransf, GCFilter}
 import org.scalatest.FunSpec
+import dataconnectors.ConstraintGen._
 
 /**
  * Created with IntelliJ IDEA.
@@ -16,7 +17,7 @@ import org.scalatest.FunSpec
 
 class TestFunctions extends FunSpec {
 
-  describe ("Choco - Transformer (x2), replicator, 2 Filters (odd/even).") {
+  describe ("GC - Transformer (x2), replicator, 2 Filters (odd/even).") {
 
     //    val w: GCBehaviour = new GCWriter("w",42,List(7,5,6,7,8))
     //    val f1: GCBehaviour = new GCFilter("fi","fo",43,(new GT(5)))
@@ -24,7 +25,7 @@ class TestFunctions extends FunSpec {
     //    val rd: GCBehaviour = new GCReader("r",45,5)
     //
     //
-    //    var c = w.constraints ++ f1.constraints ++ f2.constraints ++ rd.constraints
+    //    var c = w.getConstraints ++ f1.getConstraints ++ f2.getConstraints ++ rd.getConstraints
     //    w.connections += f1 -> Set(("w","fi",43))
     //    f1.connections += f2 -> Set(("fo","fi",44))
     //    f2.connections += rd -> Set(("fo","r",45))
@@ -41,23 +42,37 @@ class TestFunctions extends FunSpec {
     def oddd(x:String) = IntPred(dataVar(x,0),odd)
 
     // TEST
-    val c1= new GCTransf("a","b",0,new Double()).constraints ++
-      new GCFilter("b","c",0,evend("b")).constraints ++
-      new GCFilter("b","d",0,evend("b")).constraints ++
+    val c1= new GCTransf("a","b",0,new Double()).getConstraints ++
+      new GCFilter("b","c",0,evend("b")).getConstraints ++
+      new GCFilter("b","d",0,evend("b")).getConstraints ++
       GuardedCommands(True --> IntAssgn(dataVar("a",0),3)) ++
-      GuardedCommands(True --> SGuard(Var(flowVar("a",0))))
+      GuardedCommands(True --> Var(flowVar("a",0)))
 
-    val c2= new GCTransf("a","b",0,new Double()).constraints ++
-      new GCFilter("b","c",0,oddd("b")).constraints ++
-      new GCFilter("b","d",0,evend("b")).constraints ++
+    val c2= new GCTransf("a","b",0,new Double()).getConstraints ++
+      new GCFilter("b","c",0,oddd("b")).getConstraints ++
+      new GCFilter("b","d",0,evend("b")).getConstraints ++
       GuardedCommands(True --> IntAssgn(dataVar("a",0),3)) ++
-      GuardedCommands(True --> SGuard(Var(flowVar("a",0))))
+      GuardedCommands(True --> Var(flowVar("a",0)))
 
-    val c3= new GCTransf("a","b",0,new Double()).constraints ++
-      new GCFilter("b","c",0,oddd("b")).constraints ++
-      new GCFilter("b","d",0,oddd("b")).constraints ++
+    val c3= new GCTransf("a","b",0,new Double()).getConstraints ++
+      new GCFilter("b","c",0,oddd("b")).getConstraints ++
+      new GCFilter("b","d",0,oddd("b")).getConstraints ++
       GuardedCommands(True --> IntAssgn(dataVar("a",0),3)) ++
-      GuardedCommands(True --> SGuard(Var(flowVar("a",0))))
+      GuardedCommands(True --> Var(flowVar("a",0)))
+
+    // new syntax:
+    val a = mkVar("a")
+    val c11 =
+      transf("a","b",new Double) ++
+      filter("b","c",evend("d)")) ++
+      filter("b","d",evend("b")) ++
+      GuardedCommands(a := 3 , a)
+    val c22 =
+      transf("a","b",new Double) ++
+      filter("b","c",oddd("d)")) ++
+      filter("b","d",evend("b")) ++
+      (a := 3) ++ a
+
 
     //    println(c1.commands)
 
@@ -87,24 +102,26 @@ class TestFunctions extends FunSpec {
     it ("c3 should have sol") {assert (res3.isDefined)}
 
     it ("c1 should have flow on both filters")
-    {assert (res1.get.hasFlow(flowVar("c",0)) && res1.get.hasFlow(flowVar("d",0)))}
+    {assert (res1.get.hasFlowOn(flowVar("c",0)) && res1.get.hasFlowOn(flowVar("d",0)))}
     it ("c2 should have flow on 2nd filter with data 6")
-    {assert (!res2.get.hasFlow(flowVar("c",0)) && res2.get(dataVar("d",0))==6)}
+    {assert (!res2.get.hasFlowOn(flowVar("c",0)) && res2.get(dataVar("d",0))==6)}
     it ("c3 should have no flow on both filters")
-    {assert (!res3.get.hasFlow(flowVar("c",0)) && !res3.get.hasFlow(flowVar("d",0)))}
+    {assert (!res3.get.hasFlowOn(flowVar("c",0)) && !res3.get.hasFlowOn(flowVar("d",0)))}
 
 
     val const = c2
 
     println("GC:\n"+const.commands.mkString("\n"))
 
-    val cnf = const.toCNF
-//    println("cnf: "+cnf)
 
     println("--\nDA:\n"+const.da.pp)
 
+//    val cnf = const.toCNF
+//    //    println("cnf: "+cnf)
+//    val optSolBool = const.solveBool(cnf._1,cnf._2)
 
-    val optSolBool = const.solveBool(cnf._1,cnf._2)
+    val optSolBool = const.solveBool
+
 //    if (!optSolBool.isDefined)
         println("--\ninit guess:\n"+optSolBool.get.pretty)
 //      return Some(new GCSolution(optSolBool.get,Map[String, Int]()))

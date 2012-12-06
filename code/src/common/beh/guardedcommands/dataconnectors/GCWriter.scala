@@ -31,7 +31,7 @@ class GCWriter (val x: String, uid: Int, var data: List[Any]) extends GCConnecto
   }
 
   override def update(s: GCSolution) {
-    if (s.hasFlow(flowVar(x, uid))) {
+    if (s.hasFlowOn(flowVar(x, uid))) {
       //      println("Writer: FLOW! new size: "+size)
       notifyflow()
       // update state

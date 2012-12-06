@@ -9,8 +9,8 @@ package common.beh
  */
 
 trait Solution {
-  def hasFlow(end: String): Boolean
-  def dataOn(end: String): Option[Any]
+  def hasFlowOn(end: String): Boolean
+  def getDataOn(end: String): Option[Any]
   def pretty: String
 }
 

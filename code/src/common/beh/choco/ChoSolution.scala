@@ -17,7 +17,7 @@ class ChoSolution(val choSol: CPSolver, varMap: Map[String, IntegerVariable]) ex
   val extension = MuMap[String, Int]()
 
 
-  def dataOn(v: String) = getVal(v)
+  def getDataOn(v: String) = getVal(v)
 
   def getVal(v: String): Option[Int] = { 
     if (varMap contains v)
@@ -26,7 +26,7 @@ class ChoSolution(val choSol: CPSolver, varMap: Map[String, IntegerVariable]) ex
     extension.get(v)
   }
   
-  def hasFlow(v: String) = {
+  def hasFlowOn(v: String) = {
 //    println("has flow on '"+v+"'? - getVal: "+ getVal(v))
     getVal(v) == Some(1)
   }
@@ -80,8 +80,8 @@ class ChoSolution(val choSol: CPSolver, varMap: Map[String, IntegerVariable]) ex
 
 object ChoSolution {
   class MyEmptySol extends Solution {
-    def hasFlow(end: String) = false
-    def dataOn(end: String) = None
+    def hasFlowOn(end: String) = false
+    def getDataOn(end: String) = None
     def pretty = ""
   }
 

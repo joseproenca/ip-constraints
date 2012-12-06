@@ -256,9 +256,9 @@ abstract sealed class Guard extends Statement{
   }
 
   def eval(sol: Solution): Boolean = this match {
-    case Var(name) => sol.hasFlow(name)
-    case IntPred(v, p) => sol.hasFlow(predVar(v,p,List()))
-    case Pred(v, p) => sol.hasFlow(predVar(v,p,List()))
+    case Var(name) => sol.hasFlowOn(name)
+    case IntPred(v, p) => sol.hasFlowOn(predVar(v,p,List()))
+    case Pred(v, p) => sol.hasFlowOn(predVar(v,p,List()))
     case And(g1, g2) => g1.eval(sol) && g2.eval(sol)
     case Or(g1, g2) => g1.eval(sol) || g2.eval(sol)
     case Neg(g) => !g.eval(sol)
@@ -471,6 +471,7 @@ abstract sealed class Statement {
     case IntAssgn(v, d) => DataAssgn(v,d).toBoolConstrBuilder(da)
     case DataAssgn(v, d) => //common.beh.choco.DataAssgn(v,d)
       // INSTEAD OF CALCULATING, CREATE A LAZY CONSTRAINT!
+      // TODO: CREATE new temp var 'predvar2(v,pred,fs)' - it will be the output var of the lazy pred (to confirm...)
       var res:ConstrBuilder = TrueC
       for ((pred,fs,xflow) <- da.domainWithEnd(v)) {
 
@@ -516,17 +517,17 @@ abstract sealed class Statement {
   def partialEval(sol: Solution): PEval = this match {
     case g: Guard => new PEval(Map(),Map(),Map())
     case IntAssgn(v, d) =>
-      if (sol.hasFlow(data2flow(v))) new PEval(Map(v -> d),Map(),Map())
+      if (sol.hasFlowOn(data2flow(v))) new PEval(Map(v -> d),Map(),Map())
       else new PEval(Map(),Map(),Map())
     case DataAssgn(v, d) =>
-      if (sol.hasFlow(data2flow(v))) new PEval(Map(v -> d),Map(),Map())
+      if (sol.hasFlowOn(data2flow(v))) new PEval(Map(v -> d),Map(),Map())
       else new PEval(Map(),Map(),Map())
     case VarAssgn(v1, v2) =>
-      if (sol.hasFlow(data2flow(v2))) new PEval(Map(),Map(v2 -> ImSet(v1)),Map())
+      if (sol.hasFlowOn(data2flow(v2))) new PEval(Map(),Map(v2 -> ImSet(v1)),Map())
       else new PEval(Map(),Map(),Map())
     // TODO: CHANGE PEval to split at x=f(y), and include this info in PEval
     case FunAssgn(v1, v2, f) =>
-      if (sol.hasFlow(data2flow(v2))) new PEval(Map(),Map(),Map(v2 -> ImSet((v1,f))))
+      if (sol.hasFlowOn(data2flow(v2))) new PEval(Map(),Map(),Map(v2 -> ImSet((v1,f))))
       else new PEval(Map(),Map(),Map())
     case Seq(Nil) => new PEval(Map(),Map(),Map())
     case Seq(s::ss) =>

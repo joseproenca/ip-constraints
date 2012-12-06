@@ -28,7 +28,7 @@ class GCWriterInt(val x: String, uid: Int, var data: List[Int]) extends GCConnec
   }
 
   override def update(s: GCSolution) {
-    if (s.hasFlow(flowVar(x, uid))) {
+    if (s hasFlowOn flowVar(x, uid)) {
       //      println("Writer: FLOW! new size: "+size)
       notifyflow()
 //      constraints = loadConstraints

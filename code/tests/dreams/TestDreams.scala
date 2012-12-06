@@ -1,7 +1,11 @@
 package dreams
 
 import org.scalatest.FunSpec
-import common.beh.choco.ChoSolution
+import common.beh.guardedcommands.dataconnectors.GCLossy
+
+import common.beh.guardedcommands.{GuardedCommands, GCSolution}
+import common.beh.Utils._
+import common.beh.guardedcommands.GCConnector.GCBuilder
 
 /**
  * Created by IntelliJ IDEA.
@@ -16,35 +20,42 @@ class TestDreams extends FunSpec {
 
   describe ("Dreams - Writer to a lossy") {
 //    val x = scala.actors.Actor.self
+    type Sol = GCSolution
+    type Constr = GuardedCommands
     
     val wr = new connectors.Writer(2)
     {
       var counter = 0
-      override protected def processSol(sol:ChoSolution,freshSol:Boolean): Nothing = {
+      override protected def processSol(sol:Sol,freshSol:Boolean): Nothing = {
+        val a = mkVar("a",uid)
+
         if (freshSol) println("counter! "+counter)
-        if (freshSol && counter <2 && sol.sizeModel == 2) {
+        if (freshSol && counter <2 ){// && sol.hasFlow(flowVar("a",hashCode())) ) { //&& sol.sizeModel == 2) {
           counter +=1
           it ("has solution "+counter+"-"+hashCode())
-          {assert(sol.sizeModel == 2)}
+          //{assert(sol.sizeModel == 2)}
+          {assert(sol hasFlowOn a)}
         }
-        else if (freshSol && counter == 2 && sol.sizeModel == 0){
+        else if (freshSol && counter == 2 ) {//&& sol.sizeModel == 0){
           it ("has no more solution")
-          {assert(sol.sizeModel == 2)}
+//          {assert(sol.sizeModel == 2)}
+          {assert(sol hasFlowOn a)}
           counter =3
         }
         else if (freshSol)
-          it ("has no other options")
+          it ("has no other options: counter/flow "+counter+"/"+sol.hasFlowOn(a))
+           //: counter/size = "+counter+"/"+sol.sizeModel)
           {assert(false)}
         super.processSol(sol,freshSol)
       }
     }
-    val lossy = new connectors.Lossy
 
-    wr.behaviour.connections +=
-      lossy -> Set((wr.behaviour.ends.head,lossy.behaviour.ends.head,lossy.behaviour.uid))
+    val lossy = Actor[Sol,Constr](uid => new GCLossy("x","y",uid))
+               //new connectors.Lossy
 
-    lossy.behaviour.connections +=
-      wr -> Set((lossy.behaviour.ends.head,wr.behaviour.ends.head,wr.behaviour.uid))
+
+    lossy(lossy.behaviour.ends.head) <-- wr(wr.behaviour.ends.head)
+
 
     wr.start()
     lossy.start()

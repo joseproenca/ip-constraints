@@ -83,3 +83,85 @@ for ((i=10;i<=150;i=i+20)); do
   echo ""                                               >> $OUT/Primes.csv
 done
 
+
+####
+
+echo "# ParSpouts 10 - 150 (step 20)"                     > $OUT/ParSpouts.csv       
+
+for ((i=10;i<=150;i=i+20)); do
+  printf "Choco, $i"                                    >> $OUT/ParSpouts.csv
+  for run in {1..1}; do
+    printf ", "                                         >> $OUT/ParSpouts.csv
+    java -cp $JAR common.beh.benchmarks.ChoParSpouts $i    >> $OUT/ParSpouts.csv
+  done
+  echo ""                                               >> $OUT/ParSpouts.csv
+done
+
+for ((i=10;i<=150;i=i+20)); do
+  printf "PAS, $i"                                      >> $OUT/ParSpouts.csv
+  for run in {1..1}; do
+    printf ", "                                         >> $OUT/ParSpouts.csv
+    java -cp $JAR common.beh.benchmarks.GCParSpouts $i     >> $OUT/ParSpouts.csv
+  done
+  echo ""                                               >> $OUT/ParSpouts.csv
+done
+
+for ((i=10;i<=150;i=i+20)); do
+  printf "PAC, $i"                                      >> $OUT/ParSpouts.csv
+  for run in {1..1}; do
+    printf ", "                                         >> $OUT/ParSpouts.csv
+    java -cp $JAR common.beh.benchmarks.GCParSpouts $i c   >> $OUT/ParSpouts.csv
+  done
+  echo ""                                               >> $OUT/ParSpouts.csv
+done
+
+for ((i=10;i<=150;i=i+20)); do
+  printf "PAS-SAT, $i"                                  >> $OUT/ParSpouts.csv
+  for run in {1..1}; do
+    printf ", "                                         >> $OUT/ParSpouts.csv
+    java -cp $JAR common.beh.benchmarks.GCParSpouts $i n i >> $OUT/ParSpouts.csv
+  done
+  echo ""                                               >> $OUT/ParSpouts.csv
+done
+
+
+####
+
+echo "# Approval 0 - 10 (step 1)"                     > $OUT/Approval.csv       
+
+for ((i=0;i<=10;i=i+1)); do
+  printf "Choco, $i"                                    >> $OUT/Approval.csv
+  for run in {1..10}; do
+    printf ", "                                         >> $OUT/Approval.csv
+    java -cp $JAR common.beh.benchmarks.ChoApproval $i    >> $OUT/Approval.csv
+  done
+  echo ""                                               >> $OUT/Approval.csv
+done
+
+for ((i=0;i<=10;i=i+1)); do
+  printf "PAS, $i"                                      >> $OUT/Approval.csv
+  for run in {1..10}; do
+    printf ", "                                         >> $OUT/Approval.csv
+    java -cp $JAR common.beh.benchmarks.GCApproval $i     >> $OUT/Approval.csv
+  done
+  echo ""                                               >> $OUT/Approval.csv
+done
+
+for ((i=0;i<=10;i=i+1)); do
+  printf "PAC, $i"                                      >> $OUT/Approval.csv
+  for run in {1..10}; do
+    printf ", "                                         >> $OUT/Approval.csv
+    java -cp $JAR common.beh.benchmarks.GCApproval $i c   >> $OUT/Approval.csv
+  done
+  echo ""                                               >> $OUT/Approval.csv
+done
+
+for ((i=0;i<=10;i=i+1)); do
+  printf "PAS-SAT, $i"                                  >> $OUT/Approval.csv
+  for run in {1..10}; do
+    printf ", "                                         >> $OUT/Approval.csv
+    java -cp $JAR common.beh.benchmarks.GCApproval $i n i >> $OUT/Approval.csv
+  done
+  echo ""                                               >> $OUT/Approval.csv
+done
+
