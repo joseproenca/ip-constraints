@@ -28,6 +28,7 @@ object ConstraintGen {
   def sspout(a: String, b: String, i: Int = 0) = new GCSSpout(a,b,i).getConstraints
   def sync(a: String, b: String, i: Int = 0) = new GCSync(a,b,i).getConstraints
   def transf(a: String, b: String, f: Function, i: Int = 0) = new GCTransf(a,b,i,f).getConstraints
+  def monitor(a: String, b: String, f: Function, i: Int = 0) = new GCMonitor(a,b,i,f).getConstraints
   def exrouter(a: String, b: String, c: String, i: Int = 0) = new GCExRouter(a,b,c,i).getConstraints
   def nexrouter(src: String, snks: List[String], i: Int = 0) = new GCNExRouter(src,snks,i).getConstraints
   def reader(a: String,n: Int, i: Int = 0) = new GCReader(a,i,n).getConstraints

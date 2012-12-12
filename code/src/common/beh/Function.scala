@@ -15,7 +15,7 @@ abstract class Function extends Computation {
 }
 
 object Function {
-  def apply(body: Any => Any): Function =
+  def apply()(body: Any => Any): Function =
     new Function {
       def calculate(x: Any) = try body(x)
         catch {

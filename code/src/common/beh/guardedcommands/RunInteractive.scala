@@ -85,7 +85,9 @@ object RunInteractive extends App {
     merger("a3","b1","out") ++
     reader("out",2) ++
     // at least one should have flow
-    flow("out")
+    flow("out") ++
+    // also execute some code later
+    monitor("out","out2",Function(){case x => println("GOT VALUE "+x)})
 
 
 //  // create and run deployer

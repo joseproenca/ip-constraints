@@ -12,9 +12,8 @@ import collection.mutable
  * User: jose
  * Date: 06/06/12
  * Time: 17:25
- * To change this template use File | Settings | File Templates.
+ * To change the template use File | Settings | File Templates.
  */
-
 case class GuardedCom(g:Guard, st: Statement) {
 
   def optimiseEqVars(vars: mutable.Map[String, String]) {
@@ -80,6 +79,12 @@ case class GuardedCom(g:Guard, st: Statement) {
     g.toConstrBuilder --> st.toConstrBuilder
   }
 
+  /**
+   * Predicate abstraction + convertion to ConstrBuilder (core of Choco constraints).
+   * All predicates are treated as lazy impure functions.
+   * @param da
+   * @return
+   */
   def toBoolConstrBuilder(da: DomainAbst): ConstrBuilder = {
     g.toBoolConstrBuilder --> st.toBoolConstrBuilder(da)
   }

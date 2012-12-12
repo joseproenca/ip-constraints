@@ -14,8 +14,8 @@ import common.beh.{Solution, Function}
  */
 
 class GCTransf (a: String, b: String, uid: Int, f: Function) extends GCConnector(List(a,b), uid) {
-  val av = Var(flowVar(a,uid))
-  val bv = Var(flowVar(b,uid))
+  private val av = Var(flowVar(a,uid))
+  private val bv = Var(flowVar(b,uid))
 
   var constraints = GuardedCommands(
     av <-> bv

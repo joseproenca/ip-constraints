@@ -28,6 +28,7 @@ object ConnectorGen {
   def transf(a: String, b: String, f: Function) = new GCTransf(a,b,0,f)
   def transf(a: String, b: String, f: Function, i: Int) = new GCTransf(a,b,i,f)
   def transf(a: String, b: String, f: Function, undo: Function, i: Int = 0) = new GCTransfUndo(a,b,i,f,undo)
+  def monitor(a: String, b: String, f: Function, i: Int = 0) = new GCMonitor(a,b,i,f)
   def exrouter(a: String, b: String, c: String, i: Int = 0) = new GCExRouter(a,b,c,i)
   def nexrouter(src: String, snks: List[String], i: Int = 0) = new GCNExRouter(src,snks,i)
   def reader(a: String,n: Int, i: Int = 0) = new GCReader(a,i,n)
