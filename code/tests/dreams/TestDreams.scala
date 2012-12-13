@@ -1,11 +1,12 @@
 package dreams
 
 import org.scalatest.FunSpec
-import common.beh.guardedcommands.dataconnectors.GCLossy
+import common.guardedcommands.dataconnectors.GCLossy
 
-import common.beh.guardedcommands.{GuardedCommands, GCSolution}
-import common.beh.Utils._
-import common.beh.guardedcommands.GCConnector.GCBuilder
+import common.guardedcommands.{GuardedCommands, GCSolution}
+import common.Utils
+import Utils._
+import common.guardedcommands.GCConnector.GCBuilder
 
 /**
  * Created by IntelliJ IDEA.

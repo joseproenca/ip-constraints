@@ -1,10 +1,11 @@
 package dreams.connectors
 
 import dreams.Actor
-import common.beh.guardedcommands.{GuardedCommands, GCSolution}
-import common.beh.guardedcommands.dataconnectors.GCWriter
-import common.beh.Utils._
-import common.beh.guardedcommands.GCConnector.GCBuilder
+import common.guardedcommands.{GuardedCommands, GCSolution}
+import common.guardedcommands.dataconnectors.GCWriter
+import common.Utils
+import Utils._
+import common.guardedcommands.GCConnector.GCBuilder
 
 /**
  * Created by IntelliJ IDEA.

@@ -1,9 +1,10 @@
 package dreams
 
 import actors.OutputChannel
-import common.beh._
+import common._
 import scala.Some
-import common.beh.guardedcommands.GCConnector.GCBuilder
+import common.guardedcommands.GCConnector.GCBuilder
+import common.{Solution, Connector, Constraints, CBuilder}
 
 /**
  * Created by IntelliJ IDEA.
@@ -210,7 +211,7 @@ private def sync(basec: C)(implicit cbuilder: CBuilder[S,C]): C = {
   }
 
   protected def processSol(sol:S,freshSol:Boolean): Nothing = { //,rcvd: Map[ActorRef,Any]) = act
-    if (freshSol) debug("got solution!\n"+sol.pretty)
+    if (freshSol) debug("got solution!\n"+sol)
     val interested = if (freshSol) neighbours else neighbours - sender
     for (a <- interested) {
       a ! ReplySol(sol)

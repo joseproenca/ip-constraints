@@ -1,7 +1,7 @@
 package workers.strategies
 
-import common.beh.{Solution, Constraints}
-import common.beh.guardedcommands.{GuardedCommands, GCSolution}
+import common.guardedcommands.{GuardedCommands, GCSolution}
+import common.{Constraints, Solution}
 
 // UNDER CONSTRUCTION
 

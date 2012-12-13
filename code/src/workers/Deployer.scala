@@ -1,7 +1,7 @@
 package workers
 
-import common.beh.{CBuilder, Solution, Constraints}
 import strategies.{Strategy, StrategyBuilder}
+import common.{Constraints, Solution, CBuilder}
 
 
 /**

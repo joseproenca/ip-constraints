@@ -1,9 +1,9 @@
 package dreams.connectors
 
 import dreams.Actor
-import common.beh.guardedcommands.{GCConnector, GCSolution, GuardedCommands}
-import common.beh.guardedcommands.dataconnectors.{GCReader, GCFifo, GCLossy}
-import common.beh.guardedcommands.GCConnector.GCBuilder
+import common.guardedcommands.{ GCSolution, GuardedCommands}
+import common.guardedcommands.dataconnectors.{GCLossy}
+import common.guardedcommands.GCConnector.GCBuilder // provides implicit builders
 
 /**
  * Created by IntelliJ IDEA.

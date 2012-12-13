@@ -1,7 +1,7 @@
 package dreams
 
-import common.beh.{Constraints, Solution}
 import actors.OutputChannel
+import common.{Constraints, Solution}
 
 
 /**

@@ -1,7 +1,7 @@
 package workers.strategies
 
-import common.beh.{Constraints, Solution}
-import common.beh.guardedcommands.{GuardedCommands, GCSolution}
+import common.guardedcommands.{GuardedCommands, GCSolution}
+import common.{Constraints, Solution}
 
 
 class OneStepStrategy[S<:Solution,C<:Constraints[S,C]] extends Strategy[S,C,OneStepStrategy[S,C]] {

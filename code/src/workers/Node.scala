@@ -1,7 +1,8 @@
 package workers
 
-import common.beh._
+import common._
 import actors.OutputChannel
+import common.{Connector, CBuilder, Solution, Constraints}
 
 
 /**

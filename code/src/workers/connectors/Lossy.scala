@@ -2,8 +2,8 @@ package workers.connectors
 
 import actors.OutputChannel
 import workers.Node
-import common.beh.guardedcommands.{GuardedCommands, GCSolution}
-import common.beh.guardedcommands.dataconnectors.GCLossy
+import common.guardedcommands.{GuardedCommands, GCSolution}
+import common.guardedcommands.dataconnectors.GCLossy
 
 /**
  * Created with IntelliJ IDEA.

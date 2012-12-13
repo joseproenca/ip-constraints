@@ -1,8 +1,8 @@
 package workers
 
 import actors.OutputChannel
-import common.beh.{CBuilder, Constraints, Solution}
 import strategies.Strategy
+import common.{Solution, CBuilder, Constraints}
 
 /**
  * Created by IntelliJ IDEA.
@@ -93,7 +93,7 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
   }
 
   def success(sol:S) {
-    debug("DONE\n"+sol.pretty)
+    debug("DONE\n"+sol)
     for (n <- strat.owned) {
       n.behaviour.update(sol)
       n.owner = None // cleaning locks (before any init)

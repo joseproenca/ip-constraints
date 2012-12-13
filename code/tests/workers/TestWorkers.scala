@@ -1,10 +1,10 @@
 package workers
 
 import org.scalatest.FunSpec
-import common.beh.choco.{ChoConstraints, ChoSolution}
+import common.choco.{ChoConstraints, ChoSolution}
 import strategies._
-import common.beh.guardedcommands.{GCSolution, GuardedCommands}
-import common.beh.guardedcommands.GCConnector.GCBuilder
+import common.guardedcommands.{GCSolution, GuardedCommands}
+import common.guardedcommands.GCConnector.GCBuilder
 
 
 /**

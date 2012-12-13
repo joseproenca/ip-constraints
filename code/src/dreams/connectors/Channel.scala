@@ -1,8 +1,9 @@
 package dreams.connectors
 
-import common.beh.guardedcommands.{GuardedCommands, GCSolution, GCConnector}
-import common.beh._
+import common.guardedcommands.{GuardedCommands, GCSolution, GCConnector}
+import common._
 import dreams.Actor
+import common.{Solution, CBuilder, Constraints, Connector}
 
 /**
  * Created with IntelliJ IDEA.

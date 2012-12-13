@@ -3,8 +3,8 @@ package workers.connectors
 import actors.OutputChannel
 import workers.Node
 import scala.Predef._
-import common.beh.guardedcommands.{GuardedCommands, GCSolution}
-import common.beh.guardedcommands.dataconnectors.GCMerger
+import common.guardedcommands.{GuardedCommands, GCSolution}
+import common.guardedcommands.dataconnectors.GCMerger
 
 /**
  * Created with IntelliJ IDEA.

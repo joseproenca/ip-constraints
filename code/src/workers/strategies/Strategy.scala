@@ -1,7 +1,7 @@
 package workers.strategies
 
-import common.beh.{CBuilder, Constraints, Solution}
 import workers.Node
+import common.{CBuilder, Solution, Constraints}
 
 
 /**
@@ -37,11 +37,11 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
 
     // get first node and behaviour
     val init = owned.head
-    val beh = init.behaviour
+    val behh = init.behaviour
 
     // collect it's constraints + neighbour constraints
 //    var  (c,included)  = neighbourConstr(init,Set(),beh.constraints)
-    var c = neighbourConstr(init,beh.getConstraints)(builder)
+    var c = neighbourConstr(init,behh.getConstraints)(builder)
 
     // collect the constraints + neighbour constraints of owned ports,
     // avoiding adding repeated neighbours (via "included") -- DROPPED (common neighbours of 2 nodes must be added 2x)

@@ -2,8 +2,8 @@ package workers.connectors
 
 import actors.OutputChannel
 import workers.Node
-import common.beh.guardedcommands.{GCSolution, GuardedCommands}
-import common.beh.guardedcommands.dataconnectors.GCReader
+import common.guardedcommands.{GCSolution, GuardedCommands}
+import common.guardedcommands.dataconnectors.GCReader
 
 /**
  * Created with IntelliJ IDEA.
