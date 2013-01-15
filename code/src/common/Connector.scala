@@ -52,11 +52,20 @@ abstract class Connector[S<: Solution, C <: Constraints[S,C]](val ends: List[Str
   }
 
 
+  /**
+   * Keeps performing steps until no dataflow is possible.
+   */
+  def run() {
+    if (step.isDefined) run()
+  }
+
 
   // CONFIGURING POWER OF CONSTRAINTS!
   // not sure if it is the way to go...
-  var useData = false
-  var useCC3 = false
+  /** Used by the constructor of specific connectors */
+  protected var useData = false
+  /** Used by the constructor of specific connectors */
+  protected var useCC3 = false
 
 
   ///////////////////////////////////////////////////////////////
@@ -85,12 +94,27 @@ abstract class Connector[S<: Solution, C <: Constraints[S,C]](val ends: List[Str
   ///////
   // Hooks for convenience, used by writers and readers.
   // Adding observers
-  var listeners: List[ () => Unit ] = Nil
+  private var listeners: List[ () => Unit ] = Nil
 
+  /**
+   * Adds a listener.
+   * @param listener is a function that is executed whenever `notifyflow()` is called.
+   */
   def listen(listener: () => Unit) {
     listeners ::= listener
   }
 
+  /**
+   * Removes a listener
+   * @param listener is a function that is executed whenever `notifyflow()` is called.
+   */
+  def ignore(listener: () => Unit) {
+    listeners = listeners.filterNot(_==listener)
+  }
+
+  /**
+   * Notifies all listeners by executing the associated functions
+   */
   def notifyflow() { for (l <- listeners) l() }
 
 }

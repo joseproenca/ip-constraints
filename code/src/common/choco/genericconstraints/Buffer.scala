@@ -82,7 +82,9 @@ class Buffer {
     for ((f2,d) <- calculatedF.keys) {
 //      print(" - "+f2+"("+d+")")
       if (f2 == f)
-        if (!data.isDefined || (data.get != d)) undo.calculate(d)
+        if (!data.isDefined || (data.get != d))
+          undo.calculate(d)
+//        else print(" *** succeeded - not rollingback ***")
     }
 //    println(" done.")
   }

@@ -467,6 +467,7 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
     buf = Some(new Buffer)
     close()
     val builders = toBoolConstrBuilders
+//    println("boolean constraints: \n"+builders.mkString("\n"))
 //    val buf = new Buffer // using the same to solve boolean constraints and to get a solution while traversing the tree.
     val optSolBool = solveChocoBool(builders)
 

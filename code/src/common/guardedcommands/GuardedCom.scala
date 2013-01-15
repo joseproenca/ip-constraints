@@ -508,12 +508,17 @@ abstract sealed class Statement {
     case FunAssgn(v1,v2,f) =>
 //      VarAssgn(v1,v2).toBoolConstrBuilder(da)
       val (d1,d2) = (da.domain(v1),da.domain(v2))
+//      println("domains in fun assign:\n"+d1+"\n"+d2)
       var res: ConstrBuilder= TrueC
       for ((pred,fs) <- d1)
-        if (d2 contains (pred,f::fs)) {
-          val t = common.choco.VarEq(predVar(v1,pred,fs),predVar(v2,pred,f::fs))
+        if (d2 contains (pred,fs++List(f))) {
+          val t = common.choco.VarEq(predVar(v1,pred,fs),predVar(v2,pred,fs++List(f)))
+//          println("adding "+predVar(v1,pred,fs)+" == "+predVar(v2,pred,fs++List(f)))
           res = res and t
         }
+//        else
+//          println("NOT adding "+predVar(v1,pred,fs)+" == "+predVar(v2,pred,fs++List(f)) ++
+//          "  --  "+d2+" does  not contain "+(pred,fs++List(f)))
       res
 
     case Seq(Nil) => common.choco.TrueC

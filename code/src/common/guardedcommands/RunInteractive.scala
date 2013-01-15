@@ -30,7 +30,7 @@ object RunInteractive extends App {
 
   // Use "def" for different predicates: independent 'attempt' counts and buffer.
   // Use "val" for shared predicates: common attempt count and buffer.
-  val secret = Map("alex" -> "123", "bob" -> "asd", "guest" -> "")
+  val secret = Map("alex" -> "123", "bob" -> "asd", "cindy" -> "asd", "guest" -> "")
 
   def checkPwd = Predicate("chkPwd") {
     case user: String =>
@@ -78,10 +78,12 @@ object RunInteractive extends App {
   val connector =
     writer("alex",List("alex")) ++
     writer("bob", List("bob")) ++
+    writer("cindy", List("cindy")) ++
+    merger("bob","cindy","b0") ++
     transf("alex","a1",hackUser,undohack) ++
     transf("a2", "a3",recallUser) ++
     filter("a1", "a2",checkPwd) ++
-    filter("bob", "b1",checkPwd) ++
+    filter("b0", "b1",checkPwd) ++
     merger("a3","b1","out") ++
     reader("out",2) ++
     // at least one should have flow

@@ -22,7 +22,7 @@ object Predicate {
    * @param body is the scala [[scala.Function1]].
    * @return new [[common.Predicate]] that can be embedded in the synchronous constraints.
    */
-  def apply(body: Any => Boolean): Predicate = new Predicate {
+  def apply()(body: Any => Boolean): Predicate = new Predicate {
     def check(x: Any) = try body(x)
     catch {
       case e: scala.MatchError => false
@@ -39,8 +39,8 @@ object Predicate {
   def apply(name: String)(body: Any => Boolean): Predicate = new Predicate {
     def check(x: Any) = try body(x)
     catch {
-      case e: scala.MatchError => false
-      case e => throw e
+      case e: scala.MatchError => {println("FAIL");false }
+      case e => {println("FAIL");throw e}
     }
     override def toString = name
   }
