@@ -1,13 +1,12 @@
-package common.guardedcommands
+package common.examples
 
-import dataconnectors.ConnectorGen._
 import workers.{Deployer, Node}
 import workers.strategies.HybridStrategy
 import workers.strategies.HybridStrategy.HybridStrategyBuilder
-import GCConnector.GCBuilder
 import common.guardedcommands.{GuardedCommands => C,GCSolution => S}
-import common.{Predicate, Utils, Function}
-import Utils._
+import common.{Predicate, Function}
+import common.Utils._
+import common.guardedcommands.dataconnectors.ConnectorGen._
 
 /**
  * Created with IntelliJ IDEA.
@@ -66,7 +65,7 @@ object RunInteractive extends App {
       if (p == "") x else p
   }
 
-  val undohack = Function("undo") {
+  val undoHack = Function("undo") {
     x => println("-- hack on "+x+" not used --")
   }
 
@@ -79,17 +78,36 @@ object RunInteractive extends App {
     writer("alex",List("alex")) ++
     writer("bob", List("bob")) ++
     writer("cindy", List("cindy")) ++
-    merger("bob","cindy","b0") ++
-    transf("alex","a1",hackUser,undohack) ++
+    merger("bob","cindy","bobcindy") ++
+    transf("alex","a1",hackUser,undoHack) ++
     transf("a2", "a3",recallUser) ++
     filter("a1", "a2",checkPwd) ++
-    filter("b0", "b1",checkPwd) ++
+    filter("bobcindy", "b1",checkPwd) ++
     merger("a3","b1","out") ++
-    reader("out",2) ++
+    reader("out",1) ++
     // at least one should have flow
-    flow("out") ++
-    // also execute some code later
-    monitor("out","out2",Function(){case x => println("GOT VALUE "+x)})
+    //    flow("out") ++
+    merger("alex","bobcindy","m") ++
+    sdrain("m","out") ++
+    // testing monitors
+    monitor("out","nothing",Function(){case x => println("GOT VALUE "+x)})
+
+
+//    writer("alex",List("alex")) ++
+//    writer("bob", List("bob")) ++
+//    writer("cindy", List("cindy")) ++
+//    merger("bob","cindy","b1") ++
+//    transf("alex","a1",hackUser,undohack) ++
+//    transf("a2", "a3",recallUser) ++
+//    filter("a1", "a2",checkPwd) ++
+//    filter("b1", "b2",checkPwd) ++
+//    merger("a3","b2","out") ++
+//    reader("out",2) ++
+//    // at least one should have flow
+////    flow("out") ++
+//    merger("alex","b1","abc") ++ sdrain("abc","out")
+//    // also execute some code later
+//    monitor("out","nothing",Function(){case x => println("GOT VALUE "+x)})
 
 
 //  // create and run deployer

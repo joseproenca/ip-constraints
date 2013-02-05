@@ -15,14 +15,14 @@ import common.guardedcommands._
 class GCNMerger(srcs: List[String], snk: String, uid: Int) extends GCConnector(snk :: srcs, uid) {
   def v(x:String) = Var(flowVar(x, uid))
 
-  val c1 = v(snk) --> orSrcs
-
   val orSrcs = genSrcOr(srcs)
   def genSrcOr(lst:List[String]): Guard = lst match {
     case x::Nil => v(x)
     case x::xs  => v(x) or genSrcOr(xs)
     case Nil    => Neg(True)
   }
+
+  val c1 = v(snk) --> orSrcs
 
   val c2 = orSrcs --> v(snk)
 

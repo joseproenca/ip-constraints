@@ -127,34 +127,66 @@ class ChoConstraints extends Constraints[ChoSolution,ChoConstraints] {
     s.read(m)
 
     // If there is an order of variables passed, use a strategy based on that order.
-    if (!(order isEmpty)) {
-      var flowvar = List[IntDomainVar]()
-//      var datavar = List[IntDomainVar]()
-      val svars = scala.collection.mutable.Map[String,IntDomainVar]()
-
-      for (v <- s.getIntVarIterator)
-        if (!(v.getName startsWith "TMP_")) svars(v.getName) = v
-
-      for (v <- order) {
-        if (svars contains data2flow((v)))  flowvar ::= svars(data2flow(v))
-//        if (svars contains v)               datavar ::= svars(v)
-        svars -= v
-        svars -= data2flow(v)
-      }
-
-      val fullorder: Array[IntDomainVar] = (flowvar::: svars.values.toList).toArray
-//      val fullorder: Array[IntDomainVar] = (flowvar.reverse ::: svars.values.toList.sortBy(_.getName()).reverse).toArray
-//      val fullorder: Array[IntDomainVar] = (svars.values.toList/*.sortBy(_.getName())*/ ::: datavar::: flowvar).toArray
-
-//      println("--- new order: "+fullorder.mkString(","))
-
-      s.addGoal(new AssignVar(new StaticVarOrder(s,fullorder),new IncreasingDomain))
-    }
+    if (!(order isEmpty))
+      s.addGoal(new AssignVar(new StaticVarOrder(s,buildOrder(order, s)),new IncreasingDomain))
 
     val solved = s.solve
 
     if (solved) Some(new ChoSolution(s,varMap))
     else  None
+  }
+
+
+  private def buildOrder(order: List[String], s: CPSolver): Array[IntDomainVar] = {
+    var flowvar = List[IntDomainVar]()
+    //      var datavar = List[IntDomainVar]()
+    val svars = scala.collection.mutable.Map[String, IntDomainVar]()
+
+    for (v <- s.getIntVarIterator)
+      if (!(v.getName startsWith "TMP_")) svars(v.getName) = v   // add non-tmp vars to svars
+
+//    println("var names in the solver: "+svars.keys.mkString(" - "))
+//    println("vars in the order: "+order.mkString(" -> "))
+//    println("port names in the solver: "+svars.keys.map(var2port(_)).mkString(" - "))
+//    println("port vars in the order: "+order.map(var2port(_)).mkString(" -> "))
+
+
+    for (v <- order) {                    // for the next varname
+      if (svars contains data2flow((v)))  // checks if it has a real (flow) variable
+        flowvar ::= svars(data2flow(v))   // append it to flowvar
+      //        if (svars contains v)               datavar ::= svars(v)
+      svars -= v
+      svars -= data2flow(v)
+    }
+
+    val fullorder: Array[IntDomainVar] = (flowvar ::: svars.values.toList).toArray
+    //      val fullorder: Array[IntDomainVar] = (flowvar.reverse ::: svars.values.toList.sortBy(_.getName()).reverse).toArray
+    //      val fullorder: Array[IntDomainVar] = (svars.values.toList/*.sortBy(_.getName())*/ ::: datavar::: flowvar).toArray
+
+
+//////// Attempt to group all variables to the same port, and follow the order.
+//    var domVars = List[IntDomainVar]()
+//    val vars = scala.collection.mutable.Map[String, Set[IntDomainVar]]().withDefaultValue(Set[IntDomainVar]())
+//
+//    for (v <- s.getIntVarIterator)
+//      if (!(v.getName startsWith "TMP_")) {
+//        val port = var2port(v.getName)
+//        vars(port) = vars(port) + v
+//      }
+//
+//    for (v <- order) {
+//    val port = var2port(v)
+//      if (vars contains port)
+//        domVars :::= vars(port).toList
+//    }
+
+
+
+//    println("--- old new order: " + fullorder.mkString(","))
+//    println("--- new new order: " + domVars.mkString(","))
+
+    fullorder
+//    domVars.reverse.toArray
   }
 
   def impose(cs:ChoConstraints) {

@@ -11,6 +11,7 @@ import common.choco.{ConstrBuilder,ChoSolution,ChoConstraints,FalseC}
 import common.choco.genericconstraints.Buffer
 import scala.Some
 import z3.Z3
+import collection.mutable
 
 /**
  * Created with IntelliJ IDEA.
@@ -65,6 +66,15 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
    * @return free variables of all guarded commands
    */
   def fv() = commands.map(_.fv).foldRight[Set[String]](Set())(_++_)
+  /**
+   * Collects the free variables of all guarded commands, using an accumulator for efficiency.
+   * @return free variables of all guarded commands
+   */
+  def fv2: Iterable[String] = {
+    val res = MutSet[String]()
+    for (c <- commands) c.fv2(res)
+    res
+  }
   /**
    * Combines the *boolean* free variables of all guarded commands efficiently
    * @return boolean free variables of all guarded commands

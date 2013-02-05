@@ -20,6 +20,11 @@ object Utils {
   def data2flow(x: String): String = "F" + x.tail
   def flow2src(x: String):  String = "R" + x.tail
   def flow2snk(x: String):  String = "K" + x.tail
+  def var2port(x: String):  String = {
+    val y = x.drop(2) . split("€") // y1 is the port
+    val z = y(1).split("#")        // z1 is the uid
+    y(0)+"_"+z(0)
+  }
 
   def isFlowVar(x: String): Boolean = x.startsWith("F€")
   def isDataVar(x: String): Boolean = x.startsWith("D€")

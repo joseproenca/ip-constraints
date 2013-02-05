@@ -29,6 +29,7 @@ case class GuardedCom(g:Guard, st: Statement) {
 
 
   def fv:Set[String] = g.fv ++ st.fv
+  def fv2(s:MutSet[String]) {g.fv2(s); st.fv2(s)}
   def bfv(l:ListBuffer[String]) = g.bfv(l)
   def solveDomain(da:DomainAbst)  { g.solveDomain(da); st.solveDomain(da) }
 
@@ -136,6 +137,18 @@ abstract sealed class Guard extends Statement{
     case Impl(g1, g2) => g1.fv ++ g2.fv
     case Equiv(g1, g2) => g1.fv ++ g2.fv
     case True => Set()
+  }
+
+  override def fv2(s: MutSet[String]): Unit = this match {
+    case Var(name) => s += name
+    case IntPred(v, p) => s += v
+    case Pred(v, p) => s += v
+    case And(g1, g2) => {g1.fv2(s); g2.fv2(s)}
+    case Or(g1, g2) => {g1.fv2(s); g2.fv2(s)}
+    case Neg(g) => g.fv2(s)
+    case Impl(g1, g2) => {g1.fv2(s); g2.fv2(s)}
+    case Equiv(g1, g2) => {g1.fv2(s); g2.fv2(s)}
+    case True => {}
   }
 
   override def afv2(da:DomainAbst,vs:MutMap[String,Int]): Unit = this match {
@@ -323,6 +336,7 @@ abstract sealed class Statement {
 //  }
 
 
+  /** Collects all (free) variables. Functional implementation. */
   def fv: Set[String] = this match {
     case g: Guard => g.fv
     case IntAssgn(v, _) => Set(v)
@@ -332,6 +346,16 @@ abstract sealed class Statement {
     case Seq(Nil) => Set()
     case Seq(s::ss) => s.fv ++ Seq(ss).fv
 //    case g: Guard => super.fv
+  }
+  /** Collects all (free) variables. Uses an accumulator for efficiency. */
+  def fv2(s: MutSet[String]): Unit = this match {
+    case g: Guard => g.fv2(s)
+    case IntAssgn(v, _) => s += v
+    case DataAssgn(v, _) => s += v
+    case VarAssgn(v1, v2) => {s += v1; s += v2}
+    case FunAssgn(v1,v2,_) => {s += v1; s += v2}
+    case Seq(Nil) => {}
+    case Seq(st::sts) => {st.fv2(s); Seq(sts).fv2(s)}
   }
   def afv2(da:DomainAbst,vs:MutMap[String,Int]): Unit = this match {
     case g: Guard => g.afv2(da,vs)
