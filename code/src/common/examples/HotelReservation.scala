@@ -108,7 +108,7 @@ object HotelReservation extends App {
   }
 
   val invoice = Function("invoice"){
-    case x => println("sending invoide for "+x+".") // returns Unit
+    case x => println("sending invoice for "+x+": "+x.getClass) // returns Unit
   }
 
   val pay = Predicate("pay"){
@@ -184,5 +184,6 @@ object HotelReservation extends App {
 
 
   //  testnewsolve.run()
-  conn2.getConstraints.solveChocoX
+//  conn3.getConstraints.solveChocoX
+    conn3.step
 }

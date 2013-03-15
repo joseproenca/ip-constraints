@@ -33,6 +33,8 @@ class GCSolution(val boolSol: Solution, var varMap: Map[String, Any]) extends So
   def getDataOn(end: Var) = varMap.get(flow2data(end.name))
 
 
+  def apply(end: Var): Any = apply(flow2data(end.name))
+
   def apply(v:String): Any = //varMap(v)
     if (varMap contains v) varMap(v)
     else boolSol hasFlowOn v

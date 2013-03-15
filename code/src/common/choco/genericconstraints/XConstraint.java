@@ -152,7 +152,8 @@ public class XConstraint extends AbstractIntSConstraint {
                     getVar(2).removeVal(1,this,false);
                 }
                  else {
-                    DEBUG("setting "+getVar(2).getName()+" to true");
+                    DEBUG("setting "+getVar(2).getName()+" to true (also restarting - should only ask in a new branch(?)");
+                    restarting = true;
                     getVar(2).removeVal(0,this,false);
                 }
             }

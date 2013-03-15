@@ -18,6 +18,6 @@ class GCMonitor (a: String, b: String, uid: Int, f: Function) extends GCSync(a,b
   override def update(s: GCSolution) {
     super.update(s)
     if (s hasFlowOn av)
-      f.calculate(s getDataOn av)
+      f.calculate(s(av))
   }
 }
