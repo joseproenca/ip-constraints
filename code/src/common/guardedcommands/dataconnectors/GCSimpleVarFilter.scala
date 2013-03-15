@@ -18,7 +18,7 @@ class GCSimpleVarFilter(an : String, bn : String, pred: Predicate, uid: Int)
   val a = mkVar(an,uid)
   val b = mkVar(bn,uid)
 
-  var data: Option[Any] = None
+  var data: Option[AnyRef] = None
 
   def getConstraints =
     if (!data.isDefined)  GuardedCommands(

@@ -122,7 +122,7 @@ object GCPrimes extends App {
   }
   else {
     val time = System.currentTimeMillis()
-    val res = problem.solve
+    val res = problem.solveIterative
     val spent = System.currentTimeMillis() - time
 
     print(spent)

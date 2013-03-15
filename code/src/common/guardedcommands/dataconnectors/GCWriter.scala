@@ -16,6 +16,9 @@ import common.guardedcommands.Var
 class GCWriter (val x: String, uid: Int, var data: List[Any]) extends GCConnector(List(x), uid) {
   val xv = Var(flowVar(x,uid))
 
+//  def this(x: String, uid: Int, dt: List[Int]) = this(x, uid, dt.map(Int.box(_)))
+  def this(x: String, uid: Int) = this(x, uid, Nil: List[Any])
+
   private val nfConstr: GuardedCommands = !xv
 
   //var constraints = loadConstraints

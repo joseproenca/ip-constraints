@@ -43,5 +43,6 @@ object Utils {
   implicit def gc2GCs(gc: GuardedCom): GuardedCommands = GuardedCommands(gc)
   implicit def st2GCs(s: Statement): GuardedCommands = GuardedCommands(GuardedCom(True,s))
   //  implicit def strs2Var(s: String,uid: Int): Var = Var(flowVar(s,uid))
+//  implicit def boxint(i:Int): java.lang.Integer = java.lang.Integer.valueOf(i)
 
 }

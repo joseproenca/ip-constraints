@@ -29,7 +29,7 @@ object GCLoanRequest extends App {
 
   Warmup.go
 
-  val baseProblem =  // stateless part
+  val baseProblem: GuardedCommands =  // stateless part
     new GCSDrain("req1","req2",0).getConstraints ++
       new GCSDrain("appr1","appr2",0).getConstraints ++
       new GCIMerger("req2","auth2","pin",0).getConstraints ++
@@ -39,45 +39,46 @@ object GCLoanRequest extends App {
       new GCFilter("isEn","denied",0,IntPred(dataVar("isEn",0),new Deny)).getConstraints ++
       new GCFilter("isEn","appr1",0,IntPred(dataVar("isEn",0),new Approve)).getConstraints
 
-  var problems = for (bankclerk <- List(1,3)) yield baseProblem ++ // init state
-    new GCWriter("start",0,List(3)).getConstraints ++
+  var problems: List[GuardedCommands] = for (bankclerk <- List(1,3)) yield
+      baseProblem ++ // init state
+      new GCWriter("start",0,List(3)).getConstraints ++
       new GCWriter("login",0,List(bankclerk)).getConstraints ++
-      new GCFifo("start","isEn",None,0).getConstraints ++
-      new GCFifo("start","req1",None,0).getConstraints ++
-      new GCFifo("auth","auth2",None,0).getConstraints ++
-      new GCFifo("pin","appr2",None,0).getConstraints ++
+      new GCFifo("start","isEn",0).getConstraints ++
+      new GCFifo("start","req1",0).getConstraints ++
+      new GCFifo("auth","auth2",0).getConstraints ++
+      new GCFifo("pin","appr2",0).getConstraints ++
       GuardedCommands(True --> Var(flowVar("start",0))) ++ // force data on start
       GuardedCommands(True --> Var(flowVar("login",0)))    // and on login
 
   // after success of 1
   problems :::= List(baseProblem ++
-    new GCWriter("start",0,List()).getConstraints ++
-    new GCWriter("login",0,List()).getConstraints ++
+    new GCWriter("start",0).getConstraints ++
+    new GCWriter("login",0).getConstraints ++
     new GCFifo("start","isEn",Some(3),0).getConstraints ++
     new GCFifo("start","req1",Some(3),0).getConstraints ++
     new GCFifo("auth","auth2",Some(1),0).getConstraints ++
-    new GCFifo("pin","appr2",None,0).getConstraints ++
+    new GCFifo("pin","appr2",0).getConstraints ++
     GuardedCommands(True --> Var(flowVar("pin",0)))    // force data on IMerger
   )
 
   // after success of only login
   problems :::= List(baseProblem ++
-    new GCWriter("start",0,List()).getConstraints ++
-    new GCWriter("login",0,List()).getConstraints ++
-    new GCFifo("start","isEn",None,0).getConstraints ++
-    new GCFifo("start","req1",None,0).getConstraints ++
+    new GCWriter("start",0).getConstraints ++
+    new GCWriter("login",0).getConstraints ++
+    new GCFifo("start","isEn",0).getConstraints ++
+    new GCFifo("start","req1",0).getConstraints ++
     new GCFifo("auth","auth2",Some(1),0).getConstraints ++
-    new GCFifo("pin","appr2",None,0).getConstraints ++
+    new GCFifo("pin","appr2",0).getConstraints ++
     GuardedCommands(True --> Var(flowVar("pin",0)))    // force data on IMerger
   )
 
   // if only IMerger had flow before
   problems :::= (for (client <- List(1,2,3)) yield baseProblem ++
-    new GCWriter("start",0,List()).getConstraints ++
-      new GCWriter("login",0,List()).getConstraints ++
+    new GCWriter("start",0).getConstraints ++
+      new GCWriter("login",0).getConstraints ++
       new GCFifo("start","isEn",Some(client),0).getConstraints ++
-      new GCFifo("start","req1",None,0).getConstraints ++
-      new GCFifo("auth","auth2",None,0).getConstraints ++
+      new GCFifo("start","req1",0).getConstraints ++
+      new GCFifo("auth","auth2",0).getConstraints ++
       new GCFifo("pin","appr2",Some(1),0).getConstraints ++
       GuardedCommands(True --> Var(flowVar("isEn",0)))) // force data before filters
 
@@ -96,7 +97,7 @@ object GCLoanRequest extends App {
       }
       else {
         time  = System.currentTimeMillis()
-        res   = prob.solve
+        res   = prob.solveIterative
         spent = System.currentTimeMillis() - time
       }
       total += spent
@@ -105,15 +106,15 @@ object GCLoanRequest extends App {
   println("\nAverage: "+(total / (n*7)))
 
 //  val time1 = System.currentTimeMillis()
-//  val res1 = problem1.solve
+//  val res1 = problem1.solveIterative
 //  val spent1 = System.currentTimeMillis() - time1
 //
 //  val time2 = System.currentTimeMillis()
-//  val res2 = problem2.solve
+//  val res2 = problem2.solveIterative
 //  val spent2 = System.currentTimeMillis() - time2
 
 //  val time3 = System.currentTimeMillis()
-//  val res3 = problem3.solve
+//  val res3 = problem3.solveIterative
 //  val spent3 = System.currentTimeMillis() - time3
 //
 //  if (res3.isDefined)  println(res3.get.pretty)

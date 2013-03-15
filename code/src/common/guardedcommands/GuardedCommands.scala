@@ -1,6 +1,7 @@
 package common.guardedcommands
 
 import _root_.z3.scala.Z3Context
+import chocox.{ChocoX, CXSolution}
 import org.sat4j.minisat.SolverFactory
 import org.sat4j.core.VecInt
 import org.sat4j.specs.{TimeoutException, ContradictionException, ISolver}
@@ -47,7 +48,8 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
    * Default solving approach.
    * @return possible data solution
    */
-  def solve = lazyDataSolve
+//    def solve = lazyDataSolve
+    def solve = solveChocoX
 
   /**
    * Collect the domain of every guarded command in field 'da'.
@@ -57,6 +59,7 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
     if (!solvedDomain) {
       for (c <- commands) c.solveDomain(da)
 //      println(da.pp)
+//      println(da.guessOrder)
       solvedDomain = true
     }
   }
@@ -267,7 +270,7 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
 //    println("INIT GUESS:\n"+optSolBool.get.pretty)
 
     if (justInit) {
-      return Some(new GCSolution(optSolBool.get,Map[String, Int]()))
+      return Some(new GCSolution(optSolBool.get,Map[String, Integer]()))
     }
 
     val res = loopPartialEval(partialEval(optSolBool.get),cnf,optSolBool.get,0)
@@ -499,10 +502,12 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
   /**
    * Predicate abstraction + Choco (as SAT)
    * Optimised Choco: lazy constraints + variable ordering
-   * Requires buf != None
+//   * Requires buf != None
    * @return Boolean solution for the abstract constraints.
    */
   def solveChocoBool : Option[GCBoolSolution] = {
+    buf = Some(new Buffer)
+    close()
     val builders = toBoolConstrBuilders
     //    println("#> solving abst using choco SAT cnf - "+da.pp)
     //    println("builder: "+builders.mkString("\n"))
@@ -516,6 +521,17 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
     for (s <- choSol) yield new GCBoolSolution(s.sol2map)
   }
 
+
+  /**
+   * Solve solutions using Choco and external predicates/functions, based on book-keeping of hash values.
+   * @return Solution for the data constraints.
+   */
+  def solveChocoX: Option[CXSolution] = {
+//    ChocoX.solve(getConstraints)
+    buf = Some(new Buffer)
+    close()
+    ChocoX.solve(this,buf.get)
+  }
   /////////////////////////
   // USING CHOCO FOR SMT //
   /////////////////////////
@@ -562,7 +578,7 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
       return None
 //    println("INIT GUESS:\n"+optSolBool.get.pretty)
 
-    if (justInit) return Some(new GCSolution(optSolBool.get,Map[String, Int]()))
+    if (justInit) return Some(new GCSolution(optSolBool.get,Map[String, Integer]()))
 
     val res = loopPartialEvalCho(partialEval(optSolBool.get),builders,optSolBool.get)
 //    log.println("[all solve]     "+(System.currentTimeMillis()-time))

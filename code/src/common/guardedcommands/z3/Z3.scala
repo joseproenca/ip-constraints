@@ -151,7 +151,7 @@ object Z3 {
 
   def gc2boolz3(s: Statement, da: DomainAbst, z3: Z3Context): Z3AST = s match {
     case g: Guard => gc2boolz3(g,z3)
-    case IntAssgn(v, d) => gc2boolz3(DataAssgn(v,d),da,z3)
+    case IntAssgn(v, d) => gc2boolz3(DataAssgn(v,Int.box(d)),da,z3)
     case DataAssgn(v, d) =>
       var res: Z3AST = z3.mkTrue()
       val dom = da.domain(v)

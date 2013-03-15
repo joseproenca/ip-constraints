@@ -53,7 +53,7 @@ class Buffer {
    * @return p(fn(..(f2(f1(d)))))
    */
   def check(p:Predicate, fs:java.util.List[Function], d:Any) = {
-//    println("#### checking "+p+"-"+fs.reverse.mkString(".")+"-"+d+"... ")
+    println("#### checking "+p+"*"+fs.reverse.mkString(".")+"*"+d+"... ")
     val newd = calculate(asJavaIterable(fs).toList.reverse,d)
     calculatedP.get((p, newd)) match {
       case Some(x) =>

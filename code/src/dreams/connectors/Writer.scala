@@ -21,7 +21,7 @@ class Writer(var n:Int) extends Actor[GCSolution, GuardedCommands] {
 //                      else stateIdle
 //  private val uid = hashCode
 
-  val behaviour = new GCWriter("a",uid,(1 to n).toList) {
+  val behaviour = new GCWriter("a",uid,(1 to n).map(Int.box(_)).toList) {
     private var triedAndFailed = false
     override def update(s: GCSolution) {
       triedAndFailed = !s.hasFlowOn(flowVar(x, uid))

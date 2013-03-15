@@ -17,7 +17,7 @@ class ChoSolution(val choSol: CPSolver, varMap: Map[String, IntegerVariable]) ex
   val extension = MuMap[String, Int]()
 
 
-  def getDataOn(v: String) = getVal(v)
+  def getDataOn(v: String) = getVal(v).map(Int.box(_))
 
   def getVal(v: String): Option[Int] = { 
     if (varMap contains v)

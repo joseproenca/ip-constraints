@@ -24,7 +24,7 @@ class Z3Solution(z3: Z3Context, model: Z3Model) extends Solution {
   override def toString = model.toString()
 }
 
-object GCSolution {
+object Z3Solution {
   implicit object NoSol extends EmptySol[Z3Solution] {
     def sol = new Z3Solution(null,null) {
       override def hasFlowOn(end: String) = false

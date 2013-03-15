@@ -13,8 +13,8 @@ import common.{Predicate, Utils}
  */
 object ConnectorGen {
   def adrain(a: String, b: String, i: Int = 0) = new GCADrain(a,b,i)
-  def fifo(a: String, b: String, data:Option[Any], i: Int = 0) = new GCFifo(a,b,data,i)
-  def sfifo(a: String, b: String, data:Option[Any], i: Int = 0) = new GCSyncFifo(a,b,data,i)
+  def fifo(a: String, b: String, data:Option[AnyRef], i: Int = 0) = new GCFifo(a,b,data,i)
+  def sfifo(a: String, b: String, data:Option[AnyRef], i: Int = 0) = new GCSyncFifo(a,b,data,i)
   def filter(a: String, b: String, g:Guard) = new GCFilter(a,b,0,g)
   def filter(a: String, b: String, filter:Predicate, i: Int = 0) = new GCFilter(a,b,i,filter)
   def negfilter(a: String, b: String, filter:Predicate, i: Int = 0) = new GCFilter(a,b,i,filter,false)
@@ -32,7 +32,7 @@ object ConnectorGen {
   def exrouter(a: String, b: String, c: String, i: Int = 0) = new GCExRouter(a,b,c,i)
   def nexrouter(src: String, snks: List[String], i: Int = 0) = new GCNExRouter(src,snks,i)
   def reader(a: String,n: Int, i: Int = 0) = new GCReader(a,i,n)
-  def writer(a: String, data: List[Any], i: Int = 0) = new GCWriter(a,i,data)
+  def writer(a: String, data: List[AnyRef], i: Int = 0) = new GCWriter(a,i,data)
 
   def flow(a: String, i: Int = 0) = new GCConnector(List(a),i) {
     def getConstraints = GuardedCommands(True --> Var(Utils.flowVar(a,i)))

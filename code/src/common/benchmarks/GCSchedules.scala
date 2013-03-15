@@ -49,11 +49,11 @@ object GCSchedules extends App {
       GuardedCommands(True --> Var(flowVar("x",i)))
 
     if (on) res ++
-      new GCSyncFifo("m","c",Some(0),i).getConstraints ++
+      new GCSyncFifo("m","c",Some(Int.box(0)),i).getConstraints ++
       new GCFifo("f","d",None,i).getConstraints
     else res ++
       new GCSyncFifo("m","c",None,i).getConstraints ++
-      new GCFifo("f","d",Some(0),i).getConstraints
+      new GCFifo("f","d",Some(Int.box(0)),i).getConstraints
   }
 
 
@@ -85,7 +85,7 @@ object GCSchedules extends App {
 
   val problem = genScheds(1 to n2, "time",0,on = true) ++   // some will display
     genScheds(n2+1 to n, "time",0,on = false) ++            // and some will turn on
-    new GCWriter("time",0,List(500)).getConstraints ++    // (it is morning)
+    new GCWriter("time",0,List(Int.box(500))).getConstraints ++    // (it is morning)
     GuardedCommands(True --> Var(flowVar("time",0))) // require some dataflow
 
   if (justInit) problem.justInit = true
@@ -105,7 +105,7 @@ object GCSchedules extends App {
   }
   else {
     val time = System.currentTimeMillis()
-    val res = problem.solve
+    val res = problem.solveIterative
     val spent = System.currentTimeMillis() - time
 
     print(spent)

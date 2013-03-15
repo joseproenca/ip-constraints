@@ -88,6 +88,9 @@ object HotelReservation extends App {
     case l:List[String] =>
       println("approve: "+l.mkString(", ")+". [y,n]")
       readLine() == "y"
+    case other =>
+      println("appr: strange type - "+other+" : "+other.getClass)
+      false
   }
 
   val book = Function("book"){
@@ -96,6 +99,8 @@ object HotelReservation extends App {
         ". Which one? (1.."+l.length+")")
       val res = readInt()
       l((res-1)%l.length)
+    case other =>
+      println("book: strange type - "+other+" : "+other.getClass)
   }
 
   val cancelB = Function("cancelB"){
@@ -117,8 +122,10 @@ object HotelReservation extends App {
     }
   }
 
+  val paid = pay
+
   // the connector:
-  val conn =
+  val conn2 =
     writer("req", List(Req("re1"), Req("req2"))) ++
     nexrouter("req",List("h1","h2","h3")) ++
     transf("h1","h1o",srchHotel(1)) ++
@@ -133,6 +140,49 @@ object HotelReservation extends App {
     negfilter("inv","npaid",pay) ++
     reader("paid",5) ++ reader("npaid",5)
 
-  conn.run()
+  val conn3 = writer("req",List(Req("req1"),
+    Req("req2"))) ++
+    nexrouter("req",List("h1","h2","h3")) ++
+    transf("h1","h1o",srchHotel(1)) ++
+    transf("h2","h2o",srchHotel(2)) ++
+    transf("h3","h3o",srchHotel(3)) ++
+    nmerger(List("h1o","h2o","h3o"),"hs") ++
+    filter("hs","ap",approve) ++
+    // sdrain("hs","ap") ++
+    transf("ap","bk",book,cancelB) ++
+    monitor("bk","inv",invoice) ++
+    filter("inv","paid",paid) ++
+    sdrain("hs","paid") ++
+    reader("paid",5)
 
+//  conn3.run()
+
+
+  val approve2 = Predicate("approve2"){
+    case l:String =>
+      println("approve: "+l+". [y,n]")
+      readLine() == "y"
+    case other =>
+      println("appr2: strange type - "+other+" : "+other.getClass)
+      false
+  }
+
+  val testnewsolve = writer("a",List(List("F1","Ibis"))) ++
+      transf("a","b",book) ++ nmerger(List("b","none"),"b2") ++ noflow("none") ++ filter("b2","c",approve2) ++ reader("c",1)
+
+
+  val conn4 = writer("1-h",List(Req("req1"),Req("req2"))) ++
+    nexrouter("1-h",List("11-h1","12-h2","13-h3")) ++
+    transf("11-h1","14-h1o",srchHotel(1)) ++
+    transf("12-h2","15-h2o",srchHotel(2)) ++
+    transf("13-h3","16-h3o",srchHotel(3)) ++
+    nmerger(List("14-h1o","15-h2o","16-h3o"),"2-ho") ++
+//    transf("1-h","2-ho",srchHotel(1)) ++
+    filter("2-ho","3-ap",approve) ++  sdrain("2-ho","3-ap") ++
+    transf("3-ap","4-bk",book,cancelB)
+
+
+
+  //  testnewsolve.run()
+  conn2.getConstraints.solveChocoX
 }

@@ -122,7 +122,7 @@ object AllSyncTransaction extends App {
 
   if (satfull) {
     val time = System.currentTimeMillis()
-    val res = problem.solve
+    val res = problem.solveIterative
     val spent = System.currentTimeMillis() - time
     print(spent)
   }
@@ -194,7 +194,7 @@ object AllSyncTransaction extends App {
 
     //// SAT-FULL ////
     time = System.currentTimeMillis()
-    res = problem.solve
+    res = problem.solveIterative
     spent = System.currentTimeMillis() - time
     //    if (res.isDefined) println("SAT-full - solved in "+spent+" ms:\n"+res.get.pretty)
     //    else println("SAT-full - no solution (in "+spent+" ms)")

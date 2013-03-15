@@ -394,7 +394,7 @@ abstract sealed class Statement {
 
   def toCNF(vars: MutMap[String,Int],da: DomainAbst): CNF.Core = this match {
     case g: Guard => g.toCNF(vars,da)
-    case IntAssgn(v,d)  => DataAssgn(v,d).toCNF(vars,da)
+    case IntAssgn(v,d)  => DataAssgn(v,Int.box(d)).toCNF(vars,da)
     case DataAssgn(v,d) =>
 //      println("converting data assgnm '"+v+" := "+d+"'.")
       var res:List[Int] = List()
@@ -445,7 +445,7 @@ abstract sealed class Statement {
 
   def toCNF2(vars: MutMap[String,Int],da: DomainAbst, l:CNF2.Core ): Unit = this match {
     case g: Guard => g.toCNF2(vars,da,l)
-    case IntAssgn(v,d)  => DataAssgn(v,d).toCNF2(vars,da,l)
+    case IntAssgn(v,d)  => DataAssgn(v,Int.box(d)).toCNF2(vars,da,l)
     case DataAssgn(v,d) =>
       val dom = da.domain(v)
       for ((pred,fs) <- dom) {
@@ -499,7 +499,7 @@ abstract sealed class Statement {
    */
   def toBoolConstrBuilder(da: DomainAbst): ConstrBuilder = this match {
     case g: Guard => g.toBoolConstrBuilder
-    case IntAssgn(v, d) => DataAssgn(v,d).toBoolConstrBuilder(da)
+    case IntAssgn(v, d) => DataAssgn(v,Int.box(d)).toBoolConstrBuilder(da)
     case DataAssgn(v, d) => //common.choco.DataAssgn(v,d)
       // INSTEAD OF CALCULATING, CREATE A LAZY CONSTRAINT!
       // TODO: CREATE new temp var 'predvar2(v,pred,fs)' - it will be the output var of the lazy pred (to confirm...)
@@ -592,12 +592,13 @@ abstract sealed class Statement {
 case class Var(name: String) extends Guard {
   def :=(v:Var): Statement = VarAssgn(flow2data(name),flow2data(v.name))
   def :=(d:Any): Statement = DataAssgn(flow2data(name),d)
+//  def :=(d:Int): Statement = DataAssgn(flow2data(name),Int.box(d))
 //  def :=(d: Any): Statement = d match {
 //    case (v:Var) => VarAssgn(flow2data(name),flow2data(v.name))
 //    case _ => DataAssgn(flow2data(name),d)
 //  }
   def :=(f:common.Function,v:Var): Statement = FunAssgn(flow2data(name),flow2data(v.name),f)
-  def :< (p:Predicate): Statement = Pred(flow2data(name),p)
+  def :< (p:Predicate): Guard = Pred(flow2data(name),p)
 }
 case class IntPred(v:String, p: IntPredicate) extends Guard
 case class Pred(v:String, p:Predicate) extends Guard

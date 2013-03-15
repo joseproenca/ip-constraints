@@ -39,7 +39,7 @@ object Predicate {
   def apply(name: String)(body: Any => Boolean): Predicate = new Predicate {
     def check(x: Any) = try body(x)
     catch {
-      case e: scala.MatchError => {println("FAIL");false }
+      case e: scala.MatchError => {println("FAIL (match error by predicate)");false }
       case e => {println("FAIL");throw e}
     }
     override def toString = name

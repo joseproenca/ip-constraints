@@ -3,6 +3,7 @@ package common.guardedcommands.dataconnectors
 import common.Utils
 import Utils._
 import common.guardedcommands._
+import scala.None
 
 /**
  * Created with IntelliJ IDEA.
@@ -13,6 +14,11 @@ import common.guardedcommands._
  */
 
 class GCFifo(a: String, b: String, var data: Option[Any], uid: Int = 0) extends GCConnector(List(a,b), uid) {
+
+//  def this(a: String, b: String, dt: Option[Int], uid: Int) = this(a,b, dt.map(Int.box(_)),uid)
+  def this(a: String, b: String, uid: Int) = this(a,b, scala.None:Option[Any],uid)
+
+
   val av = mkVar(a,uid)
   val bv = mkVar(b,uid)
 
