@@ -1,7 +1,7 @@
 package dreams.connectors
 
 import dreams.Actor
-import common.guardedcommands.{ GCSolution, GuardedCommands}
+import common.guardedcommands.{ GCSolution, Formula}
 import common.guardedcommands.dataconnectors.{GCLossy}
 import common.guardedcommands.GCConnector.GCBuilder // provides implicit builders
 
@@ -13,7 +13,7 @@ import common.guardedcommands.GCConnector.GCBuilder // provides implicit builder
  * To change this template use File | Settings | File Templates.
  */
 
-class Lossy extends Actor[GCSolution, GuardedCommands] {
+class Lossy extends Actor[GCSolution, Formula] {
 //  private val uid = hashCode
 
   val behaviour = new GCLossy("x","y",uid)

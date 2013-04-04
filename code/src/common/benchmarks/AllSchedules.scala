@@ -51,7 +51,7 @@ object AllSchedules extends App {
   val morning = new Morning
   val evening  = new Evening
 
-  def genSched(i:Int,on: Boolean): GuardedCommands = {
+  def genSched(i:Int,on: Boolean): Formula = {
 
     //    new GCWriter("x",i,List(500)).constraints ++
     val res =
@@ -66,7 +66,7 @@ object AllSchedules extends App {
       sync("e","disp",i) ++
       sync("f","off",i) ++
       sync("g","on",i) ++
-      GuardedCommands(Var(flowVar("x",i)))
+      Formula(Var(flowVar("x",i)))
 
     if (on) res ++
       sfifo("m","c",Some(0),i) ++
@@ -77,14 +77,14 @@ object AllSchedules extends App {
   }
 
 
-  def genScheds(uids: Iterable[Int], startVar: String, on: Boolean): GuardedCommands = {
-    var res = new GuardedCommands()
+  def genScheds(uids: Iterable[Int], startVar: String, on: Boolean): Formula = {
+    var res = new Formula()
     for (i <- uids) {
       res ++= genSched(i,on)
       // manual replicator from (startVar.startUid) to (x,i)
       val av = Var(flowVar(startVar,0))
       val bv = Var(flowVar("x",i))
-      res ++= GuardedCommands(
+      res ++= Formula(
         av <-> bv,
         av --> (bv := av) //VarAssgn(dataVar("x",i), dataVar(startVar,startUid))
       )
@@ -95,7 +95,7 @@ object AllSchedules extends App {
 
 
   //  val problem = genSched(0,true)  ++ new GCWriter("x",0,List(500)).constraints ++ // on, morning  - display
-  //                GuardedCommands(True --> SGuard(Var(flowVar("e",0))))
+  //                Formula(True --> SGuard(Var(flowVar("e",0))))
 
   //  val schedule = genSched(0,true)  ++ new GCWriter("x",0,List(1400)).constraints // on, evening  - turn off
   //  val schedule = genSched(0,false) ++ new GCWriter("x",0,List(500)).constraints  // off, morning - turn on
@@ -106,7 +106,7 @@ object AllSchedules extends App {
   val problem = genScheds(1 to n2, "time",on = true) ++   // some will display
     genScheds(n2+1 to n, "time",on = false) ++            // and some will turn on
     writer("time",List(500)) ++                        // (it is morning)
-    GuardedCommands(True --> Var(flowVar("time",0)))   // require some dataflow
+    Formula(True --> Var(flowVar("time",0)))   // require some dataflow
 
 
 

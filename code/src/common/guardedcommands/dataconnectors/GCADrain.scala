@@ -19,7 +19,7 @@ class GCADrain (a: String, b: String, uid: Int) extends GCConnector(List(a,b), u
   val asr = Var(srcVar(a,uid))
   val bsk = Var(snkVar(b,uid))
 
-  private var constraints: GuardedCommands = !(av and bv)
+  private var constraints: Formula = !(av and bv)
 
   if (useCC3)
     constraints ++= Set(

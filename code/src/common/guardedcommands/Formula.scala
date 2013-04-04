@@ -6,10 +6,9 @@ import org.sat4j.minisat.SolverFactory
 import org.sat4j.core.VecInt
 import org.sat4j.specs.{TimeoutException, ContradictionException, ISolver}
 import collection.mutable.{Set => MutSet, Map => MutMap, ListBuffer}
-import common.{Constraints, Solution, Utils}
+import common.{Buffer, Constraints, Solution, Utils}
 import Utils._
 import common.choco.{ConstrBuilder,ChoSolution,ChoConstraints,FalseC}
-import common.choco.genericconstraints.Buffer
 import scala.Some
 import z3.Z3
 import collection.mutable
@@ -22,7 +21,7 @@ import collection.mutable
  * To change this template use File | Settings | File Templates.
  */
 
-class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
+class Formula extends Constraints[GCSolution,Formula] {
 
   private var log = System.out
 //  val log = new java.io.PrintStream(new java.io.FileOutputStream("/dev/null"))
@@ -437,7 +436,7 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
   }
 
   /**
-   * Same as `GuardedCommands.quickDataSolve()`, but using Z3 instead of SAT4J for SAT solving.
+   * Same as `Formula.quickDataSolve()`, but using Z3 instead of SAT4J for SAT solving.
    *
    * @see # quickDataSolve
    * @param z3 context required by Z3
@@ -648,36 +647,36 @@ class GuardedCommands extends Constraints[GCSolution,GuardedCommands] {
 
   ///////////////////////
 
-  def ++(other: GuardedCommands): GuardedCommands = {
+  def ++(other: Formula): Formula = {
     val thiscommands = commands
-    new GuardedCommands(){
+    new Formula(){
       commands = thiscommands ++ other.commands
     }
   }
-  def ++(others: Iterable[GuardedCom]): GuardedCommands = {
+  def ++(others: Iterable[GuardedCom]): Formula = {
     val thiscommands = commands
-    new GuardedCommands(){
+    new Formula(){
       commands = thiscommands ++ others
     }
   }
 
-  def ++(other: GuardedCom): GuardedCommands = {
+  def ++(other: GuardedCom): Formula = {
     val thiscommands = commands
-    new GuardedCommands(){
+    new Formula(){
       commands = thiscommands + other
     }
   }
 }
 
 
-object GuardedCommands {
-  def apply(gs: Set[GuardedCom]): GuardedCommands = {
-    val g = new GuardedCommands()
+object Formula {
+  def apply(gs: Set[GuardedCom]): Formula = {
+    val g = new Formula()
     g.commands = gs
     g
   }
-  def apply(gs: GuardedCom*): GuardedCommands = apply(gs.toSet)
-  def apply(g: GuardedCom): GuardedCommands = apply(Set(g))
-  def apply(): GuardedCommands = new GuardedCommands()
+  def apply(gs: GuardedCom*): Formula = apply(gs.toSet)
+  def apply(g: GuardedCom): Formula = apply(Set(g))
+  def apply(): Formula = new Formula()
 
 }

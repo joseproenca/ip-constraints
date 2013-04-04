@@ -17,7 +17,7 @@ class GCMerger(a: String, b: String, c: String, uid: Int) extends GCConnector(Li
   val bv = Var(flowVar(b,uid))
   val cv = Var(flowVar(c,uid))
 
-  private var constraints = GuardedCommands(
+  private var constraints = Formula(
     cv --> (av \/ bv),
     (av \/ bv) --> cv,
     !(av and bv))

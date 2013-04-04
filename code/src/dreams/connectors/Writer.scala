@@ -1,7 +1,7 @@
 package dreams.connectors
 
 import dreams.Actor
-import common.guardedcommands.{GuardedCommands, GCSolution}
+import common.guardedcommands.{Formula, GCSolution}
 import common.guardedcommands.dataconnectors.GCWriter
 import common.Utils
 import Utils._
@@ -15,7 +15,7 @@ import common.guardedcommands.GCConnector.GCBuilder
  * To change this template use File | Settings | File Templates.
  */
 
-class Writer(var n:Int) extends Actor[GCSolution, GuardedCommands] {
+class Writer(var n:Int) extends Actor[GCSolution, Formula] {
 
 //  override def init = if (n>0) {  println("starting protocol! ["+n+","+uid+"]"); startProtocol}
 //                      else stateIdle

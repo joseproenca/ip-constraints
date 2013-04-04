@@ -3,7 +3,7 @@ package workers.connectors
 import actors.OutputChannel
 import workers.Node
 import scala.Predef._
-import common.guardedcommands.{GuardedCommands, GCSolution}
+import common.guardedcommands.{Formula, GCSolution}
 import common.guardedcommands.dataconnectors.GCMerger
 
 /**
@@ -14,13 +14,13 @@ import common.guardedcommands.dataconnectors.GCMerger
  * To change this template use File | Settings | File Templates.
  */
 
-class Merger (deployer: OutputChannel[Any]) extends Node[GCSolution, GuardedCommands](deployer) {
+class Merger (deployer: OutputChannel[Any]) extends Node[GCSolution, Formula](deployer) {
 //  val uid = hashCode
   val behaviour = new GCMerger("a","b","c",uid)
 
 
   // suggests which ends must have dataflow if "end" has also dataflow
-  def guessRequirements(nd: Node[GCSolution, GuardedCommands]): Set[Node[GCSolution,GuardedCommands]] =
+  def guessRequirements(nd: Node[GCSolution, Formula]): Set[Node[GCSolution,Formula]] =
     if (connections contains nd) { // if the node nd is actually connected to nd
       for ((myend,_,_) <- connections(nd)) {// set of ends
         if (myend == "a" || myend == "b") return invConnections("c")

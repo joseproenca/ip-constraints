@@ -2,7 +2,7 @@ package workers.connectors
 
 import workers.Node
 import actors.OutputChannel
-import common.guardedcommands.{GuardedCommands, GCSolution}
+import common.guardedcommands.{Formula, GCSolution}
 import common.guardedcommands.dataconnectors.GCWriter
 
 /**
@@ -13,12 +13,12 @@ import common.guardedcommands.dataconnectors.GCWriter
  * To change this template use File | Settings | File Templates.
  */
 
-class Writer(var n:Int,deployer: OutputChannel[Any]) extends Node[GCSolution, GuardedCommands](deployer) {
+class Writer(var n:Int,deployer: OutputChannel[Any]) extends Node[GCSolution, Formula](deployer) {
 
   //val uid = hashCode()
 
   val behaviour = new GCWriter("w",uid,(1 to n).map(Int.box(_)).toList)
 
   // suggests which ends must have dataflow if "end" has also dataflow
-  def guessRequirements(nd: Node[GCSolution, GuardedCommands]) = Set()
+  def guessRequirements(nd: Node[GCSolution, Formula]) = Set()
 }

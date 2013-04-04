@@ -6,6 +6,7 @@ import choco.kernel.solver.Solver;
 import choco.kernel.solver.constraints.AbstractSConstraint;
 import choco.kernel.solver.constraints.integer.AbstractTernIntSConstraint;
 import choco.kernel.solver.variables.integer.IntDomainVar;
+import common.Buffer;
 import common.Function;
 import common.Predicate;
 

@@ -1,6 +1,6 @@
 package workers.strategies
 
-import common.guardedcommands.{GuardedCommands, GCSolution}
+import common.guardedcommands.{Formula, GCSolution}
 import common.{Constraints, Solution}
 
 // UNDER CONSTRUCTION
@@ -119,8 +119,8 @@ class HybridStrategy[S <: Solution, C <: Constraints[S, C]] extends Strategy[S,C
 
 object HybridStrategy {
   implicit object HybridStrategyBuilder
-    extends StrategyBuilder[GCSolution, GuardedCommands, HybridStrategy[GCSolution, GuardedCommands]] {
-    def apply = new HybridStrategy[GCSolution, GuardedCommands]()
+    extends StrategyBuilder[GCSolution, Formula, HybridStrategy[GCSolution, Formula]] {
+    def apply = new HybridStrategy[GCSolution, Formula]()
   }
 }
 

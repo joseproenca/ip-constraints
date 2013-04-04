@@ -31,7 +31,7 @@ object GCSchedules extends App {
   val morning = new Morning
   val evening  = new Evening
 
-  def genSched(i:Int,on: Boolean): GuardedCommands = {
+  def genSched(i:Int,on: Boolean): Formula = {
 
 //    new GCWriter("x",i,List(500)).getConstraints ++
     val res =
@@ -46,7 +46,7 @@ object GCSchedules extends App {
       new GCSync("e","disp",i).getConstraints ++
       new GCSync("f","off",i).getConstraints ++
       new GCSync("g","on",i).getConstraints ++
-      GuardedCommands(True --> Var(flowVar("x",i)))
+      Formula(True --> Var(flowVar("x",i)))
 
     if (on) res ++
       new GCSyncFifo("m","c",Some(Int.box(0)),i).getConstraints ++
@@ -57,14 +57,14 @@ object GCSchedules extends App {
   }
 
 
-  def genScheds(uids: Iterable[Int], startVar: String, startUid: Int, on: Boolean): GuardedCommands = {
-    var res = new GuardedCommands()
+  def genScheds(uids: Iterable[Int], startVar: String, startUid: Int, on: Boolean): Formula = {
+    var res = new Formula()
     for (i <- uids) {
       res ++= genSched(i,on)
       // manual replicator from (startVar.startUid) to (x,i)
       val av = Var(flowVar(startVar,startUid))
       val bv = Var(flowVar("x",i))
-      res ++= GuardedCommands(Set(
+      res ++= Formula(Set(
         True --> (av <-> bv),
         av --> VarAssgn(dataVar("x",i), dataVar(startVar,startUid))
       ))
@@ -75,7 +75,7 @@ object GCSchedules extends App {
 
 
 //  val problem = genSched(0,true)  ++ new GCWriter("x",0,List(500)).getConstraints ++ // on, morning  - display
-//                GuardedCommands(True --> SGuard(Var(flowVar("e",0))))
+//                Formula(True --> SGuard(Var(flowVar("e",0))))
 
 //  val schedule = genSched(0,true)  ++ new GCWriter("x",0,List(1400)).getConstraints // on, evening  - turn off
 //  val schedule = genSched(0,false) ++ new GCWriter("x",0,List(500)).getConstraints  // off, morning - turn on
@@ -86,7 +86,7 @@ object GCSchedules extends App {
   val problem = genScheds(1 to n2, "time",0,on = true) ++   // some will display
     genScheds(n2+1 to n, "time",0,on = false) ++            // and some will turn on
     new GCWriter("time",0,List(Int.box(500))).getConstraints ++    // (it is morning)
-    GuardedCommands(True --> Var(flowVar("time",0))) // require some dataflow
+    Formula(True --> Var(flowVar("time",0))) // require some dataflow
 
   if (justInit) problem.justInit = true
 

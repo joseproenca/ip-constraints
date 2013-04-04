@@ -5,7 +5,7 @@ import z3.scala.{Z3AST, Z3Config, Z3Context}
 import common.guardedcommands.z3.Z3
 import choco.kernel.model.variables.integer.IntegerExpressionVariable
 import choco.Choco
-import common.guardedcommands.GuardedCommands
+import common.guardedcommands.Formula
 import common.{Solution, IntFunction, IntPredicate}
 
 /**
@@ -45,9 +45,9 @@ object AllThermometer extends App {
   /// The PROBLEM ///
   ///////////////////
 
-  def genRouters(height:Int): GuardedCommands= {
+  def genRouters(height:Int): Formula= {
     var snks = List("y")
-    var res = GuardedCommands()
+    var res = Formula()
     for (level <- 1 to height) {
       var newsnks = List[String]()
       for (x <- snks) {

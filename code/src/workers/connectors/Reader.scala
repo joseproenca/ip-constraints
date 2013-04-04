@@ -2,7 +2,7 @@ package workers.connectors
 
 import actors.OutputChannel
 import workers.Node
-import common.guardedcommands.{GCSolution, GuardedCommands}
+import common.guardedcommands.{GCSolution, Formula}
 import common.guardedcommands.dataconnectors.GCReader
 
 /**
@@ -13,7 +13,7 @@ import common.guardedcommands.dataconnectors.GCReader
  * To change this template use File | Settings | File Templates.
  */
 
-class Reader (var n:Int,deployer: OutputChannel[Any]) extends Node[GCSolution, GuardedCommands](deployer) {
+class Reader (var n:Int,deployer: OutputChannel[Any]) extends Node[GCSolution, Formula](deployer) {
 
 //  val uid = hashCode()
 
@@ -21,5 +21,5 @@ class Reader (var n:Int,deployer: OutputChannel[Any]) extends Node[GCSolution, G
     new GCReader("r",uid,n) { override def isProactive = false }
 
   // suggests which ends must have dataflow if "end" has also dataflow
-  def guessRequirements(nd: Node[GCSolution, GuardedCommands]) = Set()
+  def guessRequirements(nd: Node[GCSolution, Formula]) = Set()
 }

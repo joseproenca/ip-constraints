@@ -1,4 +1,4 @@
-package common.choco.genericconstraints;
+package common.guardedcommands.chocox;
 
 import choco.cp.model.managers.IntConstraintManager;
 import choco.cp.solver.CPSolver;
@@ -8,14 +8,13 @@ import choco.kernel.model.variables.integer.IntegerVariable;
 import choco.kernel.solver.Solver;
 import choco.kernel.solver.constraints.SConstraint;
 import choco.kernel.solver.variables.integer.IntDomainVar;
+import common.Buffer;
 import common.Function;
 import common.Predicate;
-import scala.Int;
 import scala.Tuple2;
 import scala.collection.Map;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**

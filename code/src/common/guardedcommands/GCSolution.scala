@@ -1,10 +1,7 @@
 package common.guardedcommands
 
-import common.{Utils, Solution}
+import common._
 import common.Utils.{ppVar,flow2data}
-import common.choco.genericconstraints.Buffer
-import common.Solution
-import common.EmptySol
 
 /**
  * Created with IntelliJ IDEA.

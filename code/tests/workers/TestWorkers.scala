@@ -3,7 +3,7 @@ package workers
 import org.scalatest.FunSpec
 import common.choco.{ChoConstraints, ChoSolution}
 import strategies._
-import common.guardedcommands.{GCSolution, GuardedCommands}
+import common.guardedcommands.{GCSolution, Formula}
 import common.guardedcommands.GCConnector.GCBuilder
 
 
@@ -19,7 +19,7 @@ class TestWorkers extends FunSpec {
   describe ("Workers full traversal - Writer to a lossy") {
     //    val x = scala.actors.Actor.self
     type S = GCSolution
-    type C = GuardedCommands
+    type C = Formula
     type St = HybridStrategy[S,C]
     //type SB = StrategyBuilder[S,C,St]
 

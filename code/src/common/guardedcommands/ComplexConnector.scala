@@ -11,7 +11,7 @@ import collection.mutable
  * Time: 16:31
  * To change this template use File | Settings | File Templates.
  */
-class ComplexConnector(val sub: List[Connector[GCSolution,GuardedCommands]], ends: List[String], uid: Int = 0)
+class ComplexConnector(val sub: List[Connector[GCSolution,Formula]], ends: List[String], uid: Int = 0)
     extends GCConnector(ends, uid) {
 
   /**
@@ -20,14 +20,14 @@ class ComplexConnector(val sub: List[Connector[GCSolution,GuardedCommands]], end
    *   and connect CC3-related variables (assuming their original ids - good!)
    */
   def getConstraints = {
-    var res = GuardedCommands()
+    var res = Formula()
     for (c <- sub) res ++= c.getConstraints
     if (useCC3) {
       val subends = mutable.Set[(String,Int)]()
       for (c <- sub; e <- c.ends)
         subends add (e,c.uid)
       for ((e,id) <- subends)
-        res ++= GuardedCommands( Var(srcVar(e,id)) \/ Var(snkVar(e,id)) )
+        res ++= Formula( Var(srcVar(e,id)) \/ Var(snkVar(e,id)) )
     }
     res
   }
@@ -36,7 +36,7 @@ class ComplexConnector(val sub: List[Connector[GCSolution,GuardedCommands]], end
     for (c <- sub) c.update(s)
   }
 
-  def +++(other: Connector[GCSolution,GuardedCommands]): ComplexConnector = other match {
+  def +++(other: Connector[GCSolution,Formula]): ComplexConnector = other match {
     case c: ComplexConnector => new ComplexConnector(sub ++ c.sub,ends ++ c.ends, uid)
     case _ => new ComplexConnector(other :: sub, ends ++ other.ends, uid)
   }

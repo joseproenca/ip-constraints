@@ -45,20 +45,20 @@ class TestFunctions extends FunSpec {
     val c1= new GCTransf("a","b",0,new Double()).getConstraints ++
       new GCFilter("b","c",0,evend("b")).getConstraints ++
       new GCFilter("b","d",0,evend("b")).getConstraints ++
-      GuardedCommands(True --> IntAssgn(dataVar("a",0),3)) ++
-      GuardedCommands(True --> Var(flowVar("a",0)))
+      Formula(True --> IntAssgn(dataVar("a",0),3)) ++
+      Formula(True --> Var(flowVar("a",0)))
 
     val c2= new GCTransf("a","b",0,new Double()).getConstraints ++
       new GCFilter("b","c",0,oddd("b")).getConstraints ++
       new GCFilter("b","d",0,evend("b")).getConstraints ++
-      GuardedCommands(True --> IntAssgn(dataVar("a",0),3)) ++
-      GuardedCommands(True --> Var(flowVar("a",0)))
+      Formula(True --> IntAssgn(dataVar("a",0),3)) ++
+      Formula(True --> Var(flowVar("a",0)))
 
     val c3= new GCTransf("a","b",0,new Double()).getConstraints ++
       new GCFilter("b","c",0,oddd("b")).getConstraints ++
       new GCFilter("b","d",0,oddd("b")).getConstraints ++
-      GuardedCommands(True --> IntAssgn(dataVar("a",0),3)) ++
-      GuardedCommands(True --> Var(flowVar("a",0)))
+      Formula(True --> IntAssgn(dataVar("a",0),3)) ++
+      Formula(True --> Var(flowVar("a",0)))
 
     // new syntax:
     val a = mkVar("a")
@@ -66,7 +66,7 @@ class TestFunctions extends FunSpec {
       transf("a","b",new Double) ++
       filter("b","c",evend("d)")) ++
       filter("b","d",evend("b")) ++
-      GuardedCommands(a := 3 , a)
+      Formula(a := 3 , a)
     val c22 =
       transf("a","b",new Double) ++
       filter("b","c",oddd("d)")) ++

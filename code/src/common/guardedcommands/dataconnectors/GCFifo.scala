@@ -22,15 +22,15 @@ class GCFifo(a: String, b: String, var data: Option[Any], uid: Int = 0) extends 
   val av = mkVar(a,uid)
   val bv = mkVar(b,uid)
 
-  val emptyFifo = GuardedCommands(!bv)
+  val emptyFifo = Formula(!bv)
 
   def fullFifo =
-    if (useData) GuardedCommands(
+    if (useData) Formula(
         !av,
         bv --> (bv := data.get)
       )
     else if (useCC3) throw new Exception("CC3 not implemented")
-    else GuardedCommands(Neg(av))
+    else Formula(Neg(av))
 
 
   def getConstraints = if (data.isDefined) fullFifo else emptyFifo

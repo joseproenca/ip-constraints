@@ -3,7 +3,7 @@ package dreams
 import org.scalatest.FunSpec
 import common.guardedcommands.dataconnectors.GCLossy
 
-import common.guardedcommands.{GuardedCommands, GCSolution}
+import common.guardedcommands.{Formula, GCSolution}
 import common.Utils
 import Utils._
 import common.guardedcommands.GCConnector.GCBuilder
@@ -22,7 +22,7 @@ class TestDreams extends FunSpec {
   describe ("Dreams - Writer to a lossy") {
 //    val x = scala.actors.Actor.self
     type Sol = GCSolution
-    type Constr = GuardedCommands
+    type Constr = Formula
     
     val wr = new connectors.Writer(2)
     {

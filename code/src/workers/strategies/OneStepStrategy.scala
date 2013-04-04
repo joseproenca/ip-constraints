@@ -1,6 +1,6 @@
 package workers.strategies
 
-import common.guardedcommands.{GuardedCommands, GCSolution}
+import common.guardedcommands.{Formula, GCSolution}
 import common.{Constraints, Solution}
 
 
@@ -24,7 +24,7 @@ class OneStepStrategy[S<:Solution,C<:Constraints[S,C]] extends Strategy[S,C,OneS
 
 object OneStepStrategy {
   implicit object OneStepStrategyBuilder
-    extends StrategyBuilder[GCSolution, GuardedCommands, OneStepStrategy[GCSolution, GuardedCommands]] {
-    def apply = new OneStepStrategy[GCSolution, GuardedCommands]()
+    extends StrategyBuilder[GCSolution, Formula, OneStepStrategy[GCSolution, Formula]] {
+    def apply = new OneStepStrategy[GCSolution, Formula]()
   }
 }

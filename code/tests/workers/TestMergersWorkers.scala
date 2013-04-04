@@ -4,7 +4,7 @@ import connectors.Merger
 import org.scalatest.FunSpec
 import common.choco.{ChoConstraints, ChoSolution}
 import strategies._
-import common.guardedcommands.{GCSolution, GuardedCommands}
+import common.guardedcommands.{GCSolution, Formula}
 import common.guardedcommands.GCConnector.GCBuilder
 
 /**
@@ -17,7 +17,7 @@ import common.guardedcommands.GCConnector.GCBuilder
 
 class TestMergersWorkers extends FunSpec {
   type S = GCSolution
-  type C = GuardedCommands
+  type C = Formula
   type St = CompleteStrategy[S,C]
 //  type SB = StrategyBuilder[S,C,St]
   type D = Deployer[S,C,St]

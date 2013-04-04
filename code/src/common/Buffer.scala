@@ -1,10 +1,8 @@
-package common.choco.genericconstraints
+package common
 
 //import java.util.List
 import scala.collection.JavaConversions._
 import scala.collection.immutable.Map
-import common.{Solution, Predicate}
-import common.Function
 
 
 /**

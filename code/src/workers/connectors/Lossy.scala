@@ -2,7 +2,7 @@ package workers.connectors
 
 import actors.OutputChannel
 import workers.Node
-import common.guardedcommands.{GuardedCommands, GCSolution}
+import common.guardedcommands.{Formula, GCSolution}
 import common.guardedcommands.dataconnectors.GCLossy
 
 /**
@@ -13,7 +13,7 @@ import common.guardedcommands.dataconnectors.GCLossy
  * To change this template use File | Settings | File Templates.
  */
 
-class Lossy(deployer: OutputChannel[Any]) extends Node[GCSolution, GuardedCommands](deployer) {
+class Lossy(deployer: OutputChannel[Any]) extends Node[GCSolution, Formula](deployer) {
 //  val uid = hashCode
   val behaviour = new GCLossy("a","b",uid)
 
@@ -22,7 +22,7 @@ class Lossy(deployer: OutputChannel[Any]) extends Node[GCSolution, GuardedComman
 
   // suggests which ends must have dataflow if "end" has also dataflow
   // "b" requires "a", but not vice-versa!
-  def guessRequirements(nd: Node[GCSolution, GuardedCommands]): Set[Node[GCSolution,GuardedCommands]] =
+  def guessRequirements(nd: Node[GCSolution, Formula]): Set[Node[GCSolution,Formula]] =
     if (connections contains nd) { // if the node nd is actually connected to nd
       for ((myend,_,_) <- connections(nd)) {// set of ends
         if (myend == "a") return invConnections("b")

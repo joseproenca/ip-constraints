@@ -35,7 +35,7 @@ class TestInteraction extends FunSpec {
           }
           else {
             println("Password for user "+user)
-            var pass = "asd" //readLine()
+            var pass = "123" //readLine()
             if (secret(user) == pass) {
               println("# OK #")
               true
@@ -45,6 +45,7 @@ class TestInteraction extends FunSpec {
               attempts -= 1
               false
             }
+//            true // FORCE PREDICATE TO ALWAYS SAY TRUE!
           }
         }
       }
@@ -54,28 +55,34 @@ class TestInteraction extends FunSpec {
     }
 
     val c =
-      new GCFilter("af1","bf1",0,checkPwd).getConstraints ++
-      new GCFilter("af2","bf2",0,checkPwd).getConstraints ++
-      new GCMerger("bf1","bf2","out",0).getConstraints ++
-      new GCWriter("af1",0,List("joe")).getConstraints ++
-      new GCWriter("af2",0,List("alex")).getConstraints ++
-      new GCADrain("af1","af2",0).getConstraints
+      new GCFilter("af1","bf1",0,checkPwd) ++
+      new GCFilter("af2","bf2",0,checkPwd) ++
+      new GCMerger("bf1","bf2","out",0) ++
+      new GCWriter("af1",0,List("joe")) ++
+      new GCWriter("af2",0,List("alex")) ++
+      new GCADrain("af1","af2",0)
 
     // TEST
     // data fails first filter, second should be lazy using chocoSAT. No flow on "c", so fail.
 
-    val res= c.solveChocoBool
+    val cs = c.getConstraints
+    val res= cs.solveChocoBool
+    val res2= cs.solveChocoX
 
-    println("-----------\n"+c.commands.mkString("\n"))
+    println("-----------\n"+cs.commands.mkString("\n"))
     println("-----------")
 
 
     if (res.isDefined) print("solved:\n"+res.get)
     else println("no solution")
 
-    if (res.isDefined) println("partial eval: "+c.partialEval(res.get))
+    if (res.isDefined) println("partial eval: "+cs.partialEval(res.get))
 
-    it ("c should have a sol") {assert (res.isDefined)}
+    if (res.isDefined) print("X solved:\n"+res2.get)
+    else println("no X solution")
+
+    it ("c  should have a sol") {assert (res.isDefined)}
+    it ("cX should have a sol") {assert (res2.isDefined)}
 
   }
 

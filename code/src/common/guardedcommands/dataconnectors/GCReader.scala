@@ -14,10 +14,10 @@ import common.guardedcommands._
 
 class GCReader(x: String, uid: Int, var size: Int) extends GCConnector(List(x), uid) {
   //  val flowConstr = ChoConstraints(TrueC)
-  val nfConstr = GuardedCommands(Neg((Var(flowVar(x, uid)))))
+  val nfConstr = Formula(Neg((Var(flowVar(x, uid)))))
 
   def getConstraints =
-    if (size > 0) GuardedCommands()
+    if (size > 0) Formula()
     else nfConstr
 
   override def update(s: GCSolution) {

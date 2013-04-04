@@ -34,6 +34,6 @@ object ConstraintGen {
   def reader(a: String,n: Int, i: Int = 0) = new GCReader(a,i,n).getConstraints
   def writer(a: String, data: List[Any], i: Int = 0) = new GCWriter(a,i,data).getConstraints
 
-  def flow(a: String, i: Int = 0) = GuardedCommands(True --> Var(Utils.flowVar(a,i)))
-  def noflow(a: String, i: Int = 0) = GuardedCommands(True --> Neg(Var(Utils.flowVar(a,i))))
+  def flow(a: String, i: Int = 0) = Formula(True --> Var(Utils.flowVar(a,i)))
+  def noflow(a: String, i: Int = 0) = Formula(True --> Neg(Var(Utils.flowVar(a,i))))
 }

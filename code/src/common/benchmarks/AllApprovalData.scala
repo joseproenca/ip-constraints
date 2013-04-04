@@ -59,10 +59,10 @@ object AllApprovalData extends App {
     res
   }
 
-  def genMergers(height:Int): GuardedCommands= {
+  def genMergers(height:Int): Formula= {
     val size = pow(2,height)
     var srcs = List("x")
-    var res = GuardedCommands()
+    var res = Formula()
     for (level <- 1 to height) {
       var newsrcs = List[String]()
       for (x <- srcs) {

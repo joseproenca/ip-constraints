@@ -17,7 +17,7 @@ class GCLossy(a: String, b: String, uid: Int) extends GCConnector(List(a,b), uid
   val av = Var(flowVar(a,uid))
   val bv = Var(flowVar(b,uid))
 
-  private var constraints : GuardedCommands = bv --> av
+  private var constraints : Formula = bv --> av
 
 
   if (useData) constraints ++=

@@ -17,7 +17,7 @@ class GCTransf (a: String, b: String, uid: Int, f: Function) extends GCConnector
   private val av = Var(flowVar(a,uid))
   private val bv = Var(flowVar(b,uid))
 
-  var constraints = GuardedCommands(
+  var constraints = Formula(
     av <-> bv
   )
 

@@ -21,7 +21,7 @@ class GCIMerger(a: String, b: String, c: String, uid: Int) extends GCConnector(L
   val cv = Var(flowVar(c,uid))
   val abv = Var(flowVar(a+b,uid))
 
-  private var constraints = GuardedCommands(Set(
+  private var constraints = Formula(Set(
     cv --> (av or bv),
     (av or bv) --> cv
   ))

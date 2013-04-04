@@ -1,6 +1,6 @@
 package dreams.connectors
 
-import common.guardedcommands.{GuardedCommands, GCSolution, GCConnector}
+import common.guardedcommands.{Formula, GCSolution, GCConnector}
 import common._
 import dreams.Actor
 import common.{Solution, CBuilder, Constraints, Connector}

@@ -1,4 +1,4 @@
-package common.choco.genericconstraints;
+package common.guardedcommands.chocox;
 
 import choco.cp.solver.CPSolver;
 import choco.cp.solver.variables.integer.IntVarEvent;
@@ -8,11 +8,10 @@ import choco.kernel.solver.Solver;
 import choco.kernel.solver.constraints.AbstractSConstraint;
 import choco.kernel.solver.constraints.SConstraintType;
 import choco.kernel.solver.constraints.integer.AbstractIntSConstraint;
-import choco.kernel.solver.constraints.integer.AbstractTernIntSConstraint;
 import choco.kernel.solver.variables.integer.IntDomainVar;
+import common.Buffer;
 import common.Function;
 import common.Predicate;
-import scala.Int;
 import scala.Tuple2;
 import scala.collection.Map;
 

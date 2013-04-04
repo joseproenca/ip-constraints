@@ -17,7 +17,7 @@ class GCExRouter(a: String, b: String, c: String, uid: Int) extends GCConnector(
   val bv = Var(flowVar(b,uid))
   val cv = Var(flowVar(c,uid))
 
-  private var constraints = GuardedCommands(
+  private var constraints = Formula(
     av --> (bv or cv),
     (bv or cv) --> av,
     Neg(bv and cv)

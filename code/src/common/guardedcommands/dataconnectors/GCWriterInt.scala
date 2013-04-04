@@ -17,13 +17,13 @@ import common.guardedcommands._
 class GCWriterInt(val x: String, uid: Int, var data: List[Int]) extends GCConnector(List(x), uid) {
   val xv = Var(flowVar(x,uid))
 
-  val nfConstr = GuardedCommands(!xv)
+  val nfConstr = Formula(!xv)
 
-  def getConstraints: GuardedCommands = {
+  def getConstraints: Formula = {
     if (!data.isEmpty) {
-      if(useData) xv := data.head  //GuardedCommands(xv --> IntAssgn(dataVar(x,uid),data.head)) //(xv := data.head))
+      if(useData) xv := data.head  //Formula(xv --> IntAssgn(dataVar(x,uid),data.head)) //(xv := data.head))
       else if (useCC3) throw new Exception("CC3 not implemented")
-      else GuardedCommands()
+      else Formula()
     }
     else nfConstr
   }

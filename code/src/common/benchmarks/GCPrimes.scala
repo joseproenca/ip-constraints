@@ -86,7 +86,7 @@ object GCPrimes extends App {
       ,  3517,  3527,  3529,  3533,  3539,  3541,  3547,  3557,  3559,  3571
   )
 
-  def genFilters(size: Int): GuardedCommands = {
+  def genFilters(size: Int): Formula = {
     var commands = new GCSDrain("x","x"+size,0).getConstraints ++
                    new GCFilter("x","x0",0,IntPred(dataVar("x",0),new GT(1))).getConstraints
 //                   new GCSync("x","x0",0).getConstraints
@@ -96,13 +96,13 @@ object GCPrimes extends App {
     commands
   }
 
-  def genSpout(): GuardedCommands = {
+  def genSpout(): Formula = {
     new GCSSpout("reader","x",0).getConstraints
   }
 
 
   val problem = genFilters(n) ++ genSpout ++
-    GuardedCommands(True --> Var(flowVar("x0",0))) // require some dataflow
+    Formula(True --> Var(flowVar("x0",0))) // require some dataflow
 
   if (justInit) problem.justInit = true
 //  println(problem.commands.mkString(","))

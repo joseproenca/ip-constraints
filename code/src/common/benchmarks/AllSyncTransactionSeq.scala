@@ -1,6 +1,6 @@
 package common.benchmarks
 
-import common.guardedcommands.GuardedCommands
+import common.guardedcommands.Formula
 import common.guardedcommands.dataconnectors.ConstraintGen._
 import common.benchmarks.AllSyncTransaction.genTransaction
 import z3.scala.{Z3Config, Z3Context}
@@ -46,7 +46,7 @@ object AllSyncTransactionSeq extends App {
 
   val invFunc = new InvFunc
 
-  def genTransations(max:Int,failAt:Int): GuardedCommands = {
+  def genTransations(max:Int,failAt:Int): Formula = {
     var res = genTransaction(1,invFunc)
     for (seed <- 2 to max) {
       if (seed == failAt) res ++= genTransaction(-1 * seed,invFunc)

@@ -42,7 +42,7 @@ object Z3 {
     }
   }
 
-  def gc2z3(gcs: GuardedCommands, z3: Z3Context): Z3AST = {
+  def gc2z3(gcs: Formula, z3: Z3Context): Z3AST = {
 //    gcs.close() // add flow constraints here
 
     var res = z3.mkTrue()
@@ -114,7 +114,7 @@ object Z3 {
    * @param z3 the Z3 context, used to build operators and variables
    * @return a Z3 term equivalent to the predicate abstraction of the given guarded command
    */
-  def gc2boolz3(gcs: GuardedCommands, da: DomainAbst,z3: Z3Context): Z3AST = {
+  def gc2boolz3(gcs: Formula, da: DomainAbst,z3: Z3Context): Z3AST = {
     var res = z3.mkTrue()
     for (com <- gcs.commands)
       res = z3.mkAnd(res,gc2boolz3(com,da,z3))

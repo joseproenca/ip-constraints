@@ -3,9 +3,9 @@ package common.choco
 import choco.kernel.model.variables.integer.{IntegerExpressionVariable, IntegerVariable}
 import choco.Choco
 import choco.kernel.model.constraints.{Constraint => ChocoConstr}
-import genericconstraints.{Buffer, PredManager}
+import genericconstraints.{PredManager}
 import scala.collection.JavaConversions._
-import common.{Predicate, Utils, Function}
+import common.{Buffer, Predicate, Utils, Function}
 
 /**
  * Created by IntelliJ IDEA.

@@ -16,7 +16,7 @@ class GCSync(a: String, b: String, uid: Int) extends GCConnector(List(a,b), uid)
   protected val av = Var(flowVar(a,uid))
   protected val bv = Var(flowVar(b,uid))
 
-  var constraints = GuardedCommands(
+  var constraints = Formula(
     av <-> bv
   )
 

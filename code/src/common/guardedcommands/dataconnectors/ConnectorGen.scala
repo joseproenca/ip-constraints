@@ -35,9 +35,9 @@ object ConnectorGen {
   def writer(a: String, data: List[AnyRef], i: Int = 0) = new GCWriter(a,i,data)
 
   def flow(a: String, i: Int = 0) = new GCConnector(List(a),i) {
-    def getConstraints = GuardedCommands(True --> Var(Utils.flowVar(a,i)))
+    def getConstraints = Formula(True --> Var(Utils.flowVar(a,i)))
   }
   def noflow(a: String, i: Int = 0) = new GCConnector(List(a),i) {
-    def getConstraints = GuardedCommands(True --> Neg(Var(Utils.flowVar(a,i))))
+    def getConstraints = Formula(True --> Neg(Var(Utils.flowVar(a,i))))
   }
 }

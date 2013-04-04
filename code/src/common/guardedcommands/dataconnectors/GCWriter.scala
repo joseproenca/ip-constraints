@@ -19,7 +19,7 @@ class GCWriter (val x: String, uid: Int, var data: List[Any]) extends GCConnecto
 //  def this(x: String, uid: Int, dt: List[Int]) = this(x, uid, dt.map(Int.box(_)))
   def this(x: String, uid: Int) = this(x, uid, Nil: List[Any])
 
-  private val nfConstr: GuardedCommands = !xv
+  private val nfConstr: Formula = !xv
 
   //var constraints = loadConstraints
 
@@ -29,7 +29,7 @@ class GCWriter (val x: String, uid: Int, var data: List[Any]) extends GCConnecto
         xv --> (xv := data.head)//(Var(flowVar(x,uid)) --> DataAssgn(dataVar(x,uid),data.head))
 
       else if (useCC3) throw new Exception("CC3 not implemented")
-      else GuardedCommands()
+      else Formula()
     }
     else nfConstr
   }

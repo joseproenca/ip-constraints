@@ -3,17 +3,15 @@ package common.choco
 import choco.cp.solver.CPSolver
 import choco.cp.model.CPModel
 import choco.kernel.common.logging.{Verbosity, ChocoLogging}
-import genericconstraints.Buffer
 import scala.collection.JavaConversions._
 import choco.Choco
 import choco.kernel.model.variables.integer.IntegerVariable
-import common.{Utils, Constraints}
+import common.{Buffer, Utils, Constraints}
 import Utils._
 import choco.cp.solver.search.integer.branching.AssignVar
 import choco.cp.solver.search.integer.varselector.StaticVarOrder
 import choco.kernel.solver.variables.integer.IntDomainVar
 import choco.cp.solver.search.integer.valiterator.IncreasingDomain
-import common.Constraints
 
 /**
  * Created by IntelliJ IDEA.

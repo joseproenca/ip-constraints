@@ -3,7 +3,7 @@ package common.benchmarks
 import _root_.choco.kernel.model.variables.integer.IntegerExpressionVariable
 import _root_.choco.Choco
 import z3.scala.{Z3Config, Z3AST, Z3Context}
-import common.guardedcommands.GuardedCommands
+import common.guardedcommands.Formula
 import common.guardedcommands.z3.Z3
 import common._
 import common.guardedcommands.dataconnectors.ConstraintGen._
@@ -49,7 +49,7 @@ object AllSyncTransaction extends App {
   //////////////////////////
 
   def genTransaction(pre: Predicate, post: Predicate, f: common.Function, finv: common.Function,
-                      in: String, out: String, aborted: String, abort: String, uid: String): GuardedCommands = {
+                      in: String, out: String, aborted: String, abort: String, uid: String): Formula = {
     filter(in,"a"+uid,pre) ++
     transf("a"+uid,"b"+uid,f) ++
     filter("b"+uid,out,post) ++
@@ -60,7 +60,7 @@ object AllSyncTransaction extends App {
     merger("c"+uid,"f"+uid,aborted)
   }
 
-  def genTransaction(seed:Int,invf: common.Function): GuardedCommands =
+  def genTransaction(seed:Int,invf: common.Function): Formula =
     genTransaction(new PreCond(seed),new PostCond(seed),new SomeFunc(seed),invf,
                   "x"+math.abs(seed),"x"+(math.abs(seed)+1),
                   "y"+math.abs(seed),"y"+(math.abs(seed)+1),math.abs(seed).toString)
@@ -68,7 +68,7 @@ object AllSyncTransaction extends App {
 
 
   ////// REMOVE!! /////
-  def genTransations(max:Int,failAt:Int): GuardedCommands = {
+  def genTransations(max:Int,failAt:Int): Formula = {
     var res = genTransaction(1,invFunc)
     for (seed <- 2 to max) {
       if (seed == failAt) res ++= genTransaction(-1 * seed,invFunc)
@@ -93,7 +93,7 @@ object AllSyncTransaction extends App {
   val invFunc = new InvFunc
 
   ////////////////////////
-  def genParTransations(in:String,max:Int): GuardedCommands = {
+  def genParTransations(in:String,max:Int): Formula = {
     var res = genTransaction(1,invFunc) ++
       sync(in,"x1") ++
 //    println("empty writer for y2")

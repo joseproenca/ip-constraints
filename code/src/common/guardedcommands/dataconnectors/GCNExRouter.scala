@@ -36,7 +36,7 @@ class GCNExRouter(src: String, snks: List[String], uid: Int) extends GCConnector
   val c2 = orSnks --> v(src)
   val c3 = if (snks.tail.isEmpty) True else Neg(genSnkAnd(snks))
 
-  var constraints = GuardedCommands(
+  var constraints = Formula(
     c1,
     c2,
     c3
@@ -48,7 +48,7 @@ class GCNExRouter(src: String, snks: List[String], uid: Int) extends GCConnector
 
   def getConstraints = constraints
 
-  //  var constraints = GuardedCommands(Set(
+  //  var constraints = Formula(Set(
 //    av --> SGuard(bv or cv),
 //    (bv or cv) --> SGuard(av),
 //    True --> SGuard(Neg(bv and cv)),

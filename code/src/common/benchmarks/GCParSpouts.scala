@@ -29,13 +29,13 @@ object GCParSpouts extends App {
   val justInit = if (args.size > 2) args(2) startsWith "i"
                  else               false
 
-  var problem = GuardedCommands()
+  var problem = Formula()
 
   if (n > 0)
     problem ++=
       ( new GCSSpout("b1","c1",0).getConstraints ++
-        GuardedCommands(True --> Var(flowVar("a1",0))) ++
-        GuardedCommands(True --> Var(flowVar("d1",0))) ++
+        Formula(True --> Var(flowVar("a1",0))) ++
+        Formula(True --> Var(flowVar("d1",0))) ++
         new GCFilter("b1","a1",0,IntPred(dataVar("b1",0),new LT(1))).getConstraints ++
         new GCFilter("c1","d1",0,IntPred(dataVar("c1",0),new GT(1))).getConstraints
       )

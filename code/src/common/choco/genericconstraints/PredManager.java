@@ -11,9 +11,9 @@ import choco.kernel.model.variables.integer.IntegerExpressionVariable;
 import choco.kernel.model.variables.integer.IntegerVariable;
 import choco.kernel.solver.Solver;
 import choco.kernel.solver.constraints.SConstraint;
+import common.Buffer;
 import common.Function;
 import common.Predicate;
-import common.Utils;
 
 import java.util.ArrayList;
 import java.util.List;

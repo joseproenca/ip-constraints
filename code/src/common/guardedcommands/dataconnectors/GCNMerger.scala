@@ -38,7 +38,7 @@ class GCNMerger(srcs: List[String], snk: String, uid: Int) extends GCConnector(s
     for (src <- srcs) yield v(src) --> (v(snk) := v(src)) //VarAssgn(dataVar(snk,uid),dataVar(src,uid))
 
 
-  var constraints = GuardedCommands(
+  var constraints = Formula(
     c1,
     c2,
     c3

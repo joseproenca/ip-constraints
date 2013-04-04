@@ -4,12 +4,12 @@ import common.{CBuilder, Utils, Connector}
 import Utils._
 
 /**
- * Connector defined with guarded commands ([[common.guardedcommands.GuardedCommands]]).
+ * Connector defined with guarded commands ([[common.guardedcommands.Formula]]).
  * Each concrete connector will extend this class.
  *
  * Created by jose on 06/06/12.
  */
-abstract class GCConnector(ends: List[String], uid: Int = 0) extends Connector[GCSolution,GuardedCommands](ends,uid) {
+abstract class GCConnector(ends: List[String], uid: Int = 0) extends Connector[GCSolution,Formula](ends,uid) {
   useData = true // data by default
 
 
@@ -21,7 +21,7 @@ abstract class GCConnector(ends: List[String], uid: Int = 0) extends Connector[G
    * @param other The other connector to be composed
    * @return The composed connector
    */
-  def ++(other: Connector[GCSolution, GuardedCommands]): Connector[GCSolution,GuardedCommands] =
+  def ++(other: Connector[GCSolution, Formula]): Connector[GCSolution,Formula] =
     (this,other) match {
       case (x:ComplexConnector,_) => x +++ other
       case (_,x:ComplexConnector) => x +++ this
@@ -38,7 +38,7 @@ abstract class GCConnector(ends: List[String], uid: Int = 0) extends Connector[G
 //  // adds to "c" the sync constraints wrt the ends shared with "from"
 //  // TODO: fix based on useData or not.
 //  // NOTE: direction IS important!
-//  def sync(from: AnyRef, c: GuardedCommands) = {
+//  def sync(from: AnyRef, c: Formula) = {
 //    if (connections contains from) {
 //      val glue: Set[GuardedCom]= for ((end,oend,ouid) <- connections(from))
 //        yield
@@ -60,8 +60,8 @@ abstract class GCConnector(ends: List[String], uid: Int = 0) extends Connector[G
 //  }
 //
 //// adds to "c" the border constraints wrt the ends shared with "from"
-////  def border(from: AnyRef, c: GuardedCommands) = null
-//  def border(from:AnyRef,c:GuardedCommands) = {
+////  def border(from: AnyRef, c: Formula) = null
+//  def border(from:AnyRef,c:Formula) = {
 //    var res = c
 //    if (connections contains from) {
 //      val connConstr: Set[GuardedCom] = for ((end,_,_) <- connections(from))
@@ -76,13 +76,13 @@ abstract class GCConnector(ends: List[String], uid: Int = 0) extends Connector[G
 }
 
 object GCConnector {
-  implicit object GCBuilder extends CBuilder[GCSolution,GuardedCommands] {
-    def sync(e1: String, id1: Int, e2: String, id2: Int): GuardedCommands = {
+  implicit object GCBuilder extends CBuilder[GCSolution,Formula] {
+    def sync(e1: String, id1: Int, e2: String, id2: Int): Formula = {
       val sr = Var(flowVar(e1,id1))
       val sk = Var(flowVar(e2,id2))
       st2GC((sr <-> sk) and (sr := sk))
     }
-    def noflow(end: String, uid: Int): GuardedCommands =
+    def noflow(end: String, uid: Int): Formula =
       st2GC(!mkVar(end,uid))
   }
 }

@@ -1,12 +1,12 @@
 package common.guardedcommands.chocox
 
 import common.guardedcommands._
-import common.choco.genericconstraints.{PredManager, XPredManager, Buffer}
+import common.choco.genericconstraints.{PredManager}
 import choco.kernel.model.variables.integer.IntegerVariable
 import choco.kernel.model.constraints.{Constraint => ChocoConstr}
 import common.choco.ChoSolution
 import choco.cp.solver.CPSolver
-import common.{Predicate, Utils}
+import common.{Buffer, Predicate, Utils}
 import choco.Choco
 import collection.mutable
 import choco.kernel.common.logging.{Verbosity, ChocoLogging}
@@ -17,6 +17,9 @@ import collection.mutable.{Set => MutSet, Map => MutMap}
  * Created with IntelliJ IDEA.
  *
  * Created by jose on 05/02/13.
+ *
+ * Static library of functions to convert from guarded commands to Choco constraints,
+ * using
  */
 object ChocoX {
   type VarMap     = MutMap[String, IntegerVariable]
@@ -24,7 +27,7 @@ object ChocoX {
   type FunHash    = MutMap[Integer, (common.Function, IntegerVariable)]
   type NewPredMap = MutMap[(Predicate,String), IntegerVariable]
 
-  private def optimChocoVars(gcs: GuardedCommands,vars: VarMap) {
+  private def optimChocoVars(gcs: Formula,vars: VarMap) {
     for (gc <- gcs.commands)
       if (gc.g == True)
         optimChocoVars(gc.st,vars)
@@ -105,7 +108,7 @@ object ChocoX {
    * @param buf
    * @return
    */
-  def gc2chocox(gcs: GuardedCommands,buf: Buffer)
+  def gc2chocox(gcs: Formula,buf: Buffer)
       :(VarMap,Iterable[ChocoConstr],DataHash,FunHash,Buffer,NewPredMap) = {
     val chocos   = MutSet[ChocoConstr]()
     val vm       = MutMap[String, IntegerVariable]()
@@ -189,7 +192,7 @@ object ChocoX {
   }
 
 
-  def solve(gcs: GuardedCommands,buf: Buffer): Option[CXSolution] = {
+  def solve(gcs: Formula,buf: Buffer): Option[CXSolution] = {
     val DEBUG = false
     ChocoLogging.setVerbosity(Verbosity.OFF)
 

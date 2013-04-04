@@ -4,11 +4,11 @@ import _root_.choco.kernel.model.variables.integer.IntegerExpressionVariable
 import collection.mutable.{Set => MutSet}
 import collection.{Set => GenSet}
 import common._
+import choco.FlowPred
 import scala.Some
 import Utils._
 import common.choco.{ChoConstraints, FlowPred, ConstrBuilder}
-import common.choco.genericconstraints.Buffer
-import common.{IntFunction, IntPredicate, Function, Solution}
+import scala.Some
 
 /**
  * Created with IntelliJ IDEA.

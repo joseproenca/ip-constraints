@@ -5,7 +5,7 @@ import Utils._
 import common.guardedcommands.dataconnectors._
 import common.examples.{LT, GT}
 
-//import common.guardedcommands.GuardedCommands
+//import common.guardedcommands.Formula
 import common.guardedcommands._
 import choco.kernel.model.variables.integer.IntegerExpressionVariable
 import choco.Choco
@@ -27,8 +27,8 @@ object GCSpouts extends App {
 
 
 
-  def genFilters(times: Int): GuardedCommands = {
-    var res = new GuardedCommands()
+  def genFilters(times: Int): Formula = {
+    var res = new Formula()
     for (i <- 0 to (times-1)) {
       res ++= new GCFilter("a","b",i,IntPred(dataVar("a",i),gtwo)).getConstraints ++
               new GCFilter("b","c",i,Neg(IntPred(dataVar("b",i),lfive))).getConstraints
@@ -38,7 +38,7 @@ object GCSpouts extends App {
     res
   }
 
-  def genSpout(): GuardedCommands = {
+  def genSpout(): Formula = {
     new GCSSpout("x","a",0).getConstraints ++
       new GCFilter("x","reader",0,(IntPred(dataVar("x",0),lfive))).getConstraints ++
       new GCReader("reader",0,1).getConstraints
@@ -47,8 +47,8 @@ object GCSpouts extends App {
 
 
   val problem = genFilters(1)  ++ genSpout() ++
-//    GuardedCommands(True --> SGuard(Var(flowVar("reader",0)))) ++
-    GuardedCommands(True --> VarAssgn(dataVar("x",0),dataVar("a",0)))
+//    Formula(True --> SGuard(Var(flowVar("reader",0)))) ++
+    Formula(True --> VarAssgn(dataVar("x",0),dataVar("a",0)))
 
   //  val schedule = genSched(0,true)  ++ new GCWriter("x",0,List(1400)).getConstraints // on, evening  - turn off
   //  val schedule = genSched(0,false) ++ new GCWriter("x",0,List(500)).getConstraints  // off, morning - turn on

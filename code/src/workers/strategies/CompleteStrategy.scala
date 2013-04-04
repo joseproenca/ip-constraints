@@ -1,6 +1,6 @@
 package workers.strategies
 
-import common.guardedcommands.{GuardedCommands, GCSolution}
+import common.guardedcommands.{Formula, GCSolution}
 import common.{Constraints, Solution}
 
 
@@ -29,8 +29,8 @@ class CompleteStrategy[S <: Solution, C <: Constraints[S, C]] extends Strategy[S
 
 object CompleteStrategy {
   implicit object CompleteStrategyBuilder
-    extends StrategyBuilder[GCSolution, GuardedCommands, CompleteStrategy[GCSolution, GuardedCommands]] {
-    def apply = new CompleteStrategy[GCSolution, GuardedCommands]()
+    extends StrategyBuilder[GCSolution, Formula, CompleteStrategy[GCSolution, Formula]] {
+    def apply = new CompleteStrategy[GCSolution, Formula]()
 
   }
 }

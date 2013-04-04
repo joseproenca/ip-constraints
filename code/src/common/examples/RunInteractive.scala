@@ -3,7 +3,7 @@ package common.examples
 import workers.{Deployer, Node}
 import workers.strategies.HybridStrategy
 import workers.strategies.HybridStrategy.HybridStrategyBuilder
-import common.guardedcommands.{GuardedCommands => C,GCSolution => S}
+import common.guardedcommands.{Formula => C,GCSolution => S}
 import common.{Predicate, Function}
 import common.Utils._
 import common.guardedcommands.dataconnectors.ConnectorGen._

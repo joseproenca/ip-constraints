@@ -21,11 +21,11 @@ class GCSimpleVarFilter(an : String, bn : String, pred: Predicate, uid: Int)
   var data: Option[AnyRef] = None
 
   def getConstraints =
-    if (!data.isDefined)  GuardedCommands(
+    if (!data.isDefined)  Formula(
       a --> (a :< pred),
       !b
     )
-    else GuardedCommands(
+    else Formula(
       a --> (a :< pred),
       b --> (b := data.get)
     )

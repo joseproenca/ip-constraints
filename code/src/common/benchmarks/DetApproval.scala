@@ -1,7 +1,7 @@
 package common.benchmarks
 
 import common.guardedcommands.dataconnectors.GCMerger
-import common.guardedcommands.GuardedCommands
+import common.guardedcommands.Formula
 import common._
 import common.{Predicate, Solution, Utils}
 import Utils._
@@ -32,10 +32,10 @@ object DetApproval extends App {
 
 
 
-  def genMergers(height:Int): GuardedCommands= {
+  def genMergers(height:Int): Formula= {
 //    val size = pow(2,height)
     var srcs = List("x")
-    var res = GuardedCommands()
+    var res = Formula()
     for (level <- 1 to height) {
       var newsrcs = List[String]()
       for (x <- srcs) {

@@ -3,8 +3,7 @@ package common.guardedcommands.chocox
 import common.choco.ChoSolution
 import choco.cp.solver.CPSolver
 import choco.kernel.model.variables.integer.IntegerVariable
-import common.{Predicate, EmptySol, Solution}
-import common.choco.genericconstraints.Buffer
+import common.{Buffer, Predicate, EmptySol, Solution}
 import common.guardedcommands.GCSolution
 
 /**

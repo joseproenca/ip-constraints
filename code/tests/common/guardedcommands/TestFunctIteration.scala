@@ -28,9 +28,9 @@ class TestFunctIteration extends FunSpec {
       new GCFilter("a","b",0,lfivex("a")).getConstraints ++
       new GCFilter("b","c",0,gtwox("b")).getConstraints ++
       new GCTransf("c","d",0,double).getConstraints ++
-      GuardedCommands(True --> IntAssgn(dataVar("z",0),2)) ++
-      GuardedCommands(True --> Var(flowVar("z",0)))
-    val res1 = c1.solve
+      Formula(True --> IntAssgn(dataVar("z",0),2)) ++
+      Formula(True --> Var(flowVar("z",0)))
+    val res1 = c1.solveIterative
     if (res1.isDefined) println("solved:\n"+res1.get)
     else println("no sol")
 
@@ -41,8 +41,8 @@ class TestFunctIteration extends FunSpec {
       new GCFilter("a","b",0,lfivex("a")).getConstraints ++
       new GCFilter("b","c",0,gtwox("b")).getConstraints ++
       new GCTransf("c","d",0,double).getConstraints ++
-      GuardedCommands(True --> Var(flowVar("b",0)))
-    val res2 = c2.solve
+      Formula(True --> Var(flowVar("b",0)))
+    val res2 = c2.solveIterative
     if (res2.isDefined) println("solved:\n"+res2.get)
     else println("no sol")
 
@@ -53,8 +53,8 @@ class TestFunctIteration extends FunSpec {
       new GCFilter("a","b",0,lfivex("a")).getConstraints ++
       new GCFilter("b","c",0,gtwox("b")).getConstraints ++
       new GCTransf("c","d",0,double).getConstraints ++
-      GuardedCommands(True --> Var(flowVar("a",0)))
-    val res3 = c3.solve
+      Formula(True --> Var(flowVar("a",0)))
+    val res3 = c3.solveIterative
     if (res3.isDefined) println("solved:\n"+res3.get)
     else println("no sol")
 
@@ -121,8 +121,8 @@ class TestFunctIteration extends FunSpec {
       new GCFilter("a","b",0,lfivex("a")).getConstraints ++
       new GCFilter("b","c",0,gtwox("b")).getConstraints ++
       new GCTransf("c","d",0,double).getConstraints ++
-      GuardedCommands(True --> IntAssgn(dataVar("z",0),2)) ++
-      GuardedCommands(True --> Var(flowVar("b",0)))
+      Formula(True --> IntAssgn(dataVar("z",0),2)) ++
+      Formula(True --> Var(flowVar("b",0)))
     val res4 = c4.solveChoco
     if (res4.isDefined) println("solved:\n"+res4.get)
     else println("no sol")
@@ -131,7 +131,7 @@ class TestFunctIteration extends FunSpec {
 //    val c5=
 //      new GCFilter("a","b",0,lfivex("a")).getConstraints ++
 //      new GCFilter("b","c",0,gtwox("b")).getConstraints ++
-//      GuardedCommands(True --> SGuard(Var(flowVar("b",0))))
+//      Formula(True --> SGuard(Var(flowVar("b",0))))
 //    val res5 = c5.solveChocoSat
 //    if (res5.isDefined) println("solved:\n"+res5.get.pretty)
 //    else println("no sol")
@@ -142,7 +142,7 @@ class TestFunctIteration extends FunSpec {
       new GCFilter("a","b",0,lfivex("a")).getConstraints ++
       new GCFilter("b","c",0,gtwox("b")).getConstraints ++
       new GCTransf("c","d",0,double).getConstraints ++
-      GuardedCommands(True --> Var(flowVar("d",0)))
+      Formula(True --> Var(flowVar("d",0)))
     val res6 = c6.solveChoco
     if (res6.isDefined) println("solved:\n"+res6.get)
     else println("no sol")

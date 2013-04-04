@@ -7,7 +7,7 @@ import choco.Choco
 import choco.kernel.solver.Solver
 import choco.cp.solver.CPSolver
 import java.util
-import common.Predicate
+import common.{Buffer, Predicate}
 
 /**
  * Created with IntelliJ IDEA.

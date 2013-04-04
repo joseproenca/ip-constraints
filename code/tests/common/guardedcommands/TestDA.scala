@@ -42,27 +42,27 @@ class TestDA extends FunSpec {
     // data fails first filter, second should be lazy using chocoSAT. No flow on "c", so fail.
     val c1= new GCFilter("a","b",0,oddd("a")).getConstraints ++
             new GCFilter("b","c",0,evend("b")).getConstraints ++
-            GuardedCommands(True --> IntAssgn(dataVar("a",0),2)) ++
-            GuardedCommands(True --> (Var(flowVar("c",0))))
+            Formula(True --> IntAssgn(dataVar("a",0),2)) ++
+            Formula(True --> (Var(flowVar("c",0))))
     // Result is correct, but it is ALWAYS checking all predicates!
 
     // both predicate hold - requirement for at least an end with flow yields dataflow everywhere
     val c2= new GCFilter("a","b",0,evend("a")).getConstraints ++
             new GCFilter("b","c",0,evend("b")).getConstraints ++
-            GuardedCommands(True --> IntAssgn(dataVar("a",0),6)) //++
-//            GuardedCommands(True --> SGuard((Var(flowVar("a",0)))))
+            Formula(True --> IntAssgn(dataVar("a",0),6)) //++
+//            Formula(True --> SGuard((Var(flowVar("a",0)))))
 
     // as c1, but data flow only on "a" and is discarded (no requirement to flow on "c").
     val c3= new GCFilter("a","b",0,oddd("a")).getConstraints ++
             new GCFilter("b","c",0,evend("b")).getConstraints ++
-            GuardedCommands(True --> IntAssgn(dataVar("a",0),2)) //++
-//            GuardedCommands(True --> SGuard(Var(flowVar("b",0))))
+            Formula(True --> IntAssgn(dataVar("a",0),2)) //++
+//            Formula(True --> SGuard(Var(flowVar("b",0))))
 
     // control test with no data filters.
     val c4= new GCSync("a","b",0).getConstraints ++
             new GCSync("b","c",0).getConstraints ++
-            GuardedCommands(True --> IntAssgn(dataVar("a",0),3))// ++
-//            GuardedCommands(True --> SGuard(Var(flowVar("b",0))))
+            Formula(True --> IntAssgn(dataVar("a",0),3))// ++
+//            Formula(True --> SGuard(Var(flowVar("b",0))))
 
     //    println(c1.commands)
 
