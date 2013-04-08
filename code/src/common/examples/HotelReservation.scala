@@ -182,8 +182,13 @@ object HotelReservation extends App {
     transf("3-ap","4-bk",book,cancelB)
 
 
+  val conn5 = writer("1-h",List(Req("r1"))) ++
+    transf("1-h","2-h",srchHotel(1)) ++
+    filter("2-h","3-end",approve) ++
+    reader("3-end",1)
 
   //  testnewsolve.run()
-//  conn3.getConstraints.solveChocoX
-    conn3.step
+  val s = conn3.getConstraints.solveChocoDyn
+  println("---- \n" + s)
+//    conn3.step
 }

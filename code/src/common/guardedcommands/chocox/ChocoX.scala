@@ -1,17 +1,16 @@
 package common.guardedcommands.chocox
 
 import common.guardedcommands._
-import common.choco.genericconstraints.{PredManager}
+import common.choco.genericconstraints.PredManager
 import choco.kernel.model.variables.integer.IntegerVariable
 import choco.kernel.model.constraints.{Constraint => ChocoConstr}
-import common.choco.ChoSolution
 import choco.cp.solver.CPSolver
 import common.{Buffer, Predicate, Utils}
 import choco.Choco
-import collection.mutable
 import choco.kernel.common.logging.{Verbosity, ChocoLogging}
 import choco.cp.model.CPModel
 import collection.mutable.{Set => MutSet, Map => MutMap}
+import common.choco.ChoUtils._
 
 /**
  * Created with IntelliJ IDEA.
@@ -27,55 +26,6 @@ object ChocoX {
   type FunHash    = MutMap[Integer, (common.Function, IntegerVariable)]
   type NewPredMap = MutMap[(Predicate,String), IntegerVariable]
 
-  private def optimChocoVars(gcs: Formula,vars: VarMap) {
-    for (gc <- gcs.commands)
-      if (gc.g == True)
-        optimChocoVars(gc.st,vars)
-    vars
-  }
-
-  private def optimChocoVars(s: Statement,vars: VarMap): Unit = s match {
-    case VarAssgn(v1, v2) =>
-      if (vars contains v1)
-        vars += (v2 -> vars(v1))
-      else {
-        val v2var = getVar(vars,v2)
-        vars += (v1 -> v2var)
-      }
-    case _: Guard =>
-    case IntAssgn(v, d) =>
-    case FunAssgn(v1, v2, f) =>
-    case DataAssgn(v, d) =>
-    case Seq(Nil) =>
-    case Seq(st::sts) => {optimChocoVars(st,vars);optimChocoVars(Seq(sts),vars)}
-  }
-
-
-  /**
-   * Retrieves an IntegerVariable from a map if it exists, or creates one if it does not exist, updating the map.
-   * @param m map from variable names (Strings) to Choco variables (IntegerVariables)
-   * @param name of the variable (String)
-   * @return Choco variable (IntegerVariable) for the given variable name
-   */
-  private def getVar(m: VarMap, name: String): IntegerVariable = {
-    if (m contains name)
-      m(name)
-    else if (Utils.isFlowVar(name)) {
-      val v = Choco.makeBooleanVar(name)
-      m += (name -> v)
-      v
-    }
-    else if (Utils.isPredVar(name)) {
-      val v = Choco.makeBooleanVar(name)
-      m += (name -> v)
-      v
-    }
-    else {
-      val v = Choco.makeIntVar(name) //,-4294967296,4294967296)
-      m += (name -> v)
-      v
-    }
-  }
 
   /**
    * Creates a new boolean variable for Choco for a predicate, if it does not exist yet.
@@ -109,7 +59,7 @@ object ChocoX {
    * @return
    */
   def gc2chocox(gcs: Formula,buf: Buffer)
-      :(VarMap,Iterable[ChocoConstr],DataHash,FunHash,Buffer,NewPredMap) = {
+    :(VarMap,Iterable[ChocoConstr],DataHash,FunHash,Buffer,NewPredMap) = {
     val chocos   = MutSet[ChocoConstr]()
     val vm       = MutMap[String, IntegerVariable]()
     val datahash = MutMap[Integer, Any]()

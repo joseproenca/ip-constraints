@@ -1,6 +1,8 @@
 package common.guardedcommands
 
 import _root_.z3.scala.Z3Context
+import chocobuilder.ChocoBuilderSAT
+import chocodyn.{ChocoDyn, DynSolution}
 import chocox.{ChocoX, CXSolution}
 import org.sat4j.minisat.SolverFactory
 import org.sat4j.core.VecInt
@@ -11,7 +13,6 @@ import Utils._
 import common.choco.{ConstrBuilder,ChoSolution,ChoConstraints,FalseC}
 import scala.Some
 import z3.Z3
-import collection.mutable
 
 /**
  * Created with IntelliJ IDEA.
@@ -116,7 +117,7 @@ class Formula extends Constraints[GCSolution,Formula] {
    */
   def toCNF: (CNF.Core,MutMap[String,Int]) = {
 //    val t0 = System.currentTimeMillis()
-    var vars: MutMap[String, Int] = collectVars
+    val vars: MutMap[String, Int] = collectVars
 
 //    // DEBUGGING
 //    val fv = commands.map(_.fv).foldRight[Set[String]](Set())(_++_)
@@ -389,7 +390,7 @@ class Formula extends Constraints[GCSolution,Formula] {
   ////////////////////////////
 
   def optimiseEqVars: Map[String,String] = {
-    var vars = MutMap[String,String]()
+    val vars = MutMap[String,String]()
     for (gc <- commands)
       gc.optimiseEqVars(vars)
 
@@ -478,10 +479,12 @@ class Formula extends Constraints[GCSolution,Formula] {
   def lazyDataSolve : Option[GCSolution] = {
     buf = Some(new Buffer)
     close()
-    val builders = toBoolConstrBuilders
+    solveDomain()
+
+    val builders = ChocoBuilderSAT.gc2BoolConstrBuilders(this,da)
 //    println("boolean constraints: \n"+builders.mkString("\n"))
 //    val buf = new Buffer // using the same to solve boolean constraints and to get a solution while traversing the tree.
-    val optSolBool = solveChocoBool(builders)
+    val optSolBool = ChocoBuilderSAT.solveChocoBool(buf.get,da,builders)
 
     if (!optSolBool.isDefined)
       return None
@@ -498,27 +501,28 @@ class Formula extends Constraints[GCSolution,Formula] {
       None
   }
 
-  /**
-   * Predicate abstraction + Choco (as SAT)
-   * Optimised Choco: lazy constraints + variable ordering
-//   * Requires buf != None
-   * @return Boolean solution for the abstract constraints.
-   */
-  def solveChocoBool : Option[GCBoolSolution] = {
-    buf = Some(new Buffer)
-    close()
-    val builders = toBoolConstrBuilders
-    //    println("#> solving abst using choco SAT cnf - "+da.pp)
-    //    println("builder: "+builders.mkString("\n"))
-    solveChocoBool(builders)
-  }
-
-  /** Requires buf != None */
-  private def solveChocoBool(builders: Iterable[ConstrBuilder]) : Option[GCBoolSolution] = {
-    if (!buf.isDefined) throw new RuntimeException("Required buffer not defined.")
-    val choSol = ChoConstraints(builders).solve(da.guessOrder,buf.get)
-    for (s <- choSol) yield new GCBoolSolution(s.sol2map)
-  }
+//  /**
+//   * Predicate abstraction + Choco (as SAT)
+//   * Optimised Choco: lazy constraints + variable ordering
+////   * Requires buf != None
+//   * @return Boolean solution for the abstract constraints.
+//   */
+//  def solveChocoBool : Option[GCBoolSolution] = {
+//    buf = Some(new Buffer)
+//    close()
+//    solveDomain()
+//    val builders = ChocoBuilderSAT.gc2BoolConstrBuilders(this,da)
+//    //    println("#> solving abst using choco SAT cnf - "+da.pp)
+//    //    println("builder: "+builders.mkString("\n"))
+//    solveChocoBool(builders)
+//  }
+//
+//  /** Requires buf != None */
+//  private def solveChocoBool(builders: Iterable[ConstrBuilder]) : Option[GCBoolSolution] = {
+//    if (!buf.isDefined) throw new RuntimeException("Required buffer not defined.")
+//    val choSol = ChoConstraints(builders).solve(da.guessOrder,buf.get)
+//    for (s <- choSol) yield new GCBoolSolution(s.sol2map)
+//  }
 
 
   /**
@@ -531,6 +535,19 @@ class Formula extends Constraints[GCSolution,Formula] {
     close()
     ChocoX.solve(this,buf.get)
   }
+
+  /**
+   * Solve solutions using Choco and external predicates/functions, based on a dynamic map from ints to data values.
+   * @return Solution for the data constraints.
+   */
+  def solveChocoDyn: Option[DynSolution] = {
+    //    ChocoX.solve(getConstraints)
+    buf = Some(new Buffer)
+    close()
+    ChocoDyn.solve(this,buf.get)
+  }
+
+
   /////////////////////////
   // USING CHOCO FOR SMT //
   /////////////////////////
@@ -565,13 +582,14 @@ class Formula extends Constraints[GCSolution,Formula] {
    */
   def solveChocoSat : Option[GCSolution] = {
     buf = Some(new Buffer)
+    solveDomain()
     // solveDomain; toCNF; solveBool?; [partialEval; quotient; dataAssign(done?); solveData(done?); incrementAndSolve?]
     val time = System.currentTimeMillis()
 //    val buf = new Buffer
-    val builders = toBoolConstrBuilders
+    val builders = ChocoBuilderSAT.gc2BoolConstrBuilders(this,da)
 //    println("#> solving abst using choco SAT cnf - "+da.pp)
 //    println("builder: "+builders.mkString("\n"))
-    val optSolBool = solveChocoBool(builders)
+    val optSolBool = ChocoBuilderSAT.solveChocoBool(buf.get,da,builders)
 //    log.println("[Cho/SAT solve] "+(System.currentTimeMillis()-time))
     if (!optSolBool.isDefined)
       return None
@@ -627,22 +645,10 @@ class Formula extends Constraints[GCSolution,Formula] {
         }
       }
     }
-    (solveChocoBool(newBuilders),newBuilders)
+    (ChocoBuilderSAT.solveChocoBool(buf.get,da,newBuilders),newBuilders)
   }
 
 
-  /**
-   * Calculate the choco integer constraints for the abstract (SAT) problem.
-   * @return A constraint builder for choco constraints.
-   */
-  private def toBoolConstrBuilders : Iterable[ConstrBuilder] = {
-    solveDomain()
-
-//    println("&& domain solved: "+da.pp)
-
-    for (com <- commands)
-      yield com.toBoolConstrBuilder(da)
-  }
 
 
   ///////////////////////

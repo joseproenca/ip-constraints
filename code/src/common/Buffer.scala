@@ -30,18 +30,39 @@ class Buffer {
   def calculate(functs:List[Function],d:Any): Any = functs match {
     case Nil => d
     case (f: Function)::(fs: List[Function]) =>
-      if (calculatedF contains (f,d)) {
-//        println("# buffered func #")
-        calculate(fs,calculatedF((f,d)))
-      }
-      else {
-        val res = f.calculate(d)
-//        println("# adding "+f+"("+d+") -> "+res+" to buffer "+hashCode())
-        calculatedF += (f,d) -> res
-//        print("# Calc func - "+res+" ")
-        calculate(fs,res)
-      }
+      calculate(fs,calculate(f,d))
+//      if (calculatedF contains (f,d)) {
+////        println("# buffered func #")
+//        calculate(fs,calculatedF((f,d)))
+//      }
+//      else {
+//        val res = f.calculate(d)
+////        println("# adding "+f+"("+d+") -> "+res+" to buffer "+hashCode())
+//        calculatedF += (f,d) -> res
+////        print("# Calc func - "+res+" ")
+//        calculate(fs,res)
+//      }
   }
+
+  /**
+   * Calculate the result of function using a *caching* mechanism
+   * @param funct Functions f to be applied
+   * @param d Data value to be passed to the f
+   * @return f(d)
+   */
+  def calculate(funct: Function, d:Any): Any =
+    if (calculatedF contains (funct,d)) {
+//              println("# buffered func #")
+      calculatedF((funct,d))
+    }
+    else {
+      val res = funct.calculate(d)
+//              println("# adding "+funct+"("+d+") -> "+res+" to buffer "+hashCode())
+      calculatedF += (funct,d) -> res
+//              print("# Calc func - "+res+" ")
+      res
+    }
+
 
   /**
    * Apply functions and then a predicate to a data value, using a *caching* mechanism

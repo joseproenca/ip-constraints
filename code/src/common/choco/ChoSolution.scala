@@ -3,7 +3,7 @@ package common.choco
 import choco.kernel.model.variables.integer.IntegerVariable
 import choco.cp.solver.CPSolver
 import scala.collection.mutable.{Map => MuMap}
-import common.{Utils, Solution, EmptySol}
+import common.{Solution, EmptySol}
 
 /**
  * Created by IntelliJ IDEA.

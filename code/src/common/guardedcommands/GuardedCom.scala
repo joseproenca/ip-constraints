@@ -82,16 +82,6 @@ case class GuardedCom(g:Guard, st: Statement) {
     g.toConstrBuilder --> st.toConstrBuilder
   }
 
-  /**
-   * Predicate abstraction + convertion to ConstrBuilder (core of Choco constraints).
-   * All predicates are treated as lazy impure functions.
-   * @param da
-   * @return
-   */
-  def toBoolConstrBuilder(da: DomainAbst): ConstrBuilder = {
-    g.toBoolConstrBuilder --> st.toBoolConstrBuilder(da)
-  }
-
   def partialEval(sol:Solution): PEval = { //(Map[String,Int], Map[String,String]) = {
     if (g.eval(sol)) {
 //      println("  # PE ("+g.toString+"): "+st.toString)
@@ -258,20 +248,8 @@ abstract sealed class Guard extends Statement{
     case And(g1, g2) => g1.toConstrBuilder and g2.toConstrBuilder
     case Or(g1, g2) => g1.toConstrBuilder or g2.toConstrBuilder
     case Neg(g) => common.choco.Neg(g.toConstrBuilder)
-    case Impl(g1, g2) => g1.toBoolConstrBuilder --> g2.toBoolConstrBuilder
-    case Equiv(g1, g2) => g1.toBoolConstrBuilder <-> g2.toBoolConstrBuilder
-    case True => common.choco.TrueC
-  }
-
-  def toBoolConstrBuilder: ConstrBuilder = this match {
-    case Var(name) => common.choco.Var(name)
-    case IntPred(v, p) => common.choco.Var(predVar(v,p,List()))//common.choco.FlowPred(p.choPred,v)
-    case Pred(v, p) => common.choco.Var(predVar(v,p,List()))
-    case And(g1, g2) => g1.toBoolConstrBuilder and g2.toBoolConstrBuilder
-    case Or(g1, g2) =>  g1.toBoolConstrBuilder or  g2.toBoolConstrBuilder
-    case Neg(g) => common.choco.Neg(g.toBoolConstrBuilder)
-    case Impl(g1, g2) => g1.toBoolConstrBuilder --> g2.toBoolConstrBuilder
-    case Equiv(g1, g2) => g1.toBoolConstrBuilder <-> g2.toBoolConstrBuilder
+    case Impl(g1, g2) => g1.toConstrBuilder --> g2.toConstrBuilder  // changed from toBoolConstrBuilder
+    case Equiv(g1, g2) => g1.toConstrBuilder <-> g2.toConstrBuilder // changed from toBoolConstrBuilder
     case True => common.choco.TrueC
   }
 
@@ -490,65 +468,6 @@ abstract sealed class Statement {
     case Seq(s::ss) => s.toConstrBuilder and Seq(ss).toConstrBuilder
   }
 
-  /**
-   * Similar to toCNF, performs predicate abstraction and returns a boolean formula.
-   * However, it produces a Choco constraint instead of a CNF formula.
-   * Uses lazy constraints.
-   * @param da domain abstraction (what needs to be precomputed)
-   * @return Boolean Choco constraint (constraint builder)
-   */
-  def toBoolConstrBuilder(da: DomainAbst): ConstrBuilder = this match {
-    case g: Guard => g.toBoolConstrBuilder
-    case IntAssgn(v, d) => DataAssgn(v,Int.box(d)).toBoolConstrBuilder(da)
-    case DataAssgn(v, d) => //common.choco.DataAssgn(v,d)
-      // INSTEAD OF CALCULATING, CREATE A LAZY CONSTRAINT!
-      // TODO: CREATE new temp var 'predvar2(v,pred,fs)' - it will be the output var of the lazy pred (to confirm...)
-      var res:ConstrBuilder = TrueC
-      for ((pred,fs,xflow) <- da.domainWithEnd(v)) {
-
-//        println("added LazyPred("+predVar(v,pred,fs)+","+data2flow(v)+","+data2flow(xflow)+","+fs+")")
-        res = res and LazyPred(predVar(v,pred,fs),data2flow(v),data2flow(xflow),d,pred,fs)
-      }
-
-      //        var newd = d
-      //        for (f<-fs.reverse) newd = f.calculate(newd)
-      //        if (pred.check(newd))
-      //          res = res and common.choco.Var(predVar(v,pred,fs))
-      //        else
-      //          res = res and common.choco.Neg(common.choco.Var(predVar(v,pred,fs)))
-
-      res
-
-    case VarAssgn(v1, v2) =>
-      val (d1,d2) = (da.domain(v1),da.domain(v2))
-      var res: ConstrBuilder= TrueC
-      for ((pred,fs) <- d2)
-        if (d1 contains (pred,fs)) {
-          val t = common.choco.VarEq(predVar(v1,pred,fs),predVar(v2,pred,fs))
-          res = res and t
-        }
-      res
-
-    case FunAssgn(v1,v2,f) =>
-//      VarAssgn(v1,v2).toBoolConstrBuilder(da)
-      val (d1,d2) = (da.domain(v1),da.domain(v2))
-//      println("domains in fun assign:\n"+d1+"\n"+d2)
-      var res: ConstrBuilder= TrueC
-      for ((pred,fs) <- d1)
-        if (d2 contains (pred,fs++List(f))) {
-          val t = common.choco.VarEq(predVar(v1,pred,fs),predVar(v2,pred,fs++List(f)))
-//          println("adding "+predVar(v1,pred,fs)+" == "+predVar(v2,pred,fs++List(f)))
-          res = res and t
-        }
-//        else
-//          println("NOT adding "+predVar(v1,pred,fs)+" == "+predVar(v2,pred,fs++List(f)) ++
-//          "  --  "+d2+" does  not contain "+(pred,fs++List(f)))
-      res
-
-    case Seq(Nil) => common.choco.TrueC
-    case Seq(s::ss) => s.toBoolConstrBuilder(da) and Seq(ss).toBoolConstrBuilder(da)
-//    case g: Guard => super.toBoolConstrBuilder
-  }
 
   def partialEval(sol: Solution): PEval = this match {
     case g: Guard => new PEval(Map(),Map(),Map())

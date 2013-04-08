@@ -1,7 +1,7 @@
 package common.choco
 
-import common.{CBuilder, Utils, Connector}
-import Utils._
+import common.{CBuilder, Connector}
+import common.Utils._
 
 
 /**
