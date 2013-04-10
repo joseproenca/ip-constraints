@@ -1,6 +1,6 @@
 package common.guardedcommands
 
-import _root_.z3.scala.Z3Context
+import _root_.z3.scala.{Z3Config, Z3Context}
 import common.guardedcommands.chocobuilder.{ChocoBuilderInt, ChocoBuilderSAT}
 import chocodyn.{ChocoDyn, DynSolution}
 import chocox.{ChocoX, CXSolution}
@@ -12,7 +12,7 @@ import common.{Buffer, Constraints, Solution, Utils}
 import Utils._
 import common.choco.{ConstrBuilder,ChoSolution,ChoConstraints,FalseC}
 import scala.Some
-import z3.Z3
+import common.guardedcommands.z3.{Z3Solution, Z3}
 
 /**
  * Created with IntelliJ IDEA.
@@ -574,6 +574,12 @@ class Formula extends Constraints[GCSolution,Formula] {
     close()
     ChocoBuilderInt.solveChoco(this)
   }
+
+
+  def solvez3: Option[Z3Solution] = {
+    Z3.solvez3(this)
+  }
+
 
 
 
