@@ -20,6 +20,36 @@ import common.examples.Even
 
 object Z3 {
 
+
+  /**
+   * Solve an integer formula using Z3
+   * @param gcs formula to be solved
+   * @return Possible solution to the formula
+   */
+  def solvez3(gcs: Formula): Option[Z3Solution] = {
+    val z3 = new Z3Context(new Z3Config("MODEL" -> true))
+    val z3ast = gc2z3(gcs,z3)
+    solvez3(z3ast,z3)
+  }
+
+  /**
+   * Solve a data formula using Z3 and predicate abstraction for SAT.
+   * @param gcs formula to be solved
+   * @return possible solution to the formula
+   */
+  def solveboolz3(gcs: Formula): Option[Z3Solution] = {
+    val z3 = new Z3Context(new Z3Config("MODEL" -> true))
+    val z3term = gc2boolz3(gcs,z3)
+    Z3.solvez3(z3term,z3)
+  }
+
+
+  /**
+   * Solve a given z3 term for a given z3 context
+   * @param const term to be solved
+   * @param z3 context
+   * @return possible solution to const
+   */
   def solvez3(const: Z3AST, z3: Z3Context): Option[Z3Solution] = {
     z3.assertCnstr(const)
 
@@ -87,11 +117,16 @@ object Z3 {
     case g: Guard => gc2z3(g,z3)
     case IntAssgn(v, d) => z3.mkEq(z3.mkIntConst(z3.mkStringSymbol(v)),z3.mkInt(d,z3.mkIntSort()))
     case VarAssgn(v1, v2) => z3.mkEq(z3.mkIntConst(z3.mkStringSymbol(v1)),z3.mkIntConst(z3.mkStringSymbol(v2)))
-    case FunAssgn(v1, v2, f) =>
-      if (f.isInstanceOf[IntFunction])
-        z3.mkEq(z3.mkIntConst(z3.mkStringSymbol(v1)),
-          f.asInstanceOf[IntFunction].z3Fun(z3,z3.mkIntConst(z3.mkStringSymbol(v2))))
-      else throw new RuntimeException("General data functions have no associated z3 functions: "+f)
+    case FunAssgn(v1, v2, f:IntFunction) =>
+      z3.mkEq(z3.mkIntConst(z3.mkStringSymbol(v1)),
+        f.z3Fun(z3,List(z3.mkIntConst(z3.mkStringSymbol(v2)))))
+    case NFunAssgn(v1, v2s, f:IntFunction) =>
+      z3.mkEq(z3.mkIntConst(z3.mkStringSymbol(v1)),
+        f.z3Fun(z3, v2s.map((v2:String) => z3.mkIntConst(z3.mkStringSymbol(v2)))))
+    case FunAssgn(v1, v2, notIntF) =>
+      throw new RuntimeException("General data functions have no associated z3 functions: "+notIntF)
+    case NFunAssgn(v1, v2s, notIntF) =>
+      throw new RuntimeException("General data functions have no associated z3 functions: "+notIntF)
     case DataAssgn(v, d) => //throw new RuntimeException("General data assignments not handled with Z3")
       if (d.isInstanceOf[Int])
         z3.mkEq(z3.mkIntConst(z3.mkStringSymbol(v)),z3.mkInt(d.asInstanceOf[Int],z3.mkIntSort()))
@@ -110,11 +145,11 @@ object Z3 {
   /**
    * Converts a guarded command into a Z3 term.
    * @param gcs the guarded command to be converted
-   * @param da the domain abstraction, with the look-ahead for functions and predicates
    * @param z3 the Z3 context, used to build operators and variables
    * @return a Z3 term equivalent to the predicate abstraction of the given guarded command
    */
-  def gc2boolz3(gcs: Formula, da: DomainAbst,z3: Z3Context): Z3AST = {
+  def gc2boolz3(gcs: Formula,z3: Z3Context): Z3AST = {
+    val da = gcs.getDA
     var res = z3.mkTrue()
     for (com <- gcs.commands)
       res = z3.mkAnd(res,gc2boolz3(com,da,z3))
@@ -185,6 +220,10 @@ object Z3 {
           res = z3.mkAnd(res,t)
         }
       res
+    case NFunAssgn(v,v2s,f) => v2s match {
+      case List(v2) => gc2boolz3(FunAssgn(v,v2,f),da,z3)
+      case Nil => throw new Exception("Predicate abstraction cannot be applied to n-ary functions - "+f)
+    }
     case Seq(Nil) => z3.mkTrue()
     case Seq(x::xs) => z3.mkAnd(gc2boolz3(x,da,z3),gc2boolz3(Seq(xs),da,z3))
   }
@@ -285,8 +324,10 @@ object Z3 {
    */
 
 
-
-
+  /**
+   * Test the usage of z3
+   * @param args
+   */
   def main(args:Array[String]) {
     val cfg = new Z3Config("MODEL" -> true) // required if you plan to query models of satisfiable constraints
     val z3 = new Z3Context(cfg)

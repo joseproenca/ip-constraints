@@ -78,10 +78,6 @@ case class GuardedCom(g:Guard, st: Statement) {
   }
 
 
-  def toConstrBuilder: ConstrBuilder = {
-    g.toConstrBuilder --> st.toConstrBuilder
-  }
-
   def partialEval(sol:Solution): PEval = { //(Map[String,Int], Map[String,String]) = {
     if (g.eval(sol)) {
 //      println("  # PE ("+g.toString+"): "+st.toString)
@@ -238,21 +234,6 @@ abstract sealed class Guard extends Statement{
   }
 
 
-  override def toConstrBuilder: ConstrBuilder = this match {
-    case Var(name) => common.choco.Var(name)
-    case IntPred(v, p) => common.choco.FlowPred(p.choPred,v) // THIS is the difference with Bool below.
-    case Pred(v, p) => p match {
-      case intp: IntPredicate => common.choco.FlowPred(intp.choPred,v)
-      case _ => throw new Exception("General predicates have no associated choco constraint")
-    }
-    case And(g1, g2) => g1.toConstrBuilder and g2.toConstrBuilder
-    case Or(g1, g2) => g1.toConstrBuilder or g2.toConstrBuilder
-    case Neg(g) => common.choco.Neg(g.toConstrBuilder)
-    case Impl(g1, g2) => g1.toConstrBuilder --> g2.toConstrBuilder  // changed from toBoolConstrBuilder
-    case Equiv(g1, g2) => g1.toConstrBuilder <-> g2.toConstrBuilder // changed from toBoolConstrBuilder
-    case True => common.choco.TrueC
-  }
-
   def eval(sol: Solution): Boolean = this match {
     case Var(name) => sol.hasFlowOn(name)
     case IntPred(v, p) => sol.hasFlowOn(predVar(v,p,List()))
@@ -321,6 +302,7 @@ abstract sealed class Statement {
     case DataAssgn(v, _) => Set(v)
     case VarAssgn(v1, v2) => Set(v1,v2)
     case FunAssgn(v1,v2,_) => Set(v1,v2)
+    case NFunAssgn(v1,vs,_) => vs.toSet + v1
     case Seq(Nil) => Set()
     case Seq(s::ss) => s.fv ++ Seq(ss).fv
 //    case g: Guard => super.fv
@@ -332,12 +314,13 @@ abstract sealed class Statement {
     case DataAssgn(v, _) => s += v
     case VarAssgn(v1, v2) => {s += v1; s += v2}
     case FunAssgn(v1,v2,_) => {s += v1; s += v2}
+    case NFunAssgn(v1,vs,_) => {s += v1; s ++= vs}
     case Seq(Nil) => {}
     case Seq(st::sts) => {st.fv2(s); Seq(sts).fv2(s)}
   }
   def afv2(da:DomainAbst,vs:MutMap[String,Int]): Unit = this match {
     case g: Guard => g.afv2(da,vs)
-    case IntAssgn(v, _) => for ((p,fs) <- da.domain(v)) updD(da,vs,predVar(v,p,fs))
+    case IntAssgn(v, _)  => for ((p,fs) <- da.domain(v)) updD(da,vs,predVar(v,p,fs))
     case DataAssgn(v, _) => for ((p,fs) <- da.domain(v)) updD(da,vs,predVar(v,p,fs))
     case VarAssgn(v1, v2) =>
       for ((p,fs) <- da.domain(v1)) updD(da,vs,predVar(v1,p,fs))
@@ -345,6 +328,10 @@ abstract sealed class Statement {
     case FunAssgn(v1,v2,_) =>
       for ((p,fs) <- da.domain(v1)) updD(da,vs,predVar(v1,p,fs))
       for ((p,fs) <- da.domain(v2)) updD(da,vs,predVar(v2,p,fs))
+    case NFunAssgn(v,v2s,f) => v2s match {
+      case List(v2) => FunAssgn(v,v2,f).afv2(da,vs)
+      case _ => throw new Exception("Predicate abstraction cannot be applied to n-ary functions - "+f)
+    }
     case Seq(Nil) => {}
     case Seq(s::ss) => {s.afv2(da,vs); Seq(ss).afv2(da,vs)}
     //    case g: Guard => super.fv
@@ -367,6 +354,10 @@ abstract sealed class Statement {
     case FunAssgn(v1,v2,f) =>
       da += (v2 -> v1)
       da += (v1, f)
+    case NFunAssgn(v,vs,f) => vs match {
+      case List(v2) => FunAssgn(v,v2,f).solveDomain(da)
+      case _ => throw new Exception("Predicate abstraction cannot be applied to n-ary functions - "+f)
+    }
 //    case g: Guard => super.da
   }
 
@@ -417,6 +408,10 @@ abstract sealed class Statement {
     //      println("conversion: "+res.map(_.mkString(",")).mkString("["," ; ","]"))
       res
 
+    case NFunAssgn(v,vs,f) => vs match {
+      case List(v2) => FunAssgn(v,v2,f).toCNF(vars,da)
+      case _ => throw new Exception("Predicate abstraction cannot be applied to n-ary functions - "+f)
+    }
     case Seq(Nil) => List()
     case Seq(s::ss) => s.toCNF(vars,da) ++ Seq(ss).toCNF(vars,da)
   }
@@ -449,23 +444,12 @@ abstract sealed class Statement {
         if (d2 contains (pred,f::fs)) {
           (Var(predVar(v1,pred,fs)) <-> Var(predVar(v2,pred,f::fs))).toCNF2(vars,da,l)
         }
+    case NFunAssgn(v,vs,f) => vs match {
+      case List(v2) => FunAssgn(v,v2,f).toCNF2(vars,da,l)
+      case _ => throw new Exception("Predicate abstraction cannot be applied to n-ary functions - "+f)
+    }
     case Seq(Nil) => {}
     case Seq(s::ss) => {s.toCNF2(vars,da,l); Seq(ss).toCNF2(vars,da,l) }
-  }
-
-
-  def toConstrBuilder: ConstrBuilder = this match {
-    case g: Guard => g.toConstrBuilder
-    case IntAssgn(v, d) => common.choco.DataAssgn(v,d)
-    case DataAssgn(v, d) =>
-      if (d.isInstanceOf[Int]) common.choco.DataAssgn(v,d.asInstanceOf[Int])
-      else throw new RuntimeException("General data assignments have no associated choco constraint")
-    case VarAssgn(v1, v2) => common.choco.VarEq(v1,v2)
-    case FunAssgn(v1, v2, f) =>
-      if (f.isInstanceOf[IntFunction]) common.choco.FunAssgn(v1,v2,f.asInstanceOf[IntFunction].choFun)
-      else throw new RuntimeException("General data functions have no associated choco constraint")
-    case Seq(Nil) => common.choco.TrueC
-    case Seq(s::ss) => s.toConstrBuilder and Seq(ss).toConstrBuilder
   }
 
 
@@ -484,6 +468,10 @@ abstract sealed class Statement {
     case FunAssgn(v1, v2, f) =>
       if (sol.hasFlowOn(data2flow(v2))) new PEval(Map(),Map(),Map(v2 -> ImSet((v1,f))))
       else new PEval(Map(),Map(),Map())
+    case NFunAssgn(v,vs,f) => vs match {
+      case List(v2) => FunAssgn(v,v2,f).partialEval(sol)
+      case _ => throw new Exception("Predicate abstraction cannot be applied to n-ary functions - "+f)
+    }
     case Seq(Nil) => new PEval(Map(),Map(),Map())
     case Seq(s::ss) =>
       val x1 = s.partialEval(sol)
@@ -499,6 +487,7 @@ abstract sealed class Statement {
     case DataAssgn(v, d) => ppDataVar(v) + " := " + d
     case VarAssgn(v1, v2) => ppDataVar(v1) + " := " + ppDataVar(v2)
     case FunAssgn(v1, v2, f) => ppDataVar(v1) + " := " + f + "(" + ppDataVar(v2) + ")"
+    case NFunAssgn(v1,v2s,f) => ppDataVar(v1) + " := " + f + v2s.map(ppDataVar(_)).mkString("(",",",")")
     case Seq(Nil) => ""
     case Seq(x::Nil) => x.toString
     case Seq(x::xs) => x + " ; " + xs
@@ -507,7 +496,7 @@ abstract sealed class Statement {
 
 }
 
-/// GUARDS
+/// concrete GUARDS
 case class Var(name: String) extends Guard {
   def :=(v:Var): Statement = VarAssgn(flow2data(name),flow2data(v.name))
   def :=(d:Any): Statement = DataAssgn(flow2data(name),d)
@@ -517,6 +506,7 @@ case class Var(name: String) extends Guard {
 //    case _ => DataAssgn(flow2data(name),d)
 //  }
   def :=(f:common.Function,v:Var): Statement = FunAssgn(flow2data(name),flow2data(v.name),f)
+  def :=(f:common.Function,vs:List[Var]): Statement = NFunAssgn(flow2data(name),vs.map(v => flow2data(v.name)),f)
   def :< (p:Predicate): Guard = Pred(flow2data(name),p)
 }
 case class IntPred(v:String, p: IntPredicate) extends Guard
@@ -528,11 +518,12 @@ case class Impl(g1: Guard, g2: Guard) extends Guard
 case class Equiv(g1: Guard, g2: Guard) extends Guard
 case object True extends Guard
 
-/// STATEMENTS
+/// concrete STATEMENTS
 //case class SGuard(g: Guard) extends Statement
 case class IntAssgn(v: String, d: Int) extends Statement
 case class VarAssgn(v1: String, v2: String) extends Statement
 case class FunAssgn(v1:String, v2:String, f: common.Function) extends Statement
+case class NFunAssgn(v1:String,vs:List[String], f: common.Function) extends Statement
 case class DataAssgn(v: String, d: Any) extends Statement
 case class Seq(sts: List[Statement]) extends Statement
 
@@ -540,38 +531,13 @@ case class Seq(sts: List[Statement]) extends Statement
 // CNF
 object CNF {
   type Core = List[Array[Int]]
-
-//  def fv(cnf: CNF.Core): Iterable[Int] = {
-//    var s: MutSet[Int] = MutSet()
-//    for (l <- cnf; v <- l)
-//      if (v<0) s += (v * (-1))
-//      else     s+= v
-//    s
-//  }
-//
-//  def not(s:String) = (-1) * s.hashCode
-//  def v(s:String) = s.hashCode
 }
 
-//class CNF(val cnf:CNF.Core, val vars: Array[String])
 
-
-// More efficient implementation with listbuffers, used in as intermediate
+// More efficient implementation with listbuffers, used as intermediate structure
 object CNF2 {
   type Core = ListBuffer[Array[Int]]
-//
-//  def fv(cnf: CNF.Core): Iterable[Int] = {
-//    var s: MutSet[Int] = MutSet()
-//    for (l <- cnf; v <- l)
-//      if (v<0) s += (v * (-1))
-//      else     s+= v
-//    s
-//  }
-//
-//  def not(s:String) = (-1) * s.hashCode
-//  def v(s:String) = s.hashCode
 }
-//class CNF2(val cnf:CNF2.Core, val vars: Array[String])
 
 
 

@@ -132,6 +132,10 @@ object ChocoX {
       val hash2 = (math.abs(hash) % 21474836) * math.signum(hash)
       f(hash2) = (fn,getVar(vm,v2))
       Choco.eq(getVar(vm,v1),hash2)
+    case NFunAssgn(v,v2s,fun) => v2s match {
+      case List(v2) => gc2chocox(FunAssgn(v,v2,fun),g,vm,b,d,f,np,xps)
+      case _ => throw new Exception("ChocoX (ints as references to creators) does not yet support n-ary functions - "+fun)
+    }
     //////
     case IntAssgn(v, dt) => gc2chocox(DataAssgn(v,Int.box(dt)),g,vm,b,d,f,np,xps)
     case g2: Guard => gc2chocox(g2,vm,b,d,f,np,xps)

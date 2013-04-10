@@ -8,6 +8,7 @@ import common.guardedcommands.z3.Z3
 import common._
 import common.guardedcommands.dataconnectors.ConstraintGen._
 import common.{Solution, IntFunction, Predicate, IntPredicate}
+import common.guardedcommands.dataconnectors.ConstraintGen
 
 /**
  * Created with IntelliJ IDEA.
@@ -268,11 +269,11 @@ class PostCond(seed: Int) extends IntPredicate {
 
 class SomeFunc(seed: Int) extends IntFunction {
   val funFun = (x:Int) => (x*45 + 7) % seed
-  val z3Fun = (z:Z3Context,v:Z3AST) =>
+  val z3Fun = (z:Z3Context,v:List[Z3AST]) =>
     z.mkMod(
       z.mkAdd(
         z.mkMul(
-          v,
+          v.head,
           z.mkInt(45,z.mkIntSort())),
         z.mkInt(7,z.mkIntSort())),
       z.mkInt(seed,z.mkIntSort()))
@@ -284,9 +285,9 @@ class SomeFunc(seed: Int) extends IntFunction {
 
 class InvFunc extends IntFunction {
   val funFun = (x:Int) => x+1000
-  val z3Fun = (z:Z3Context,v:Z3AST) =>
+  val z3Fun = (z:Z3Context,v:List[Z3AST]) =>
     z.mkAdd(
-      v,
+      v.head,
       z.mkInt(1000,z.mkIntSort()))
   val choFun = (x:IntegerExpressionVariable) => x
   // throw new RuntimeException("choco pred not defined")

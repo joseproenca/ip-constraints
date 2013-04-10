@@ -10,29 +10,28 @@ import choco.kernel.solver.constraints.SConstraint;
 import choco.kernel.solver.variables.integer.IntDomainVar;
 import common.Buffer;
 import common.Function;
-import common.Predicate;
+import scala.collection.immutable.List;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
  * <p/>
- * Created by jose on 05/04/13.
+ * Created by jose on 10/04/13.
  */
-public class DynFuncManager extends IntConstraintManager {
+public class DynNFuncManager  extends IntConstraintManager {
     public SConstraint makeConstraint(Solver solver,
                                       IntegerVariable[] variables,
                                       Object parameters,
-                                      List<String> options) {
+                                      java.util.List<String> options) {
         if (solver instanceof CPSolver) {
 //            System.out.println("creating new lazy predicate with data "+((ArrayList<Object>)parameters).get(0));
-//            IntDomainVar[] allVars = new IntDomainVar[variables.length]; // variables.map(solver.getVar(_))
-//            for (int i = 0; i < variables.length; i++) {
-//                allVars[i] = solver.getVar(variables[i]);
-//            }
-            return new DynFunction(
-                    solver.getVar(variables[0]),solver.getVar(variables[1]),solver.getVar(variables[2]),solver.getVar(variables[3]),
+            IntDomainVar[] allVars = new IntDomainVar[variables.length]; // variables.map(solver.getVar(_))
+            for (int i = 0; i < variables.length; i++) {
+                allVars[i] = solver.getVar(variables[i]);
+            }
+            return new DynNFunction(
+                    allVars,
                     ((ArrayList<DataMap>) parameters).get(0),
                     ((ArrayList<Buffer>) parameters).get(1),
                     ((ArrayList<Function>) parameters).get(2)
@@ -45,15 +44,22 @@ public class DynFuncManager extends IntConstraintManager {
     /// STATIC AUXILIARY ///
 
     // boolvar of v1             , datavar of v1, boolvar of v2               , datavar of v2,dm,b,function
-    static Constraint genFunction(IntegerVariable xvar, IntegerVariable xdata, IntegerVariable yvar, IntegerVariable ydata,
+    static Constraint genNFunction(IntegerVariable xvar, IntegerVariable xdata, List<IntegerVariable> yvar, List<IntegerVariable> ydata,
                                   DataMap dm, Buffer buf, Function pred) {
 //        System.out.println("Creating generic predicate - "+xpred.getName()+" - "+pred);
         ArrayList<Object> parameters = new ArrayList<Object>();
         parameters.add(0,dm);
         parameters.add(1,buf);
         parameters.add(2,pred);
-//        System.out.println("### CREATING DYN-FUNCTION");
-        return new ComponentConstraint(DynFuncManager.class, parameters, new IntegerVariable[]{xvar,xdata,yvar,ydata});
+        IntegerVariable[] vars = new IntegerVariable[2+(yvar.size()*2)];
+        vars[0] = xvar;
+        vars[1] = xdata;
+        for (int i=0; i<yvar.size(); i++) {
+            vars[(i+1)*2]   = yvar.apply(i);  // 2, 4, 6...
+            vars[(i+1)*2+1] = ydata.apply(i); // 3, 5, 7...
+        }
+//        System.out.println("### CREATING DYN-N-FUNCTION");
+        return new ComponentConstraint(DynNFuncManager.class, parameters, vars);
     }
 
 }

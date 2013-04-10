@@ -33,6 +33,7 @@ object ChoUtils {
     case _: f.Guard =>
     case f.IntAssgn(v, d) =>
     case f.FunAssgn(v1, v2, f) =>
+    case f.NFunAssgn(v1, vs, f) =>
     case f.DataAssgn(v, d) =>
     case f.Seq(Nil) =>
     case f.Seq(st::sts) => {optimChocoVars(st,vars);optimChocoVars(f.Seq(sts),vars)}

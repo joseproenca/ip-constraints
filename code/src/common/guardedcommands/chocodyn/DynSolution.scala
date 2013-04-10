@@ -69,26 +69,9 @@ class DynSolution(choSol: CPSolver, varMap:Map[String,IntegerVariable],
       val dt = getDataOn(v)
       if (dt.isDefined)
         res += common.Utils.ppVar(k) + " -> " + dt.get + "\n"
-      //      if (choSol.contains(v)) {
-      //        val value = choSol.getVar(v).getVal
-      //        if (datahash contains value)
-      //          res += common.Utils.ppVar(k) + " -> " + datahash(value) + "\n"
-      //        else
-      //          res += common.Utils.ppVar(k) + " -> " + value + "\n"
-      //      }
       else
-        res += common.Utils.ppVar(k) + " -> NOFLOW\n"
-      //      res += k +" '"+v + "'\n"
+        res += common.Utils.ppVar(k) + " -> Undefined\n"
     }
-//    for (((_,s), iv) <- newpred) {
-//      val dt = getDataOn(iv)
-//      if (dt.isDefined)
-//      //        res += common.Utils.ppPredVar(s) + " -> " + dt.get + "\n"
-//      //        res += common.Utils.ppPredVar(iv.getName) + " -> " + dt.get + "\n"
-//        res += iv.getName + " -> " + dt.get + "\n"
-//      else
-//        res += common.Utils.ppPredVar(s) + " -> NOFLOW\n"
-//    }
 
     res
   }

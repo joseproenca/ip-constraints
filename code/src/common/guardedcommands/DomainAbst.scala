@@ -223,7 +223,7 @@ class DomainAbst {
   }
 
 
-  def pp: String = {
+  override def toString: String = {
     var res = ""
     for ((x,ys) <- greater; y <- ys)
       res += (ppFlowVar(y) + " > " + ppFlowVar(x)+", ")

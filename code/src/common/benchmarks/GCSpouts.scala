@@ -76,7 +76,7 @@ object GCSpouts extends App {
     println("quotient:     "+pEval)
     pEval.applyDataAssgn(res.get)
     println("dataAssign:   "+pEval)
-    pEval.solveSimpleData(res.get,problem.da)
+    pEval.solveSimpleData(res.get,problem.getDA)
     println("solveData:    "+pEval)
     //    val mapRest    = problem.applyDataAssgn(res.get)
 //    val newMapRest = problem.solveSimpleData(res.get,mapRest._1,mapRest._2)

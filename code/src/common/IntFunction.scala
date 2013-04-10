@@ -13,7 +13,7 @@ import scala.Predef._
  */
 abstract class IntFunction extends common.Function {
   val choFun: IntegerExpressionVariable => IntegerExpressionVariable
-  val z3Fun: (Z3Context,Z3AST) => Z3AST
+  val z3Fun: (Z3Context,List[Z3AST]) => Z3AST
   val funFun: Int => Int
 
   def calculate(x:Any): Any = {

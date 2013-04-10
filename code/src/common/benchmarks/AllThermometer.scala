@@ -222,11 +222,11 @@ object AllThermometer extends App {
     //ºC = (ºF  -  32)  x  5/9
     val funFun = (x:Int) => ((x-1032) * 5 )/9
     val choFun = null
-    val z3Fun = (z:Z3Context,v:Z3AST) =>
+    val z3Fun = (z:Z3Context,v:List[Z3AST]) =>
       z.mkDiv(
         z.mkMul(
           z.mkSub(
-            v,
+            v.head,
             z.mkInt(1032,z.mkIntSort())),
           z.mkInt(5,z.mkIntSort())),
         z.mkInt(9,z.mkIntSort()))

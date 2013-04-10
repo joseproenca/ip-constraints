@@ -1,7 +1,7 @@
 package common.guardedcommands
 
 import _root_.z3.scala.Z3Context
-import chocobuilder.ChocoBuilderSAT
+import common.guardedcommands.chocobuilder.{ChocoBuilderInt, ChocoBuilderSAT}
 import chocodyn.{ChocoDyn, DynSolution}
 import chocox.{ChocoX, CXSolution}
 import org.sat4j.minisat.SolverFactory
@@ -30,7 +30,7 @@ class Formula extends Constraints[GCSolution,Formula] {
 
   var commands = Set[GuardedCom]()
 //  var eqvars = Set[(String,String)]()
-  var da = DomainAbst()
+  private var da = DomainAbst()
   private var solvedDomain = false
   //  var someVars: Option[MutMap[String,Int]] = None
 
@@ -49,13 +49,14 @@ class Formula extends Constraints[GCSolution,Formula] {
    * @return possible data solution
    */
 //    def solve = lazyDataSolve
-    def solve = solveChocoX
+//    def solve = solveChocoX
+  def solve = solveChocoDyn
 
   /**
    * Collect the domain of every guarded command in field 'da'.
    * Used by 'collectVars'.
    */
-  def solveDomain() {
+  private def solveDomain() {
     if (!solvedDomain) {
       for (c <- commands) c.solveDomain(da)
 //      println(da.pp)
@@ -63,6 +64,17 @@ class Formula extends Constraints[GCSolution,Formula] {
       solvedDomain = true
     }
   }
+
+  /**
+   * Collect the domain invariants of every guarded command.
+   * @return the domain invariants
+   */
+  def getDA: DomainAbst = {
+    solveDomain()
+    da
+  }
+
+
 
   /**
    * Combines the free variables of all guarded commands
@@ -449,7 +461,7 @@ class Formula extends Constraints[GCSolution,Formula] {
 //    close  // OPTMISED in gc2boolz3, based on this.bfv
 
     val t1 = System.currentTimeMillis()
-    val z3term = Z3.gc2boolz3(this,da,z3)
+    val z3term = Z3.gc2boolz3(this,z3)
 //    println("z3 term: "+z3term.toString())
     val optSolBool = Z3.solvez3(z3term,z3)
     val t3 = System.currentTimeMillis()
@@ -560,14 +572,7 @@ class Formula extends Constraints[GCSolution,Formula] {
     // not closing constraints
     // NOW closing
     close()
-    val choConstr = ChoConstraints(toConstBuilders)
-    choConstr.solve
-  }
-
-  private def toConstBuilders:Iterable[ConstrBuilder] = {
-    // not closing constraints
-    for (com <- commands)
-      yield com.toConstrBuilder
+    ChocoBuilderInt.solveChoco(this)
   }
 
 
@@ -676,9 +681,9 @@ class Formula extends Constraints[GCSolution,Formula] {
 
 
 object Formula {
-  def apply(gs: Set[GuardedCom]): Formula = {
+  def apply(gs: Iterable[GuardedCom]): Formula = {
     val g = new Formula()
-    g.commands = gs
+    g.commands = gs.toSet
     g
   }
   def apply(gs: GuardedCom*): Formula = apply(gs.toSet)

@@ -5,19 +5,17 @@ import Utils._
 import common.guardedcommands._
 
 /**
- * Created with IntelliJ IDEA.
- * User: jose
- * Date: 07/06/12
- * Time: 17:21
- * To change this template use File | Settings | File Templates.
+ * Creates a Filter: a lossy sync that loses data exactly when a predicate does not hold.
+ *
+ * Created by jose on 07/06/12.
  */
 
 class GCFilter(a: String, b: String, uid: Int,g: Guard) extends GCConnector(List(a,b), uid) {
-  val av = Var(flowVar(a,uid))
-  val bv = Var(flowVar(b,uid))
+  protected val av = Var(flowVar(a,uid))
+  protected val bv = Var(flowVar(b,uid))
 
   /**
-   * Build guard (formula) from a UnPredicate
+   * Build guard (formula) from a Predicate
    * @param a source end
    * @param b sink end
    * @param uid unique channel id
@@ -28,7 +26,7 @@ class GCFilter(a: String, b: String, uid: Int,g: Guard) extends GCConnector(List
   }
 
   /**
-   * Build guard (formula) from a UnPredicate
+   * Build guard (formula) from a Predicate
    * @param a source end
    * @param b sink end
    * @param uid unique channel id
@@ -40,13 +38,15 @@ class GCFilter(a: String, b: String, uid: Int,g: Guard) extends GCConnector(List
                     else      Neg(Pred(dataVar(a,uid),p)))
 }
 
-  def getConstraints = Formula(
+  val constraints = Formula(
     bv --> av,
     bv -->  (bv := av), //VarAssgn(dataVar(b,uid),dataVar(a,uid)),
 //    bv := av ,
     bv --> g,
     (av /\ g) --> bv
   )
+
+  def getConstraints = constraints
 
   if (!useData) throw new Exception("Filter requires 'useData' option")
 

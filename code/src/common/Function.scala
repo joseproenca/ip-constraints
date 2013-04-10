@@ -1,5 +1,6 @@
 package common
 
+import scala.collection.JavaConverters._
 
 /**
  * Unary function that is embedded in the [[common.Constraints]].
@@ -20,11 +21,18 @@ object Function {
     */
   def apply()(body: Any => Any): Function =
     new Function {
-      def calculate(x: Any) = try body(x)
+      def calculate(x: Any) = {
+        var input = x
+        x match {
+          case jl: java.util.List[Any] => input = jl.asScala.toList
+          case _ => {}
+        }
+        try body(input)
         catch {
           case e: scala.MatchError => {}
           case e => throw e
         }
+      }
     }
 
   /**
@@ -35,11 +43,19 @@ object Function {
    */
   def apply(name:String)(body: Any => Any): Function =
     new Function {
-      def calculate(x: Any) = try body(x)
-      catch {
-        case e: scala.MatchError => {}
-        case e => throw e
+      def calculate(x: Any) = {
+        var input = x
+        x match {
+          case jl: java.util.List[Any] => input = jl.asScala.toList
+          case _ => {}
+        }
+        try body(input)
+        catch {
+          case e: scala.MatchError => {}
+          case e => throw e
+        }
       }
+
       override def toString = name
     }
 }

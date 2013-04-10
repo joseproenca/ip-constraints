@@ -87,10 +87,19 @@ object ChocoDyn {
       ChocoConstr = st match {
     case DataAssgn(v, dt) =>
       Choco.eq(getVar(vm,v),dm.add(dt))
-    case FunAssgn(v1, v2, fn) => // v1 = f(v2)
+    case FunAssgn(v1, v2:String, fn) => // v1 = f(v2)
       cs += DynFuncManager.genFunction(
         // boolvar of v1             , datavar of v1, boolvar of v2               , datavar of v2,dm,b,function
         getVar(vm,Utils.data2flow(v1)),getVar(vm,v1) ,getVar(vm,Utils.data2flow(v2)),getVar(vm,v2) ,dm,b,fn)
+      Choco.TRUE
+    case NFunAssgn(v1, v2s:List[String], fn) => // v1 = f(v2s)
+      cs += DynNFuncManager.genNFunction(
+        // boolvar of v1             , datavar of v1,
+        getVar(vm,Utils.data2flow(v1)),getVar(vm,v1) ,
+        // boolvars of v2                          ,
+        v2s.map(v2=>getVar(vm,Utils.data2flow(v2))),
+        // datavar of v2           ,dm,b,function
+        v2s.map(v2=>getVar(vm,v2)) ,dm,b,fn)
       Choco.TRUE
     //////
     case IntAssgn(v, dt) => gc2ChocoDyn(cs,DataAssgn(v,Int.box(dt)),vm,dm,b,np)

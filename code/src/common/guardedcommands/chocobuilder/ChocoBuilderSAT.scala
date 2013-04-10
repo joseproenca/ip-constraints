@@ -116,6 +116,10 @@ object ChocoBuilderSAT {
       //          println("NOT adding "+predVar(v1,pred,fs)+" == "+predVar(v2,pred,fs++List(f)) ++
       //          "  --  "+d2+" does  not contain "+(pred,fs++List(f)))
       res
+    case NFunAssgn(v,v2s,f) => v2s match {
+      case List(v2) => gc2BoolConstrBuilder(FunAssgn(v,v2,f),da)
+      case Nil => throw new Exception("Predicate abstraction cannot be applied to n-ary functions - "+f)
+    }
 
     case Seq(Nil) => common.choco.TrueC
     case Seq(s::ss) => gc2BoolConstrBuilder(s,da) and gc2BoolConstrBuilder(Seq(ss),da)

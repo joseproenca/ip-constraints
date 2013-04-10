@@ -18,6 +18,7 @@ object ConnectorGen {
   def filter(a: String, b: String, g:Guard) = new GCFilter(a,b,0,g)
   def filter(a: String, b: String, filter:Predicate, i: Int = 0) = new GCFilter(a,b,i,filter)
   def negfilter(a: String, b: String, filter:Predicate, i: Int = 0) = new GCFilter(a,b,i,filter,false)
+  def sfilter(a: String, b: String, filter:Predicate, i: Int = 0) = new GCSFilter(a,b,i,filter)
   def imerger(a: String, b: String, c: String, i: Int = 0) = new GCIMerger(a,b,c,i)
   def merger(a: String, b: String, c: String, i: Int = 0) = new GCMerger(a,b,c,i)
   def nmerger(srcs: List[String], snk: String, i: Int = 0) = new GCNMerger(srcs,snk,i)
@@ -28,11 +29,13 @@ object ConnectorGen {
   def transf(a: String, b: String, f: common.Function) = new GCTransf(a,b,0,f)
   def transf(a: String, b: String, f: common.Function, i: Int) = new GCTransf(a,b,i,f)
   def transf(a: String, b: String, f: common.Function, undo: common.Function, i: Int = 0) = new GCTransfUndo(a,b,i,f,undo)
+  def transf(as: List[String], b: String, f: common.Function) = new GCNTransf(as,b,0,f)
+  def transf(as: List[String], b: String, f: common.Function, i: Int) = new GCNTransf(as,b,i,f)
   def monitor(a: String, b: String, f: common.Function, i: Int = 0) = new GCMonitor(a,b,i,f)
   def exrouter(a: String, b: String, c: String, i: Int = 0) = new GCExRouter(a,b,c,i)
   def nexrouter(src: String, snks: List[String], i: Int = 0) = new GCNExRouter(src,snks,i)
   def reader(a: String,n: Int, i: Int = 0) = new GCReader(a,i,n)
-  def writer(a: String, data: List[AnyRef], i: Int = 0) = new GCWriter(a,i,data)
+  def writer(a: String, data: List[Any], i: Int = 0) = new GCWriter(a,i,data)
 
   def flow(a: String, i: Int = 0) = new GCConnector(List(a),i) {
     def getConstraints = Formula(True --> Var(Utils.flowVar(a,i)))
