@@ -32,7 +32,8 @@ public class DynFunction extends AbstractIntSConstraint {
                         DataMap data,
                         Buffer buffer,
                         Function function) {
-        super(4,new IntDomainVar[]{xvar, xdata, yvar, ydata});  // 4 is priority... not sure what are the consequences.
+        super(4,new IntDomainVar[]{xvar, xdata, yvar, ydata});
+        // priority 1 - 4: 1 more active with fast propagation, 4 slower/delayed listeners
         this.dm = data;
         this.buffer = buffer;
         this.function = function;

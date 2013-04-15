@@ -34,8 +34,9 @@ class GCWriter (val x: String, uid: Int, var data: List[Any]) extends GCConnecto
     else nfConstr
   }
 
-  override def update(s: GCSolution) {
-    if (s.hasFlowOn(flowVar(x, uid))) {
+  override def update(s: Option[GCSolution]) {
+    if (s.isDefined)
+    if (s.get.hasFlowOn(flowVar(x, uid))) {
       //      println("Writer: FLOW! new size: "+size)
       notifyflow()
       // update state

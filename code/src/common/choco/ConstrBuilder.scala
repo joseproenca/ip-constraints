@@ -6,6 +6,7 @@ import choco.kernel.model.constraints.{Constraint => ChocoConstr}
 import genericconstraints.{PredManager}
 import scala.collection.JavaConversions._
 import common.{Buffer, Predicate, Utils, Function}
+import scala.collection.mutable
 
 /**
  * Created by IntelliJ IDEA.
@@ -115,9 +116,18 @@ sealed abstract class ConstrBuilder {
       (m2, Choco.and(v1, v2))
     }
     case Or(c1: ConstrBuilder, c2: ConstrBuilder) => {
-      val (m1, v1) = c1.toChocoAux(vars,buf,false,false)
-      val (m2, v2) = c2.toChocoAux(m1,buf,false,false)
-      (m2, Choco.or(v1, v2))
+//      val (m1, v1) = c1.toChocoAux(vars,buf,false,false)
+//      val (m2, v2) = c2.toChocoAux(m1,buf,false,false)
+//      (m2, Choco.or(v1, v2))
+      val ors = mutable.Set[ChocoConstr]()
+      val m1 = toChocoAuxOrs(this,vars,buf,ors)
+      if (ors.isEmpty) (m1,Choco.TRUE)
+      else {
+        var res = ors.head
+          for (c <- ors.tail)
+            res = Choco.or(c,res)
+        (m1,res)
+      }
     }
     case Impl(c1: ConstrBuilder, c2: ConstrBuilder) => {
       val (m1, v1) = c1.toChocoAux(vars,buf,false,false)
@@ -154,6 +164,26 @@ sealed abstract class ConstrBuilder {
     case FalseC => (vars, Choco.FALSE)
     case TrueC => (vars, Choco.TRUE)
   }
+
+  // Optimisation to avoid stack overflow on the sequence of long Ors (at least a variable with flow).
+  private def toChocoAuxOrs(c: ConstrBuilder,vars: VarMap,buf: Buffer,cs:mutable.Set[ChocoConstr]): VarMap = c match {
+    case Or(c1,Or(c2,c3)) =>
+      val m1 = toChocoAuxOrs(c1,vars,buf,cs)
+      val m2 = toChocoAuxOrs(c2,m1,buf,cs)
+      toChocoAuxOrs(c3,m2,buf,cs)
+    case Or(Or(c1,c2),c3) =>
+      val m1 = toChocoAuxOrs(c1,vars,buf,cs)
+      val m2 = toChocoAuxOrs(c2,m1,buf,cs)
+      toChocoAuxOrs(c3,m2,buf,cs)
+    case Or(c1,c2) =>
+      val m1 = toChocoAuxOrs(c1,vars,buf,cs)
+      toChocoAuxOrs(c2,m1,buf,cs)
+    case _: ConstrBuilder =>
+      val (vars2,c2) = c.toChocoAux(vars,buf,false,false)
+      cs += c2
+      vars2
+  }
+
 
   override def toString = this match {
     case Var(name) =>  name

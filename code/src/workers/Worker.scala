@@ -92,7 +92,7 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
     act()
   }
 
-  def success(sol:S) {
+  def success(sol:Option[S]) {
     debug("DONE\n"+sol)
     for (n <- strat.owned) {
       n.behaviour.update(sol)
@@ -230,7 +230,7 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
       mark('.')
       val sol = strat.solve
       if (sol.isDefined) {
-        success(sol.get)
+        success(sol)
         quit("found a solution")
       }
     }

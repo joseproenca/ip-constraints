@@ -186,10 +186,11 @@ private def sync(basec: C)(implicit cbuilder: CBuilder[S,C]): C = {
     else { // proactive actor
       println("found constraints:\n"+c.toString)
       val sol = c.solve
-      if (sol.isDefined)
-        processSol(sol.get,freshSol = true)
-      else
-        processSol(noSol.sol,freshSol = true)
+//      if (sol.isDefined)
+//        processSol(sol.get,freshSol = true)
+//      else
+//        processSol(noSol.sol,freshSol = true)
+      processSol(sol,freshSol = true)
     }
   }
 
@@ -204,13 +205,13 @@ private def sync(basec: C)(implicit cbuilder: CBuilder[S,C]): C = {
         sender ! Busy
         stateCommitted
       }
-      case ReplySol(s:S) => processSol(s,freshSol = false)
+      case ReplySol(s:Option[S]) => processSol(s,freshSol = false)
       //    case ReplyData(d:Any) => processData(d)
       //    case ReplySolData(s:S,d:Any) => processSolData(s,d)
     }
   }
 
-  protected def processSol(sol:S,freshSol:Boolean): Nothing = { //,rcvd: Map[ActorRef,Any]) = act
+  protected def processSol(sol:Option[S],freshSol:Boolean): Nothing = { //,rcvd: Map[ActorRef,Any]) = act
     if (freshSol) debug("got solution!\n"+sol)
     val interested = if (freshSol) neighbours else neighbours - sender
     for (a <- interested) {

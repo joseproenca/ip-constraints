@@ -32,7 +32,7 @@ class ComplexConnector(val sub: List[Connector[GCSolution,Formula]], ends: List[
     res
   }
 
-  override def update(s: GCSolution) {
+  override def update(s: Option[GCSolution]) {
     for (c <- sub) c.update(s)
   }
 

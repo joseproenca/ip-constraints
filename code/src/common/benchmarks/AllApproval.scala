@@ -28,7 +28,7 @@ object AllApproval extends App {
   Warmup.go
 
   val n = if (!args.isEmpty) Integer.parseInt(args(0))
-  else               2
+  else               5
   val satfull = if (args.size > 1) args(1) startsWith "s"
   else               false
   val chocosat = if (args.size > 1) args(1) startsWith "cs"
@@ -222,6 +222,14 @@ object AllApproval extends App {
     var res: Option[Solution] = null
     var spent: Long = 0
 
+    //// DYN-CHOCO ////
+    time = System.currentTimeMillis()
+    res = problem.solveChocoDyn
+    spent = System.currentTimeMillis() - time
+    //    if (res.isDefined) println("lazy-sat - solved in "+spent+" ms:\n"+res.get.pretty)
+    //    else println("lazy-sat - no solution (in "+spent+" ms)")
+    println("dyn-choco  - "+spent)
+
     //// QUICK-SAT ////
     time = System.currentTimeMillis()
     res = problem.quickDataSolve
@@ -246,13 +254,13 @@ object AllApproval extends App {
     //    else println("SATC-full - no solution (in "+spent+" ms)")
     println("SATC-full - "+spent)
 
-    //// CHOCO ////
-    time = System.currentTimeMillis()
-    res = problem.solveChoco
-    spent = System.currentTimeMillis() - time
-    //    if (res.isDefined) println("Choco - solved in "+spent+" ms:\n"+res.get.pretty)
-    //    else println("Choco - no solution (in "+spent+" ms)")
-    println("Choco     - "+spent)
+//    //// CHOCO ////
+//    time = System.currentTimeMillis()
+//    res = problem.solveChoco
+//    spent = System.currentTimeMillis() - time
+//    //    if (res.isDefined) println("Choco - solved in "+spent+" ms:\n"+res.get.pretty)
+//    //    else println("Choco - no solution (in "+spent+" ms)")
+//    println("Choco     - "+spent)
 
     /// Z3 ////
     val z3 = new Z3Context(new Z3Config("MODEL" -> true))

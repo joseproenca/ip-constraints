@@ -5,7 +5,7 @@ import common.guardedcommands.{Formula, Var, GCConnector}
 import common.Utils._
 
 /**
- * Created with IntelliJ IDEA.
+ * N-ary transfer channel: receives data from n ports, calculates f(a1,...,an), and returns the result via b.
  *
  * Created by jose on 10/04/13.
  */

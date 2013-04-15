@@ -13,12 +13,15 @@ import Utils.dataVar
  */
 class GCTransfUndo (a: String, b: String, uid: Int, f: common.Function, undo: common.Function) extends GCTransf(a,b,uid,f) {
 
-  override def update(s: GCSolution) {
+  override def update(s: Option[GCSolution]) {
     super.update(s)
-    if (s.buf.isDefined)
-      s.buf.get.rollback(f,undo,s getDataOn dataVar(a,uid))
-//    else {
-//      println("===== buffer not defined!!!!")
-//    }
+    if (s.isDefined)
+      if (s.get.buf.isDefined) {
+//        println("trying to rollback")
+        s.get.buf.get.rollback(f,undo,s.get getDataOn dataVar(a,uid))
+      }
+    else {
+      println("===== buffer not defined!!!!")
+    }
   }
 }

@@ -16,10 +16,10 @@ abstract class Connector[S<: Solution, C <: Constraints[S,C]](val ends: List[Str
   def getConstraints: C
 
   /**
-   * Given a solution updates the current state.
+   * Given a (possible) solution updates the current state.
    * @param s solution
    */
-  def update(s: S) {} // default: do nothing
+  def update(s: Option[S]) {} // default: do nothing
 
 
   /**
@@ -47,7 +47,8 @@ abstract class Connector[S<: Solution, C <: Constraints[S,C]](val ends: List[Str
    */
   def step: Option[S] = {
     val s = getConstraints.solve
-    if (s.isDefined) update(s.get)
+//    if (s.isDefined) update(s.get)
+    update(s)
     s
   }
 

@@ -25,8 +25,9 @@ class ChoFifoB(b: String, var data: Option[Int], uid: Int) extends ChoDataConnec
 
   def getConstraints = if (data.isDefined) fullFifo else emptyFifo
 
-  override def update(s: ChoSolution) {
-    if (s.hasFlowOn(flowVar(b, uid))) {
+  override def update(s: Option[ChoSolution]) {
+    if (s.isDefined)
+    if (s.get.hasFlowOn(flowVar(b, uid))) {
       notifyflow()
       data = None
 //      constraints = emptyFifo

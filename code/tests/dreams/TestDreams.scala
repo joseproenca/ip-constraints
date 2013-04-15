@@ -27,24 +27,26 @@ class TestDreams extends FunSpec {
     val wr = new connectors.Writer(2)
     {
       var counter = 0
-      override protected def processSol(sol:Sol,freshSol:Boolean): Nothing = {
+      override protected def processSol(sol:Option[Sol],freshSol:Boolean): Nothing = {
         val a = mkVar("a",uid)
 
         if (freshSol) println("counter! "+counter)
-        if (freshSol && counter <2 ){// && sol.hasFlow(flowVar("a",hashCode())) ) { //&& sol.sizeModel == 2) {
+
+        if (!sol.isDefined) {}
+        else if (freshSol && counter <2 ){// && sol.hasFlow(flowVar("a",hashCode())) ) { //&& sol.sizeModel == 2) {
           counter +=1
           it ("has solution "+counter+"-"+hashCode())
           //{assert(sol.sizeModel == 2)}
-          {assert(sol hasFlowOn a)}
+          {assert(sol.get hasFlowOn a)}
         }
         else if (freshSol && counter == 2 ) {//&& sol.sizeModel == 0){
           it ("has no more solution")
 //          {assert(sol.sizeModel == 2)}
-          {assert(sol hasFlowOn a)}
+          {assert(sol.get hasFlowOn a)}
           counter =3
         }
         else if (freshSol)
-          it ("has no other options: counter/flow "+counter+"/"+sol.hasFlowOn(a))
+          it ("has no other options: counter/flow "+counter+"/"+sol.get.hasFlowOn(a))
            //: counter/size = "+counter+"/"+sol.sizeModel)
           {assert(false)}
         super.processSol(sol,freshSol)

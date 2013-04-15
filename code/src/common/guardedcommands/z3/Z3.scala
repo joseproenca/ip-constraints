@@ -1,6 +1,7 @@
 package common.guardedcommands.z3
 
 import _root_.z3.scala._
+import _root_.z3.scala.dsl.{Distinct, IntVar}
 import common.guardedcommands._
 import common.guardedcommands.Var
 import common.{guardedcommands}
@@ -359,7 +360,38 @@ object Z3 {
       }
     }
 
-//    for (d<-z3.) println("decl: "+d)
+    println("------------")
+
+    val zz3 = new Z3Context("MODEL" -> true)
+    val N = 8
+//    val cols = (0 until N) map { _ => IntVar() } // column vars
+    val cols = (0 until N) map { i => IntVar() } // IntVar() } // column vars
+    val diﬀCnstr = Distinct(cols : _*) // all queens on distinct cols
+    val boundsCnstr = for (c <- cols) yield (c >= 0 && c < N) // cols are within bounds
+    val diagonalsCnstr = // no two queens on same diagonal
+      for (i <- 0 until N; j <- 0 until i) yield
+        ((cols(i) - cols(j) !== i - j) && (cols(i) - cols(j) !== j - i))
+    zz3.assertCnstr(diﬀCnstr)
+    boundsCnstr map (zz3.assertCnstr(_))
+    diagonalsCnstr map (zz3.assertCnstr(_))
+    println(zz3.checkAndGetAllModels.size) // prints 92
+
+
+    zz3.checkAndGetModel() match {
+      case (None, _) => println("Z3 failed. The reason is: " + z3.getSearchFailure.message)
+      case (Some(false), _) => println("Unsat.")
+      case (Some(true), model) => {
+        //        for (c <- model.getModelConstants) println ("const "+c)
+        //        println("v1: " + model.evalAs[Boolean](v1))
+        //        println("v2: " + model.evalAs[Boolean](v2))
+        //        println("v3: " + model.evalAs[Boolean](v3))
+        println("model:\n"+model)
+        //        model.delete
+      }
+    }
+
+
+    //    for (d<-z3.) println("decl: "+d)
 
 
   }

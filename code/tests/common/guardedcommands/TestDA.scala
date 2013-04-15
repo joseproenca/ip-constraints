@@ -70,7 +70,7 @@ class TestDA extends FunSpec {
     val res2 = c2.solveBool
     val res3 = c3.solveBool
     val res4 = c4.solveBool
-    val resB= c3.solveChocoBool
+    val resB= c3.lazyDataSolve  //solveChocoBool
 
     println("-----------\n"+c1.commands.mkString("\n"))
     println("-----------")

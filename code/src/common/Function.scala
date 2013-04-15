@@ -19,17 +19,17 @@ object Function {
     * @param body is the scala [[scala.Function1]].
     * @return new [[common.Function]] that can be embedded in the synchronous constraints.
     */
-  def apply()(body: Any => Any): Function =
+  def apply[A]()(body: A => Any): Function =
     new Function {
       def calculate(x: Any) = {
-        var input = x
-        x match {
-          case jl: java.util.List[Any] => input = jl.asScala.toList
-          case _ => {}
-        }
-        try body(input)
+        // calculate is called within a Java program, that cannot generate scala lists properly... (!)
+//        x match {
+//          case jl: java.util.List[Any] => input = jl.asScala.toList
+//          case _ => {}
+//        }
+        try x match { case y: A => body(y) }
         catch {
-          case e: scala.MatchError => {}
+          case e: scala.MatchError => {}    // return Unit if undefined
           case e => throw e
         }
       }
@@ -41,17 +41,17 @@ object Function {
    * @param body is the scala [[scala.Function1]]
    * @return the new [[common.Function]].
    */
-  def apply(name:String)(body: Any => Any): Function =
+  def apply[A](name:String)(body: Any => Any): Function =
     new Function {
       def calculate(x: Any) = {
-        var input = x
-        x match {
-          case jl: java.util.List[Any] => input = jl.asScala.toList
-          case _ => {}
-        }
-        try body(input)
+//        val input = x
+//        x match {
+//          case jl: java.util.List[Any] => input = jl.asScala.toList
+//          case _ => {}
+//        }
+        try x match { case y: A => body(y) }
         catch {
-          case e: scala.MatchError => {}
+          case e: scala.MatchError => {}  // return Unit if undefined
           case e => throw e
         }
       }

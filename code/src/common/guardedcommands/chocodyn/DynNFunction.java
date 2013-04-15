@@ -9,6 +9,7 @@ import choco.kernel.solver.constraints.integer.AbstractIntSConstraint;
 import choco.kernel.solver.variables.integer.IntDomainVar;
 import common.Buffer;
 import common.Function;
+import scala.collection.immutable.Nil$;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +30,7 @@ public class DynNFunction extends AbstractIntSConstraint {
                         DataMap data,
                         Buffer buffer,
                         Function function) {
-        super(vars.length,vars);  // "length" is priority... not sure what are the consequences.
+        super(4,vars);  // priority 1 - 4: 1 more active with fast propagation, 4 slower/delayed listeners
         this.dm = data;
         this.buffer = buffer;
         this.function = function;
@@ -51,11 +52,6 @@ public class DynNFunction extends AbstractIntSConstraint {
      */
     public void awakeOnInst(int idx) throws ContradictionException {
         propagate();
-//        if (idx == 0 || idx == 1 ) {
-////            System.out.println("# AWAKE (Pred) - xflow instantiated! - "+v1.getVal());
-//            propagate();
-//        }
-//        if (idx == 1) { propagate(); }
     }
 
     /** * <i>Propagation:</i> * Propagating the constraint until local consistency is reached. * * @throws ContradictionException * contradiction exception */
@@ -77,15 +73,20 @@ public class DynNFunction extends AbstractIntSConstraint {
 
         // calculate function value
         // order of objects seems to be right!
-        List<Object> l = new ArrayList<Object>();
-        for (int i=3; i<getNbVars(); i+=2)
-            l.add(dm.get(getVar(i).getVal()));
+//        List<Object> l = new ArrayList<Object>();
+//        for (int i=3; i<getNbVars(); i+=2)
+//            l.add(dm.get(getVar(i).getVal()));
 
-        Object newVal = buffer.calculate(function,l);
+        scala.collection.immutable.List sl = Nil$.MODULE$; // create empty list
+        for (int i=3; i<getNbVars(); i+=2)
+            sl = sl.$colon$colon(dm.get(getVar(i).getVal()));
+
+
+        Object newVal = buffer.calculate(function,sl.reverse());
 
 //                System.out.println("defining "+getVar(1).getName()+" from f -> "+newVal+" -> idx "+getVar(3).getVal()+"");
         if (getVar(1).isInstantiated()) {
-//                    System.out.println("already defined as "+dm.get(getVar(1).getVal())+"...");
+//                System.out.println("already defined as "+dm.get(getVar(1).getVal())+"...");
             if (dm.get(getVar(1).getVal()) != newVal) fail();
         }
         else

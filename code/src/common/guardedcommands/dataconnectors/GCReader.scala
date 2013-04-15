@@ -5,7 +5,9 @@ import Utils._
 import common.guardedcommands._
 
 /**
- * Created with IntelliJ IDEA.
+ * Creates a reader with that can receive up to "size" elements, or an infinite number if size=-1.
+ * It also prints the value that it received, and notifies flow to listeners of the constraint.
+ *
  * User: jose
  * Date: 07/06/12
  * Time: 17:34
@@ -17,13 +19,14 @@ class GCReader(x: String, uid: Int, var size: Int) extends GCConnector(List(x), 
   val nfConstr = Formula(Neg((Var(flowVar(x, uid)))))
 
   def getConstraints =
-    if (size > 0) Formula()
+    if (size != 0) Formula()
     else nfConstr
 
-  override def update(s: GCSolution) {
-    if (s hasFlowOn flowVar(x, uid)) {
+  override def update(s: Option[GCSolution]) {
+    if (s.isDefined)
+    if (s.get hasFlowOn flowVar(x, uid)) {
       println("//////////////////")
-      println("// Got data - "+x+": "+s.getDataOn(dataVar(x,uid)).get)
+      println("// Got data - "+x+": "+s.get.getDataOn(dataVar(x,uid)).get)
 //      println("// new size: "+size)
       println("//////////////////")
       notifyflow()

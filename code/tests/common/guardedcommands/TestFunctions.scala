@@ -114,7 +114,7 @@ class TestFunctions extends FunSpec {
     println("GC:\n"+const.commands.mkString("\n"))
 
 
-    println("--\nDA:\n"+const.da.pp)
+    println("--\nDA:\n"+const.getDA)
 
 //    val cnf = const.toCNF
 //    //    println("cnf: "+cnf)

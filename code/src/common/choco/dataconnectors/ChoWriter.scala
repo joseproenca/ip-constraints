@@ -22,8 +22,9 @@ class ChoWriter(val x: String, uid: Int, var data: List[Int]) extends connectors
     if (!data.isEmpty) ChoConstraints(Var(flowVar(x,uid)) --> DataAssgn(dataVar(x,uid),data.head))
     else nfConstr
 
-  override def update(s: ChoSolution) {
-    if (s.hasFlowOn(flowVar(x, uid))) {
+  override def update(s: Option[ChoSolution]) {
+    if (s.isDefined)
+    if (s.get.hasFlowOn(flowVar(x, uid))) {
       //      println("Writer: FLOW! new size: "+size)
       notifyflow()
 //      constraints = loadConstraints

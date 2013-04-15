@@ -28,17 +28,19 @@ class ChoFifo(a: String, b: String, var data: Option[Int], uid: Int) extends Cho
 
   def getConstraints = if (data.isDefined) fullFifo else emptyFifo
 
-  override def update(s: ChoSolution) {
-    if (s.hasFlowOn(flowVar(a, uid))) {
+  override def update(s: Option[ChoSolution]) {
+    if (s.isDefined) {
+    if (s.get.hasFlowOn(flowVar(a, uid))) {
       //      println("Writer: FLOW! new size: "+size)
       notifyflow()
       data = Some(0)
 //      constraints = loadConstraints
     }
-    if (s.hasFlowOn(flowVar(b, uid))) {
+    else if (s.get.hasFlowOn(flowVar(b, uid))) {
       notifyflow()
       data = None
 //      constraints = loadConstraints
+    }
     }
   }
 

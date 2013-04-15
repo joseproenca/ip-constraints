@@ -148,7 +148,16 @@ object AllSyncTransactionSeq extends App {
     //        else println("quick-z3  - no solution (in "+spent+" ms)")
     println("quick-z3  - "+spent)
 
-        //// SAT-FULL ////
+    //// DYN-CHOCO ////
+    time = System.currentTimeMillis()
+    res = problem.solveChocoDyn
+    spent = System.currentTimeMillis() - time
+    //    if (res.isDefined) println("lazy-sat - solved in "+spent+" ms:\n"+res.get.pretty)
+    //    else println("lazy-sat - no solution (in "+spent+" ms)")
+    println("dyn-choco  - "+spent)
+
+
+    //// SAT-FULL ////
         time = System.currentTimeMillis()
         res = problem.solveIterative
         spent = System.currentTimeMillis() - time

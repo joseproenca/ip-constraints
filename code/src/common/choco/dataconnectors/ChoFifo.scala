@@ -21,17 +21,19 @@ class ChoFifo(a: String, b: String, dt: Option[Int], uid: Int) extends connector
     bv --> DataAssgn(dataVar(b,uid),data.get)
   )
 
-  override def update(s: ChoSolution) {
-    if (s.hasFlowOn(flowVar(a, uid))) {
+  override def update(s: Option[ChoSolution]) {
+    if (s.isDefined) {
+    if (s.get.hasFlowOn(flowVar(a, uid))) {
       //      println("Writer: FLOW! new size: "+size)
       notifyflow()
-      data = s.getVal(flowVar(a,uid))
+      data = s.get.getVal(flowVar(a,uid))
 //      constraints = loadConstraints
     }
-    if (s.hasFlowOn(flowVar(b, uid))) {
+    else if (s.get.hasFlowOn(flowVar(b, uid))) {
       notifyflow()
       data = None
 //      constraints = loadConstraints
+    }
     }
   }
 

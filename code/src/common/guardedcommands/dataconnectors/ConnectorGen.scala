@@ -31,10 +31,13 @@ object ConnectorGen {
   def transf(a: String, b: String, f: common.Function, undo: common.Function, i: Int = 0) = new GCTransfUndo(a,b,i,f,undo)
   def transf(as: List[String], b: String, f: common.Function) = new GCNTransf(as,b,0,f)
   def transf(as: List[String], b: String, f: common.Function, i: Int) = new GCNTransf(as,b,i,f)
+  def transf(a: String, b: String, f: PartialFunction[Any,Any], i: Int) = new GCPTransf(a,b,i,f)
+  def transf[A](a: String, b: String, f: PartialFunction[A,_]) = new GCPTransf(a,b,0,f)
   def monitor(a: String, b: String, f: common.Function, i: Int = 0) = new GCMonitor(a,b,i,f)
   def exrouter(a: String, b: String, c: String, i: Int = 0) = new GCExRouter(a,b,c,i)
   def nexrouter(src: String, snks: List[String], i: Int = 0) = new GCNExRouter(src,snks,i)
   def reader(a: String,n: Int, i: Int = 0) = new GCReader(a,i,n)
+  def reader(a: String) = new GCReader(a,0,-1)
   def writer(a: String, data: List[Any], i: Int = 0) = new GCWriter(a,i,data)
 
   def flow(a: String, i: Int = 0) = new GCConnector(List(a),i) {

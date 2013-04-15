@@ -66,7 +66,7 @@ class TestInteraction extends FunSpec {
     // data fails first filter, second should be lazy using chocoSAT. No flow on "c", so fail.
 
     val cs = c.getConstraints
-    val res= cs.solveChocoBool
+    val res= cs.lazyDataSolve  //solveChocoBool
     val res2= cs.solveChocoX
 
     println("-----------\n"+cs.commands.mkString("\n"))

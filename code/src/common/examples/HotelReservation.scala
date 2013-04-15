@@ -10,8 +10,6 @@ import common.guardedcommands.dataconnectors.ConnectorGen._
  * Created by jose on 15/01/13.
  */
 
-class HotelReservation
-
 object HotelReservation extends App {
 
 //  implicit def scalaFunc2Func(f: Any => Any): Function = Function()(f)
@@ -190,5 +188,9 @@ object HotelReservation extends App {
   //  testnewsolve.run()
   val s = conn3.getConstraints.solveChocoDyn
   println("---- \n" + s)
+//  if (s.isDefined) {
+    println("updating...")
+    conn3.update(s)
+//  }
 //    conn3.step
 }

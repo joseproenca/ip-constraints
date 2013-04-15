@@ -17,7 +17,8 @@ object Subtract extends App {
 
   val subtr = common.Function("subtract"){
     case List(n1:Int,n2:Int) => n1 - n2
-    case x => sys.error("wrong arguments for subtract "+x+":"+x.getClass)
+    case List(n1:Int,n2:Int,n3:Int) => (n1 - n2) - n3
+//    case x => sys.error("wrong arguments for subtract "+x+":"+x.getClass)
   }
 
   def is(n:Int) = Predicate("(=="+n+")") {
@@ -25,12 +26,13 @@ object Subtract extends App {
   }
 
   val connector =
-    writer("a1",List(2)) ++
+    writer("a1",List(7)) ++
     writer("a2",List(4)) ++
-    writer("b",List(10)) ++
-    merger("a1","a2","a") ++
-    transf(List("b","a"), "c", subtr) ++
-    sfilter("c","res",is(6)) ++
+    writer("a3",List(2)) ++
+//    writer("b",List(10)) ++
+//    nmerger(List("a1","a2","a3"),"a") ++
+    transf(List("a1","a2","a3"), "c", subtr) ++
+    filter("c","res",is(6)) ++
     reader("res",2)
 
 

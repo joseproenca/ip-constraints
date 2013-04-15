@@ -24,9 +24,10 @@ class ChoReader(x:String,uid:Int,var size:Int) extends ChoConnector(List(x),uid)
 
   def getConstraints = if (size>0) flowConstr else nfConstr
 
-  override def update(s:ChoSolution) {
+  override def update(s:Option[ChoSolution]) {
 //    println("Reader: updating? (has flow?) "+s.getVal(ConstrBuilder.flowVar(x,uid)))
-    if (s hasFlowOn Utils.flowVar(x, uid)) {
+    if (s.isDefined)
+    if (s.get hasFlowOn Utils.flowVar(x, uid)) {
       size -= 1
 //      println("Reader: FLOW! new size: "+size)
       notifyflow()

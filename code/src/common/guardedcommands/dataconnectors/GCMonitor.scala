@@ -15,9 +15,10 @@ import common.guardedcommands.Var
 
 class GCMonitor (a: String, b: String, uid: Int, f: Function) extends GCSync(a,b,uid) {
 
-  override def update(s: GCSolution) {
+  override def update(s: Option[GCSolution]) {
     super.update(s)
-    if (s hasFlowOn av)
-      f.calculate(s(av))
+    if (s.isDefined)
+      if (s.get hasFlowOn av)
+        f.calculate(s.get(av))
   }
 }

@@ -85,15 +85,15 @@ abstract class ChoConnector(ends: List[String], uid: Int) extends Connector[ChoS
 }
 
 object ChoConnector {
-  def apply(ends:List[String],uid:Int, c:ChoConstraints,upd: ChoSolution => Unit): ChoConnector = {
-    new ChoConnector(ends,uid) {
-      def getConstraints = c
-      override def update(s:ChoSolution) { upd(s) }
-
-      // suggests which ends must have dataflow if "end" has also dataflow
-      def guessRequirements(end: String) = Set()
-    }
-  }
+//  def apply(ends:List[String],uid:Int, c:ChoConstraints,upd: ChoSolution => Unit): ChoConnector = {
+//    new ChoConnector(ends,uid) {
+//      def getConstraints = c
+//      override def update(s:Option[ChoSolution]) { upd(s) }
+//
+//      // suggests which ends must have dataflow if "end" has also dataflow
+//      def guessRequirements(end: String) = Set()
+//    }
+//  }
   def apply(ends:List[String],uid:Int, c:ChoConstraints): ChoConnector = {
     new ChoConnector(ends,uid) {
       def getConstraints = c
@@ -101,14 +101,14 @@ object ChoConnector {
       def guessRequirements(end: String) = Set()
     }
   }
-  def apply(ends:List[String],uid:Int, c:ConstrBuilder,upd: ChoSolution => Unit): ChoConnector = {
-    new ChoConnector(ends,uid) {
-      def getConstraints = ChoConstraints(c)
-      override def update(s:ChoSolution) { upd(s) }
-      // suggests which ends must have dataflow if "end" has also dataflow
-      def guessRequirements(end: String) = Set()
-    }
-  }
+//  def apply(ends:List[String],uid:Int, c:ConstrBuilder,upd: ChoSolution => Unit): ChoConnector = {
+//    new ChoConnector(ends,uid) {
+//      def getConstraints = ChoConstraints(c)
+//      override def update(s:Option[ChoSolution]) { upd(s) }
+//      // suggests which ends must have dataflow if "end" has also dataflow
+//      def guessRequirements(end: String) = Set()
+//    }
+//  }
   def apply(ends:List[String],uid:Int, c:ConstrBuilder): ChoConnector = {
     new ChoConnector(ends,uid) {
       def getConstraints = ChoConstraints(c)
