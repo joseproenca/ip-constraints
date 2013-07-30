@@ -12,7 +12,7 @@ import common.{Buffer, Constraints, Solution, Utils}
 import Utils._
 import common.choco.{ConstrBuilder,ChoSolution,ChoConstraints,FalseC}
 import scala.Some
-import common.guardedcommands.z3.{Z3Solution, Z3}
+import common.guardedcommands.z3.{XZ3, Z3Solution, Z3}
 
 /**
  * Created with IntelliJ IDEA.
@@ -48,9 +48,10 @@ class Formula extends Constraints[GCSolution,Formula] {
    * Default solving approach.
    * @return possible data solution
    */
-//    def solve = lazyDataSolve
-//    def solve = solveChocoX
-  def solve = solveChocoDyn
+//  def solve = lazyDataSolve  // predicate abstraction + choco (using guesses)
+//  def solve = solveChocoX    // choco - 1st attempt (predicates that keep track of all functions)
+  def solve = solveChocoDyn  // choco - 2nd attempt (dynamic mapping between ints (in choco) and the value they represent)
+//  def solve = solveXZ3       // z3    - same as chocoDyn. Tricks used to be able to recover solution and to avoid incomplete theories (not possible to say "if A is instantiated...")
 
   /**
    * Collect the domain of every guarded command in field 'da'.
@@ -559,6 +560,14 @@ class Formula extends Constraints[GCSolution,Formula] {
     ChocoDyn.solve(this,buf.get)
   }
 
+  /**
+   * Experimental - solve solutions using Z3 and external predicates/functions, using a custom theory, based on a dynamic map from ints to data values.
+   * @return Solution for the data constraints.
+   */
+  def solveXZ3: Option[GCSolution] = {
+    close()
+    XZ3.solvexz3(this)
+  }
 
   /////////////////////////
   // USING CHOCO FOR SMT //

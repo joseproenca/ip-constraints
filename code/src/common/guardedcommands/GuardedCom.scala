@@ -30,7 +30,7 @@ case class GuardedCom(g:Guard, st: Statement) {
 
   def fv:Set[String] = g.fv ++ st.fv
   def fv2(s:MutSet[String]) {g.fv2(s); st.fv2(s)}
-  def bfv(l:ListBuffer[String]) = g.bfv(l)
+  def bfv(l:ListBuffer[String]) = {g.bfv(l); st.bfv(l)}
   def solveDomain(da:DomainAbst)  { g.solveDomain(da); st.solveDomain(da) }
 
   def afv(dom: DomainAbst) :Set[String] = {
@@ -149,7 +149,7 @@ abstract sealed class Guard extends Statement{
     case True => {}
   }
 
-  def bfv(l:ListBuffer[String]): Unit = this match {
+  override def bfv(l:ListBuffer[String]): Unit = this match {
     case Var(name) => if (!l.contains(name)) l += name
     case And(g1, g2) => {g1.bfv(l); g2.bfv(l)}
     case Or(g1, g2) => {g1.bfv(l); g2.bfv(l)}
@@ -270,6 +270,7 @@ abstract sealed class Guard extends Statement{
 
 
 abstract sealed class Statement {
+  def /\(s: Statement) = and(s)
 
   def and(s: Statement) = this match {
     case Seq(s1) => s match {
@@ -342,6 +343,13 @@ abstract sealed class Statement {
       vars(v) = i
       vars("") = i+1
     }
+  }
+
+  def bfv(l:ListBuffer[String]): Unit = this match {
+    case g: Guard => g.bfv(l)
+    case Seq(Nil) =>
+    case Seq(s::ss) => {s.bfv(l); Seq(ss).bfv(l)}
+    case _ =>
   }
 
   def solveDomain(da: DomainAbst): Unit = this match {

@@ -21,7 +21,7 @@ abstract class GCConnector(ends: List[String], uid: Int = 0) extends Connector[G
    * @param other The other connector to be composed
    * @return The composed connector
    */
-  def ++(other: Connector[GCSolution, Formula]): Connector[GCSolution,Formula] =
+  def ++(other: Connector[GCSolution, Formula]): ComplexConnector =
     (this,other) match {
       case (x:ComplexConnector,_) => x +++ other
       case (_,x:ComplexConnector) => x +++ this

@@ -16,6 +16,8 @@ object Divide extends App {
   val divide: PartialFunction[Int,Int] =
     { case d: Int if d != 0 => seed / d }
 
+  //def div2()
+
   val connector =
     writer("a",List(0)) ++
     writer("b",List(2)) ++

@@ -15,6 +15,7 @@ import scala.Tuple2;
 import scala.collection.Map;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**

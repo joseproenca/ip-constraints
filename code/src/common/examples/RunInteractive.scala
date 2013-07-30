@@ -13,23 +13,26 @@ import common.guardedcommands.dataconnectors.ConnectorGen._
  * User: jose
  * Date: 18/07/12
  * Time: 11:28
- * To change this template use File | Settings | File Templates.
  */
-
-class RunInteractive
 
 object RunInteractive extends App {
 
   /*
-   af0 --(hackUser)--> af1 --[checkPwd] --> bf1 --(recallUser)--> cf1 -_
-                                                                        >-> out
-                       af2 --[checkPwd] --> bf2 -----------------------
+   alex --(hackUser)--> a1 --[checkPwd] --> a2 --(recallUser)--> a3 -\
+                                                                      --> out
+   bob   ------\                                                     /
+                --> bobCindy --[checkPwd] --> b1 -------------------/
+   cindy ------/
    */
 
 
   // Use "def" for different predicates: independent 'attempt' counts and buffer.
   // Use "val" for shared predicates: common attempt count and buffer.
-  val secret = Map("alex" -> "123", "bob" -> "asd", "cindy" -> "asd", "guest" -> "")
+  val secret = Map(
+    "alex"  -> "123",
+    "bob"   -> "asd",
+    "cindy" -> "asd",
+    "guest" -> "")
 
   def checkPwd = Predicate("chkPwd") {
     case user: String =>
@@ -84,33 +87,28 @@ object RunInteractive extends App {
     filter("a1", "a2",checkPwd) ++
     filter("bobcindy", "b1",checkPwd) ++
     merger("a3","b1","out") ++
-    reader("out",1) ++
+    reader("out",2) ++
     // at least one should have flow
-    //    flow("out") ++
     merger("alex","bobcindy","m") ++
-    sdrain("m","out") ++
+    sdrain("m","out")
     // testing monitors
-    monitor("out","nothing",Function(){case x => println("GOT VALUE "+x)})
-
-
-//    writer("alex",List("alex")) ++
-//    writer("bob", List("bob")) ++
-//    writer("cindy", List("cindy")) ++
-//    merger("bob","cindy","b1") ++
-//    transf("alex","a1",hackUser,undohack) ++
-//    transf("a2", "a3",recallUser) ++
-//    filter("a1", "a2",checkPwd) ++
-//    filter("b1", "b2",checkPwd) ++
-//    merger("a3","b2","out") ++
-//    reader("out",2) ++
-//    // at least one should have flow
-////    flow("out") ++
-//    merger("alex","b1","abc") ++ sdrain("abc","out")
-//    // also execute some code later
 //    monitor("out","nothing",Function(){case x => println("GOT VALUE "+x)})
 
 
-//  // create and run deployer
+  connector.run
+
+
+  //// other experiments ///
+
+//  val sol = connector.getConstraints.solveXZ3
+//
+//  sol match {
+//    case Some(s) => println("Solved!\n"+s)
+//    case None => println("no solution")
+//  }
+
+
+  //  // create and run deployer
 //  val deployer = new Deployer[S,C,HybridStrategy[S,C]](2)
 //  deployer.start()
 //
@@ -143,26 +141,26 @@ object RunInteractive extends App {
 
   // Run
 
-  val sol = connector.step // getConstraints.lazyDataSolve
-
-//  println("-----------\n" + c.commands.mkString("\n"))
-//  println("-----------")
-
-
-//  if (sol.isDefined) print("solved CS:\n" + sol.get.pretty)
-  if (sol.isDefined) println("-- data through 'out': " +
-    (sol.get getDataOn dataVar("out")).get+" --")
-  else {
-    println("no solution")
-    sys.exit()
-  }
-
-//  connector.update(sol.get)
-  val sol2 = connector.step  // getConstraints.lazyDataSolve
-
-//  if (sol2.isDefined) println("solved again CS:\n" + sol2.get.pretty)
-  if (sol2.isDefined) println("-- data through 'out': " +
-    (sol2.get getDataOn dataVar("out")).get+" --")
-  else println("no solution this time")
+//  val sol = connector.step // getConstraints.lazyDataSolve
+//
+////  println("-----------\n" + c.commands.mkString("\n"))
+////  println("-----------")
+//
+//
+////  if (sol.isDefined) print("solved CS:\n" + sol.get.pretty)
+//  if (sol.isDefined) println("-- data through 'out': " +
+//    (sol.get getDataOn dataVar("out")).get+" --")
+//  else {
+//    println("no solution")
+//    sys.exit()
+//  }
+//
+////  connector.update(sol.get)
+//  val sol2 = connector.step  // getConstraints.lazyDataSolve
+//
+////  if (sol2.isDefined) println("solved again CS:\n" + sol2.get.pretty)
+//  if (sol2.isDefined) println("-- data through 'out': " +
+//    (sol2.get getDataOn dataVar("out")).get+" --")
+//  else println("no solution this time")
 
 }

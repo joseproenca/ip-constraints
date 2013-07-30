@@ -27,7 +27,7 @@ object AllApprovalData extends App {
   Warmup.go
 
   val n = if (!args.isEmpty) Integer.parseInt(args(0))
-  else               7
+  else               8
   val satfull = if (args.size > 1) args(1) startsWith "s"
   else               false
   val chocosat = if (args.size > 1) args(1) startsWith "cs"
@@ -187,15 +187,51 @@ object AllApprovalData extends App {
     spent = System.currentTimeMillis() - time
 //    if (res.isDefined) println("quick-z3  - solved in "+spent+" ms:\n"+res.get.pretty)
 //    else println("quick-z3  - no solution (in "+spent+" ms)")
+    if (res.isDefined) println("ok/accept/neither: "+
+      res.get.getDataOn(dataVar("app-ok",0))+"/"+
+      res.get.getDataOn(dataVar("den-ok",0))+"/"+
+      res.get.getDataOn(dataVar("neither-ok",0))+"/"
+    )
     println("quick-z3  - "+spent)
 
       // LAZY-SAT ////
     time = System.currentTimeMillis()
     res = problem.lazyDataSolve
     spent = System.currentTimeMillis() - time
-//    if (res.isDefined) println("lazy-sat - solved in "+spent+" ms:\n"+res.get.pretty)
+//    if (res.isDefined) println("lazy-sat - solved in "+spent+" ms:\n"+res)
 //    else println("lazy-sat - no solution (in "+spent+" ms)")
+    if (res.isDefined) println("ok/accept/neither: "+
+      res.get.getDataOn(dataVar("app-ok",0))+"/"+
+      res.get.getDataOn(dataVar("den-ok",0))+"/"+
+      res.get.getDataOn(dataVar("neither-ok",0))+"/"
+    )
     println("lazy-sat  - "+spent)
+
+    // ChocoDyn ////
+    time = System.currentTimeMillis()
+    res = problem.solveChocoDyn
+    spent = System.currentTimeMillis() - time
+//        if (res.isDefined) println("lazy-sat - solved in "+spent+" ms:\n"+res)
+//        else println("lazy-sat - no solution (in "+spent+" ms)")
+    if (res.isDefined) println("ok/accept/neither: "+
+      res.get.getDataOn(dataVar("app-ok",0))+"/"+
+      res.get.getDataOn(dataVar("den-ok",0))+"/"+
+      res.get.getDataOn(dataVar("neither-ok",0))+"/"
+    )
+    println("choco dyn tables  - "+spent)
+
+    // ChocoDyn ////
+    time = System.currentTimeMillis()
+    res = problem.solveXZ3
+    spent = System.currentTimeMillis() - time
+//        if (res.isDefined) println("lazy-sat - solved in "+spent+" ms:\n"+res)
+//        else println("lazy-sat - no solution (in "+spent+" ms)")
+    if (res.isDefined) println("ok/accept/neither: "+
+      res.get.getDataOn(dataVar("app-ok",0))+"/"+
+      res.get.getDataOn(dataVar("den-ok",0))+"/"+
+      res.get.getDataOn(dataVar("neither-ok",0))+"/"
+      )
+    println("X-Z3 - "+spent)
   }
 
 }

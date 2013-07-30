@@ -30,10 +30,12 @@ object Utils {
   def isDataVar(x: String): Boolean = x.startsWith("D€")
   def isPredVar(x: String): Boolean = x.contains('#')
 
-  def ppFlowVar(x:String): String = { val y = x.split("€"); y(1)+"_"+y(2) }
-  def ppDataVar(x:String): String = { val y = x.split("€"); "^"+y(1)+"_"+y(2) }
-  def ppPredVar(x:String): String = { val y = x.split("€"); "P"+y(1)+"_"+y(2) }
+  def ppFlowVar(x:String): String = { val y = x.split("€"); placeIndex(y) }
+  def ppDataVar(x:String): String = { val y = x.split("€"); "^"+placeIndex(y) }
+  def ppPredVar(x:String): String = { val y = x.split("€"); "P"+placeIndex(y) }
   def ppVar(x:String) = if (x.startsWith("F€")) ppFlowVar(x) else ppDataVar(x)
+  private def placeIndex(y:Array[String]) =
+    if (y(2) == "0") y(1) else y(1)+"_"+y(2)
 
   // Special treatment of guarded commands
   def mkVar(x: String, uid: Int=0): Var = Var(flowVar(x,uid))

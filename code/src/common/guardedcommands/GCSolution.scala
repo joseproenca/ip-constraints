@@ -27,18 +27,19 @@ class GCSolution(val boolSol: Solution, var varMap: Map[String, Any]) extends So
 
   def getDataOn(end: String) = varMap.get(end)
 
-  def getDataOn(end: Var) = varMap.get(flow2data(end.name))
+//  def getDataOn(end: Var) = varMap.get(flow2data(end.name))
 
 
-  def apply(end: Var): Any = apply(flow2data(end.name))
-
+//  def apply(end: Var): Any = apply(flow2data(end.name))
+//
+  // not needed, but used in tests (laziness)
   def apply(v:String): Any = //varMap(v)
     if (varMap contains v) varMap(v)
     else boolSol hasFlowOn v
-
-  def update(v:String,b:Int) {
-    varMap = varMap + (v -> b)
-  }
+//
+//  def update(v:String,b:Int) {
+//    varMap = varMap + (v -> b)
+//  }
 
 }
 

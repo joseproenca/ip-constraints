@@ -88,6 +88,27 @@ class Buffer {
   }
 
   /**
+   * Apply a predicate to a data value, using a *caching* mechanism
+   * @param p Predicate to be evaluated
+   * @param d Dat1a value to be passed to the first function
+   * @return p(fn(..(f2(f1(d)))))
+   */
+  def check(p:Predicate, d:Any) = {
+    //    println("#### checking "+p+"*"+fs.reverse.mkString(".")+"*"+d+"... ")
+    calculatedP.get((p, d)) match {
+      case Some(x) =>
+        //        println("(buffered)")
+        if (x) 1 else 0
+      case None =>
+        val res = p.check(d)
+        //        println("# adding "+p+"("+newd+") -> "+res+" to buffer")
+        calculatedP += (p,d) -> res
+        //        println("# Calc P - "+res+" ####")
+        if (res) 1 else 0
+    }
+  }
+
+  /**
    * Apply 'undo' to data 'd' for every calculation of 'f'(d) except if 'd'='data'.
    * Not optimised - Iterating over all buffered applications of functions.
    * (We could modify the 'calculatedF' map to be a nested map to avoid iteration.)

@@ -3,6 +3,7 @@ package common.guardedcommands.dataconnectors
 import common.guardedcommands._
 import common.guardedcommands.Var
 import common.{Predicate, Utils}
+import scala.collection.JavaConversions
 
 /**
  * Created with IntelliJ IDEA.
@@ -39,6 +40,8 @@ object ConnectorGen {
   def reader(a: String,n: Int, i: Int = 0) = new GCReader(a,i,n)
   def reader(a: String) = new GCReader(a,0,-1)
   def writer(a: String, data: List[Any], i: Int = 0) = new GCWriter(a,i,data)
+  def jwriter(a: String, data: java.util.List[Any], i: Int = 0) =
+    new GCWriter(a,i,data.toArray.toList)
 
   def flow(a: String, i: Int = 0) = new GCConnector(List(a),i) {
     def getConstraints = Formula(True --> Var(Utils.flowVar(a,i)))

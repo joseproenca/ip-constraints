@@ -330,6 +330,209 @@ object Z3 {
    * @param args
    */
   def main(args:Array[String]) {
+
+    println("------------ testing procedural attachments ---")
+
+    val z33 = new Z3Context()
+    // Defines a new theory of strings with two predicates and one function symbol.
+    val strings = new ProceduralAttachment[String](z33) {
+      val oddLength = predicate(s ⇒ s.length % 2 == 1)
+      val isSubstr = predicate((s1,s2) ⇒ s2.contains(s1))
+      val concat = function((s1,s2) ⇒ s1 + s2)
+    }
+
+    import strings._
+    val s1, s2 = strings.variable
+    z33.assertCnstr(
+      z33.mkAnd(
+        z33.mkAnd( s1 === "hello",
+          z33.mkOr(s2 === "world",s2 === "moon")
+        ),
+        z33.mkAnd(oddLength(concat(s2, s1)), isSubstr("low", concat(s1,s2)))
+      )
+    )
+
+//      s1 === "hello") && ((s2 === "world") || (s2 === "moon")) &&
+//          oddLength(concat(s2, s1)) && isSubstr("low", concat(s1,s2)))
+    println(z33.check) // unsatisfiable
+
+
+    println("------------ testing my procedural attachments for real ---")
+    val z = new Z3Context()
+    val xint = new ProceduralAttachment[Int](z) {
+      // index: ith element added --> value added.
+      val data = collection.mutable.ArrayBuffer[Any]()
+      def xpred(p: common.Predicate) = predicate( n => {
+        println("testing if "+p+"(#"+n+")")
+        if (data isDefinedAt n) {
+          //          println("from "+data(n.toString)+" got "+p.check(data(n.toString)))
+          p.check(data(n))
+        }
+        else false
+      })
+      def xfun(f: common.Function) = function( n =>
+        if (data isDefinedAt n) {
+          xgen(f.calculate(data(n)))
+        }
+        else
+          -1 // return an undefined value in "data"
+      )
+      // adds the new data value, and returns its new index
+      def xgen(d: Any): Int = { data.append(d); data.size - 1 }
+      def mkEq (v: Z3AST, d: Any): Z3AST = {
+        val indx = xgen(d)
+        val newConstant = constant(indx)
+        println("new val: data["+(indx)+"]  = "+newConstant+" - sort "+newConstant.getSort)
+        v === newConstant
+      }
+
+      def getVal(x: Z3AST,model: Z3Model): Option[Any] = {
+        val v = model.eval(x)
+        // only way I found was by analysing the toString... terrible.
+        if (!v.isDefined) return None
+        val elems = v.get.toString().split("!")
+        if (elems isDefinedAt 2) {
+          // assume: after ! there is always an integer
+          val index = Integer.valueOf(elems(2))
+          if (data isDefinedAt index)
+            Some(data(index))
+          else None
+        }
+        else
+          None
+      }
+    }
+
+    val succ = common.Function("succ") {
+      case x:Int =>
+        //x+1
+        println("succ of "+x+"?")
+        readInt()
+    }
+    val odd  = common.Predicate("odd") {
+      case x:Int => (x % 2) == 1
+      case x    => {println("strange value - "+x+": "+x.getClass()); false}
+    }
+
+
+    import xint.{mkEq,xpred,xfun}
+    val a,b,c,d,e = xint.variable
+    // if no "mkEq", no generator of elements of the theory exists - theory incomplete.
+    // if one "mkEq" is left out, the solver experiments all generated elements of the theory.
+    z.assertCnstr(mkEq(a,6))
+    z.assertCnstr(mkEq(b,9))
+    z.assertCnstr(z.mkEq(c,b))
+    z.assertCnstr(z.mkEq(d,a))
+    z.assertCnstr(z.mkEq(e,xfun(succ)(d)))
+    z.assertCnstr(xpred(odd)(e)) // odd(c) true, odd(d) false, odd(e) true.
+
+    z.checkAndGetModel() match {
+      case (None, _) => println("Z3 failed. The reason is: " + z.getSearchFailure.message)
+      case (Some(false), _) => println("Unsat.")
+      case (Some(true), model) => {
+        println("solution: "+model)
+        println("a: "+xint.getVal(a,model))
+        println("b: "+xint.getVal(b,model))
+        println("c: "+xint.getVal(c,model))
+        println("d: "+xint.getVal(d,model))
+        println("e: "+xint.getVal(e,model))
+      }
+    }
+
+
+
+
+
+
+    println("------------ testing my own procedural attachments ---")
+    val myz3 = new Z3Context()
+
+    ///////////////////////////
+    // Defines a new theory of integers (my constants) with external predicates and functions
+    val external = new ProceduralAttachment[Int](myz3) {
+      val data = collection.mutable.Map[String,Any]()
+      var seed = 0
+      var testConst: Z3AST = null
+      def xpred(p: common.Predicate) = predicate( n => {
+//        println("testing if "+p+"(#"+n+")")
+        if (data contains n.toString) {
+//          println("from "+data(n.toString)+" got "+p.check(data(n.toString)))
+          p.check(data(n.toString))
+        }
+        else false
+        // default - false
+      })
+
+      def xfun(f: common.Function) = function( n =>
+        if (data contains n.toString) {
+          xgen(f.calculate(data(n.toString)))
+//          seed = seed + 1
+//          data(seed.toString) = f.calculate(data(n.toString))
+//          seed
+        }
+        else
+          0
+      )
+      def xgen(d: Any): Int = { seed += 1 ; data(seed.toString) = d; seed }
+      def xassign(v: Z3AST, d: Any): Z3AST = {
+        xgen(d)
+//        println("asserting "+v+" === "+seed)
+//        v === "a"
+//        v.===(myz3.mkConst(seed.toString,v.getSort))
+        val newconstant = constant(seed)
+        testConst = newconstant
+        println("new val: "+seed+" - "+newconstant+" - sort "+newconstant.getSort)
+        v === newconstant
+      }
+    }
+    ///////////////////////////
+
+    // SMTLib -
+
+    import external._
+    val x,y,v,w = external.variable
+//    val xx = myz3.mkConst(myz3.mkStringSymbol("xx"),myz3.sort)
+    println("var x/y/w/z: "+x+" / "+y+" / "+w+" / "+z+" / ")
+    myz3.assertCnstr(myz3.mkAnd(xassign(x,5), external.xpred(odd)(y)))
+    myz3.assertCnstr(myz3.mkEq(x,y))
+    myz3.assertCnstr(xassign(w,6))
+    myz3.assertCnstr(xassign(v,7))
+//    val a = xgen(5)
+//    myz3.assertCnstr(x === a)
+    myz3.checkAndGetModel() match {
+      case (None, _) => println("Z3 failed. The reason is: " + myz3.getSearchFailure.message)
+      case (Some(false), _) => println("Unsat.")
+      case (Some(true), model) => {
+        println("model:\n"+model)
+        val valOnX = model.eval(x)
+        println("value on x: "+
+//          model.eval(x) + " - "+
+//          _root_.z3.scala.Z3
+          valOnX +" : "+valOnX.get.getClass +
+//          external.
+//          model.evalAs[Int](x) +
+          "\n - equals to generated constant? "+(valOnX.get == external.testConst)
+
+        ) //(myz3.mkBoolConst(myz3.mkStringSymbol("x"))
+        for (e <- external.getElems) println(" - elem "+e+": "+e.getClass+" - "+e.getSort)
+      }
+    }
+
+    // seems that the context myz3 has a solver, and has in the same line as the var the "constant added".
+    println("PRINTING context: "+myz3)
+
+    /////////////////
+    // NEW THEORY: the toString of the model.eval(x) ends with "val!0". This could
+    // mean that it is the first value of this sort. I generate them, so I can keep track of them.
+    // SEEMS OK!!
+    /////////////////
+
+    println(external.data)
+
+
+
+    println("------------ solving simple constraint (3 vars) ---")
+
     val cfg = new Z3Config("MODEL" -> true) // required if you plan to query models of satisfiable constraints
     val z3 = new Z3Context(cfg)
 
@@ -360,7 +563,7 @@ object Z3 {
       }
     }
 
-    println("------------")
+    println("------------ solving queens problem - 8x8 - 92 solutions")
 
     val zz3 = new Z3Context("MODEL" -> true)
     val N = 8
