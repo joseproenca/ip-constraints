@@ -4,7 +4,7 @@ import reopp.common.guardedcommands._
 import reopp.common.choco.{ChoConstraints, LazyPred, TrueC, ConstrBuilder}
 import reopp.common.Utils._
 import reopp.common.guardedcommands.GuardedCom
-import reopp.common.Buffer
+import reopp.common.{NoneSol, SomeSol, OptionSol, Buffer}
 import reopp.common
 /**
  * Static library to convert a guarded command into a choco.ConstrBuilder, from which the choco constraints can be used.
@@ -20,11 +20,21 @@ object ChocoBuilderSAT {
    * @param builders constraints to be solved using ChoConstraints
    * @return possible solution
    */
-  def solveChocoBool(buf: Buffer, da: DomainAbst, builders: Iterable[ConstrBuilder]) : Option[GCBoolSolution] = {
+  def solveChocoBool(buf: Buffer, da: DomainAbst, builders: Iterable[ConstrBuilder]) : OptionSol[GCBoolSolution] = {
     val choSol = ChoConstraints(builders).solve(da.guessOrder,buf)
-    for (s <- choSol) yield new GCBoolSolution(s.sol2map)
+//    for (s <- choSol) yield new GCBoolSolution(s.sol2map)
+    if (choSol.isDefined) SomeSol(new GCBoolSolution(choSol.get.sol2map,Some(buf)))
+    else NoneSol(buf)
   }
 
+  /** Solve a set of constraint builders from gc2BoolConstrBuilders.
+    *
+    * @param da domain invariants and information about the order of variables
+    * @param builders constraints to be solved using ChoConstraints
+    * @return possible solution
+    */
+  def solveChocoBool(da: DomainAbst, builders: Iterable[ConstrBuilder]) : OptionSol[GCBoolSolution] =
+    solveChocoBool(new Buffer, da, builders)
 
 
   /**

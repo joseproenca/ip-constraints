@@ -3,7 +3,7 @@ package reopp.dreams.connectors
 import reopp.dreams.Actor
 import reopp.common.guardedcommands.{Formula, GCSolution}
 import reopp.common.guardedcommands.dataconnectors.GCWriter
-import reopp.common.Utils
+import reopp.common.{OptionSol, Utils}
 import Utils._
 import reopp.common.guardedcommands.GCConnector.GCBuilder
 
@@ -23,7 +23,7 @@ class Writer(var n:Int) extends Actor[GCSolution, Formula] {
 
   val behaviour = new GCWriter("a",uid,(1 to n).map(Int.box(_)).toList) {
     private var triedAndFailed = false
-    override def update(s: Option[GCSolution]) {
+    override def update(s: OptionSol[GCSolution]) {
       triedAndFailed = !s.isDefined
       if (!triedAndFailed) triedAndFailed = !s.get.hasFlowOn(flowVar(x, uid))
       super.update(s)

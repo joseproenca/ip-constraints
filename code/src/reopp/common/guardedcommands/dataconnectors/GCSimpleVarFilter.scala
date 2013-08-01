@@ -1,7 +1,7 @@
 package reopp.common.guardedcommands.dataconnectors
 
 import reopp.common.guardedcommands._
-import reopp.common.{Predicate, Utils}
+import reopp.common.{OptionSol, Predicate, Utils}
 import Utils._
 
 
@@ -30,7 +30,7 @@ class GCSimpleVarFilter(an : String, bn : String, pred: Predicate, uid: Int)
       b --> (b := data.get)
     )
 
-  override def update(sol: Option[GCSolution]) {
+  override def update(sol: OptionSol[GCSolution]) {
     if (sol.isDefined)
       if (sol.get hasFlowOn a)
         data = Some(sol.get getDataOn a)

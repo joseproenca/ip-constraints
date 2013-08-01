@@ -1,7 +1,7 @@
 package reopp.dreams
 
 import actors.OutputChannel
-import reopp.common.{Constraints, Solution}
+import reopp.common.{OptionSol, Constraints, Solution}
 
 
 /**
@@ -19,7 +19,7 @@ case object Suspend               extends Message
 case class RequestBeh(rank:Int)   extends Message
 case class StrongerReq(rank:Int)  extends Message
 case class ReplyBeh[C<:Constraints[Solution,C]](c:C) extends Message
-case class ReplySol[S<:Solution](sol:Option[S])            extends Message
+case class ReplySol[S<:Solution](sol:OptionSol[S])            extends Message
 case class ReplyData(d:Any)                        extends Message
 case class ReplySolData[S<:Solution](sol:Option[S],d:Any)  extends Message
 case class Update[S<:Solution](sol:Option[S])    extends Message

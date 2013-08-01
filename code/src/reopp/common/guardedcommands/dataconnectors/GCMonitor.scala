@@ -1,7 +1,7 @@
 package reopp.common.guardedcommands.dataconnectors
 
 import reopp.common.guardedcommands._
-import reopp.common.{Function, Utils}
+import reopp.common.{OptionSol, Function, Utils}
 import Utils._
 import reopp.common.guardedcommands.Var
 
@@ -15,7 +15,7 @@ import reopp.common.guardedcommands.Var
 
 class GCMonitor (a: String, b: String, uid: Int, f: Function) extends GCSync(a,b,uid) {
 
-  override def update(s: Option[GCSolution]) {
+  override def update(s: OptionSol[GCSolution]) {
 //    println("updating! - based on "+a+"\n"+s.get)
 //    println("s.get of "+a+": "+s.get.getDataOn(dataVar(a,uid)))
     super.update(s)

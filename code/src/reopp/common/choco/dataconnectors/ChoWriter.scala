@@ -1,7 +1,7 @@
 package reopp.common.choco.dataconnectors
 
 import reopp.common.choco._
-import reopp.common.Utils
+import reopp.common.{OptionSol, Utils}
 import Utils._
 
 
@@ -22,7 +22,7 @@ class ChoWriter(val x: String, uid: Int, var data: List[Int]) extends connectors
     if (!data.isEmpty) ChoConstraints(Var(flowVar(x,uid)) --> DataAssgn(dataVar(x,uid),data.head))
     else nfConstr
 
-  override def update(s: Option[ChoSolution]) {
+  override def update(s: OptionSol[ChoSolution]) {
     if (s.isDefined)
     if (s.get.hasFlowOn(flowVar(x, uid))) {
       //      println("Writer: FLOW! new size: "+size)

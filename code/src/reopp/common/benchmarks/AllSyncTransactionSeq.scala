@@ -5,7 +5,7 @@ import reopp.common.guardedcommands.dataconnectors.ConstraintGen._
 import reopp.common.benchmarks.AllSyncTransaction.genTransaction
 import z3.scala.{Z3Config, Z3Context}
 import reopp.common.guardedcommands.z3.Z3
-import reopp.common.Solution
+import reopp.common.{OptionSol, Solution}
 
 /**
  * Created with IntelliJ IDEA.
@@ -127,7 +127,7 @@ object AllSyncTransactionSeq extends App {
     //    println("  # THE PROBLEM:\n"+problem.commands.mkString(" - ","\n - ","\n"))
 
     var time: Long = 0
-    var res: Option[Solution] = null
+    var res: OptionSol[Solution] = null
     var spent: Long = 0
 
 

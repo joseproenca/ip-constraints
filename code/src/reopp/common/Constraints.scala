@@ -1,7 +1,7 @@
 package reopp.common
 
 /**
- * Constraints whose solutions ([[common.Solution]]) describe single synchronous steps.
+ * Constraints whose solutions ([[reopp.common.Solution]]) describe single synchronous steps.
  * For example, guarded commands and choco expressions are two instances of constraints.
  *
  * Created by jose on 02/05/12.
@@ -14,7 +14,7 @@ trait Constraints[+S<:Solution,C<:Constraints[S,C]] {
     *
     * @return `Some(s)` if a solution `s` is found, and `None` otherwise.
     */
-  def solve: Option[S]
+  def solve: OptionSol[S]
 
   /** Calculate a new constraint after combining `this` with `other`.
     *

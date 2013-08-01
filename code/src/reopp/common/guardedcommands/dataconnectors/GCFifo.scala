@@ -1,6 +1,6 @@
 package reopp.common.guardedcommands.dataconnectors
 
-import reopp.common.Utils
+import reopp.common.{OptionSol, Utils}
 import Utils._
 import reopp.common.guardedcommands._
 import scala.None
@@ -35,7 +35,7 @@ class GCFifo(a: String, b: String, var data: Option[Any], uid: Int = 0) extends 
 
   def getConstraints = if (data.isDefined) fullFifo else emptyFifo
 
-  override def update(s: Option[GCSolution]) {
+  override def update(s: OptionSol[GCSolution]) {
     if (s.isDefined) {
       if (s.get hasFlowOn flowVar(a,uid)) {
         // update state

@@ -10,6 +10,7 @@ import reopp.common.Utils._
  * Created by jose on 12/04/13.
  */
 class GCPTransf[A] (a: String, b: String, uid: Int, f: PartialFunction[A,_]) extends GCConnector(List(a,b), uid) {
+
   private val av = Var(flowVar(a,uid))
   private val bv = Var(flowVar(b,uid))
 

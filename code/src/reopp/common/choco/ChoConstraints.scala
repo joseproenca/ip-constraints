@@ -1,18 +1,18 @@
 package reopp.common.choco
 
-import choco.cp.solver.CPSolver
-import choco.cp.model.CPModel
-import choco.kernel.common.logging.{Verbosity, ChocoLogging}
+import _root_.choco.cp.solver.CPSolver
+import _root_.choco.cp.model.CPModel
+import _root_.choco.kernel.common.logging.{Verbosity, ChocoLogging}
 import scala.collection.JavaConversions._
-import choco.Choco
-import choco.kernel.model.variables.integer.IntegerVariable
-import reopp.common.{Buffer, Utils, Constraints}
+import _root_.choco.Choco
+import _root_.choco.kernel.model.variables.integer.IntegerVariable
+import reopp.common._
 import reopp.common.Utils._
-import choco.cp.solver.search.integer.branching.AssignVar
-import choco.cp.solver.search.integer.varselector.StaticVarOrder
-import choco.kernel.solver.variables.integer.IntDomainVar
-import choco.cp.solver.search.integer.valiterator.IncreasingDomain
-import reopp.common
+import _root_.choco.cp.solver.search.integer.branching.AssignVar
+import _root_.choco.cp.solver.search.integer.varselector.StaticVarOrder
+import _root_.choco.kernel.solver.variables.integer.IntDomainVar
+import _root_.choco.cp.solver.search.integer.valiterator.IncreasingDomain
+import scala.Some
 
 /**
  * Created by IntelliJ IDEA.
@@ -68,7 +68,7 @@ class ChoConstraints extends Constraints[ChoSolution,ChoConstraints] {
       solved = s.minimize(s.getVar(varMap(v)),true)
     else println("Var not found in minimisation. VarMap: "+varMap.mkString(","))
 
-    if (solved) Some(new ChoSolution(s,varMap))
+    if (solved) Some(new ChoSolution(s,varMap,None))
     else  None
 
   }
@@ -93,11 +93,11 @@ class ChoConstraints extends Constraints[ChoSolution,ChoConstraints] {
 
   }
 
-  def solve: Option[ChoSolution] = solve(List(), new Buffer)
+  def solve: OptionSol[ChoSolution] = solve(List(), new Buffer)
 
-  def solve(buf: Buffer): Option[ChoSolution] = solve(List(),buf)
+  def solve(buf: Buffer): OptionSol[ChoSolution] = solve(List(),buf)
 
-  def solve(order:List[String], buf: Buffer): Option[ChoSolution] = {
+  def solve(order:List[String], buf: Buffer): OptionSol[ChoSolution] = {
     ChocoLogging.setVerbosity(Verbosity.OFF)
 
     val s = new CPSolver
@@ -131,8 +131,8 @@ class ChoConstraints extends Constraints[ChoSolution,ChoConstraints] {
 
     val solved = s.solve
 
-    if (solved) Some(new ChoSolution(s,varMap))
-    else  None
+    if (solved) SomeSol(new ChoSolution(s,varMap,Some(buf)))
+    else  NoneSol()
   }
 
 

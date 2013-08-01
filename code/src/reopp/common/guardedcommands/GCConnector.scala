@@ -4,7 +4,7 @@ import reopp.common.{CBuilder, Utils, Connector}
 import Utils._
 
 /**
- * Connector defined with guarded commands ([[common.guardedcommands.Formula]]).
+ * Connector defined with guarded commands ([[reopp.common.guardedcommands.Formula]]).
  * Each concrete connector will extend this class.
  *
  * Created by jose on 06/06/12.

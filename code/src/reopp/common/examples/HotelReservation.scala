@@ -102,14 +102,14 @@ object HotelReservation extends App {
   }
 
   val cancelB = Function("cancelB"){
-    case x => println("canceling booking "+x+".") // returns Unit
+    case (x,_) => println("canceling booking "+x+".") // returns Unit
   }
 
   val invoice = Function("invoice"){
     case x => println("sending invoice for "+x+": "+x.getClass) // returns Unit
   }
 
-  val pay = Predicate(){
+  val pay = Predicate("pay"){
     case x => if (x == "Ibis") {
       println("paying for Ibis")
       true

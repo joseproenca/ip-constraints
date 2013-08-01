@@ -1,11 +1,11 @@
-package workers
+package reopp.workers
 
 import connectors.Merger
 import org.scalatest.FunSpec
-import common.choco.{ChoConstraints, ChoSolution}
+import reopp.common.choco.{ChoConstraints, ChoSolution}
 import strategies._
-import common.guardedcommands.{GCSolution, Formula}
-import common.guardedcommands.GCConnector.GCBuilder
+import reopp.common.guardedcommands.{GCSolution, Formula}
+import reopp.common.guardedcommands.GCConnector.GCBuilder
 
 /**
  * Created with IntelliJ IDEA.
@@ -32,11 +32,11 @@ class TestMergersWorkers extends FunSpec {
 
 //  describe ("Workers full traversal - tree of merges.") {
 //    // create and run deployer
-//    val deployer = new Deployer[S,C,St,SB](workers,CompleteStrategyBuilder)
+//    val deployer = new Deployer[S,C,St,SB](reopp.workers,CompleteStrategyBuilder)
 //    deployer.start()
 //
 //    // create reader
-//    val rd = new connectors.Reader(math.pow(workers,size).toInt,deployer)
+//    val rd = new connectors.Reader(math.pow(reopp.workers,size).toInt,deployer)
 //    println("reader: "+rd.behaviour.uid)
 //
 //    // create and connect mergers

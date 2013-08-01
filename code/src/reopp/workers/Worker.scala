@@ -2,7 +2,7 @@ package reopp.workers
 
 import actors.OutputChannel
 import strategies.Strategy
-import reopp.common.{Solution, CBuilder, Constraints}
+import reopp.common.{OptionSol, Solution, CBuilder, Constraints}
 
 /**
  * Created by IntelliJ IDEA.
@@ -92,7 +92,7 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
     act()
   }
 
-  def success(sol:Option[S]) {
+  def success(sol:OptionSol[S]) {
     debug("DONE\n"+sol)
     for (n <- strat.owned) {
       n.behaviour.update(sol)

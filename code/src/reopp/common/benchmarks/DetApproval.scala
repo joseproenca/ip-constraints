@@ -108,7 +108,7 @@ object DetApproval extends App {
 
     //// QUICK-SAT ////
     var time = System.currentTimeMillis()
-    var res: Option[Solution] = problem.quickDataSolve
+    var res: OptionSol[Solution] = problem.quickDataSolve
     var spent = System.currentTimeMillis() - time
     if (res.isDefined) println("quick-sat - solved in "+spent+" ms:\n"+res.get)
     else println("quick-sat - no solution (in "+spent+" ms)")

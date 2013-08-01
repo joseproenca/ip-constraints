@@ -1,10 +1,10 @@
-package common.guardedcommands
+package reopp.common.guardedcommands
 
 import org.scalatest.FunSpec
-import common.{Utils}
+import reopp.common.{Utils}
 import Utils._
-import common.guardedcommands.dataconnectors.{GCSync, GCFilter}
-import common.examples.{Odd, Even}
+import reopp.common.guardedcommands.dataconnectors.{GCSync, GCFilter}
+import reopp.common.examples.{Odd, Even}
 
 /**
  * Created with IntelliJ IDEA.

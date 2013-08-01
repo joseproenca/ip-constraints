@@ -1,11 +1,11 @@
-package common.choco
+package reopp.common.choco
 
-import common.{Utils}
+import reopp.common.{Utils}
 import Utils.{flowVar,dataVar}
 import org.scalatest.FunSpec
 import dataconnectors.{ChoReader, ChoFilter, ChoWriter}
 import ChoConnector.ChoBuilder._
-import common.examples.{Even, GT}
+import reopp.common.examples.{Even, GT}
 
 /**
  * Created with IntelliJ IDEA.

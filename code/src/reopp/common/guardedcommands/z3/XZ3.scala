@@ -35,7 +35,7 @@ object XZ3 {
    * @param gcs formula to be solved
    * @return Possible solution to the formula
    */
-  def solvexz3(gcs: Formula): Option[GCSolution] = {
+  def solvexz3(gcs: Formula): OptionSol[GCSolution] = {
     val z3 = new Z3Context(new Z3Config("MODEL" -> true))
     val theory = buildTheory(z3) // each theory has state, including buffering of intermediate values. Cannot be reused.
     val z3ast = gc2xz3(gcs,theory)
@@ -46,7 +46,7 @@ object XZ3 {
     solvexz3(z3ast,theory)
   }
 
-  def solvexz3(const: Iterable[Z3AST],theory: XTheory): Option[GCSolution] = {
+  def solvexz3(const: Iterable[Z3AST],theory: XTheory): OptionSol[GCSolution] = {
     val z3 = theory.getContext
     for (z <- theory.extraAssigns)
       z3.assertCnstr(z)
@@ -54,15 +54,16 @@ object XZ3 {
       z3.assertCnstr(z)
 
     z3.checkAndGetModel() match {
-      case (None, m) =>
+//      case (None, m) =>
 //        println("Z3 failed. The reason is: " + z3.getSearchFailure.message)
-        None
-      case (Some(false), m) =>
+//        None
+//      case (Some(false), m) =>
 //        println("Unsat.")
-        None
-      case (Some(true), model) => {
-        Some(GCWrapper(new XZ3Solution(theory,model),theory.buf))
-      }
+//        None
+      case (Some(true), model) =>
+        SomeSol(GCWrapper(new XZ3Solution(theory,model),theory.buf))
+      case _ =>
+        NoneSol(theory.buf) // rollback all here? probably not the best place.
     }
 
   }
@@ -231,13 +232,10 @@ object XZ3 {
 
   }
 
-  def GCWrapper(s:XZ3Solution,buf: Buffer) = {
-    val sol = new GCSolution(s,Map()) {
+  def GCWrapper(s:XZ3Solution,buf: Buffer) =
+    new GCSolution(s,Map()) {
       override def getDataOn(end:String) = s.getDataOn(end)
     }
-    sol.buf = Some(buf)
-    sol
-  }
   private class XZ3Solution(theory: XTheory, model: Z3Model) extends Solution {
     private val z3 = theory.getContext
 
@@ -251,6 +249,8 @@ object XZ3 {
 //      println("what is the value in "+v+"? - "+model.eval(v).get)
       model.eval(v).get
     }
+
+    override def getBuffer = Some(theory.buf)
 
     def hasFlowOn(end: String) =model.evalAs[Boolean](z3.mkBoolConst(z3.mkStringSymbol(end))) match {
       case None => false

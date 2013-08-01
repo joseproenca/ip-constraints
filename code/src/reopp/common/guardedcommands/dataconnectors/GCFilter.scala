@@ -56,3 +56,7 @@ class GCFilter(a: String, b: String, uid: Int,g: Guard) extends GCConnector(List
 //object GCFilter {
 //
 //}
+
+class GCTFilter[A](a: String, b: String, uid: Int,filter: (A) => Boolean)
+  extends GCFilter(a, b, uid,
+    Pred(dataVar(a,uid),Predicate()(filter)))

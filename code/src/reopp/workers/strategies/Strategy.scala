@@ -1,7 +1,7 @@
 package reopp.workers.strategies
 
 import reopp.workers.Node
-import reopp.common.{CBuilder, Solution, Constraints}
+import reopp.common._
 
 
 /**
@@ -31,9 +31,9 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
   def merge(s:St)
 
   // aux functions
-  def solve(implicit builder:CBuilder[S,C]): Option[S] = {
+  def solve(implicit builder:CBuilder[S,C]): OptionSol[S] = {
 //    var beh = new Behaviour[S,C](val ends: List[String],val uid: Int)
-    if (owned.isEmpty) return None
+    if (owned.isEmpty) return NoneSol()
 
     // get first node and behaviour
     val init = owned.head

@@ -1,9 +1,9 @@
-package common.guardedcommands
+package reopp.common.guardedcommands
 
 import org.scalatest.FunSpec
-import common.Utils._
-import common.guardedcommands.dataconnectors.{GCFilter, GCTransf}
-import common.examples.{Double, LT, GT}
+import reopp.common.Utils._
+import reopp.common.guardedcommands.dataconnectors.{GCFilter, GCTransf}
+import reopp.common.examples.{Double, LT, GT}
 
 /**
  * Test channels with functions in guarded commands.

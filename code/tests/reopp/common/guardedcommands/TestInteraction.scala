@@ -1,9 +1,9 @@
-package common.guardedcommands
+package reopp.common.guardedcommands
 
 import dataconnectors._
 import org.scalatest.FunSpec
-import common.Predicate
-import common.guardedcommands.dataconnectors.{GCADrain, GCWriter, GCMerger, GCFilter}
+import reopp.common.Predicate
+import reopp.common.guardedcommands.dataconnectors.{GCADrain, GCWriter, GCMerger, GCFilter}
 
 /**
  * Created with IntelliJ IDEA.

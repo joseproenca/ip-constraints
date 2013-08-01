@@ -1,6 +1,6 @@
 package reopp.common.guardedcommands
 
-import reopp.common.{Connector, Utils}
+import reopp.common.{OptionSol, Connector, Utils}
 import Utils._
 import collection.mutable
 
@@ -32,7 +32,7 @@ class ComplexConnector(val sub: List[Connector[GCSolution,Formula]], ends: List[
     res
   }
 
-  override def update(s: Option[GCSolution]) {
+  override def update(s: OptionSol[GCSolution]) {
     for (c <- sub) c.update(s)
   }
 

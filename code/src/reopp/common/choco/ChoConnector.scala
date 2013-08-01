@@ -69,7 +69,7 @@ abstract class ChoConnector(ends: List[String], uid: Int) extends Connector[ChoS
 
   //def update(s: ChoSolution) {} // default implementation
 
-  def noSol = new ChoSolution(null, null) {
+  def noSol = new ChoSolution(null, null, None) {
     override def getVal(v: String): Option[Int] =
       extension.get(v)
 

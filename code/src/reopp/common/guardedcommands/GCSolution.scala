@@ -12,7 +12,8 @@ import reopp.common.Utils.{ppVar,flow2data}
  */
 
 class GCSolution(val boolSol: Solution, var varMap: Map[String, Any]) extends Solution {
-  var buf: Option[Buffer] = None
+//  var buf: Option[Buffer] = None
+  override def getBuffer = boolSol.getBuffer //buf
 
   def hasFlowOn(end: String) =
     boolSol hasFlowOn end

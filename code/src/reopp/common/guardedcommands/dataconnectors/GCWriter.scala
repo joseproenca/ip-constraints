@@ -1,7 +1,7 @@
 package reopp.common.guardedcommands.dataconnectors
 
 import reopp.common.guardedcommands._
-import reopp.common.Utils
+import reopp.common.{OptionSol, Utils}
 import Utils._
 import reopp.common.guardedcommands.Var
 
@@ -34,7 +34,7 @@ class GCWriter (val x: String, uid: Int, var data: List[Any]) extends GCConnecto
     else nfConstr
   }
 
-  override def update(s: Option[GCSolution]) {
+  override def update(s: OptionSol[GCSolution]) {
     if (s.isDefined)
     if (s.get.hasFlowOn(flowVar(x, uid))) {
       //      println("Writer: FLOW! new size: "+size)

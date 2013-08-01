@@ -2,7 +2,7 @@ package reopp.common.guardedcommands.chocobuilder
 
 import reopp.common.choco.{ChoConstraints, ChoSolution, ConstrBuilder}
 import reopp.common.guardedcommands._
-import reopp.common.{IntFunction, IntPredicate}
+import reopp.common.{OptionSol, IntFunction, IntPredicate}
 import reopp.common.guardedcommands.GuardedCom
 import reopp.common.guardedcommands.IntPred
 import reopp.common.guardedcommands.Var
@@ -17,7 +17,7 @@ import reopp.common
 object ChocoBuilderInt {
 
 
-  def solveChoco(gcs: Formula): Option[ChoSolution] =
+  def solveChoco(gcs: Formula): OptionSol[ChoSolution] =
     ChoConstraints(toConstBuilders(gcs)).solve
 
 

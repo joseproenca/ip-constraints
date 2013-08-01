@@ -205,13 +205,13 @@ private def sync(basec: C)(implicit cbuilder: CBuilder[S,C]): C = {
         sender ! Busy
         stateCommitted
       }
-      case ReplySol(s:Option[S]) => processSol(s,freshSol = false)
+      case ReplySol(s:OptionSol[S]) => processSol(s,freshSol = false)
       //    case ReplyData(d:Any) => processData(d)
       //    case ReplySolData(s:S,d:Any) => processSolData(s,d)
     }
   }
 
-  protected def processSol(sol:Option[S],freshSol:Boolean): Nothing = { //,rcvd: Map[ActorRef,Any]) = act
+  protected def processSol(sol:OptionSol[S],freshSol:Boolean): Nothing = { //,rcvd: Map[ActorRef,Any]) = act
     if (freshSol) debug("got solution!\n"+sol)
     val interested = if (freshSol) neighbours else neighbours - sender
     for (a <- interested) {

@@ -1,4 +1,4 @@
-package common.guardedcommands.chocox
+package reopp.common.guardedcommands.chocox
 
 /**
  * Created with IntelliJ IDEA.
@@ -7,11 +7,11 @@ package common.guardedcommands.chocox
  */
 
 import org.scalatest.FunSpec
-import common.guardedcommands.dataconnectors.{GCADrain, GCWriter, GCMerger, GCFilter}
-import common.{Buffer, Utils, Function, Predicate}
-import common.Utils._
-import common.guardedcommands.dataconnectors.ConnectorGen._
-import common.guardedcommands.{Impl, Formula}
+import reopp.common.guardedcommands.dataconnectors.{GCADrain, GCWriter, GCMerger, GCFilter}
+import reopp.common.{Buffer, Utils, Function, Predicate}
+import reopp.common.Utils._
+import reopp.common.guardedcommands.dataconnectors.ConnectorGen._
+import reopp.common.guardedcommands.{Impl, Formula}
 
 class TestChocoX extends FunSpec {
 
@@ -52,7 +52,7 @@ class TestChocoX extends FunSpec {
 
 
 
-    val res = ChocoX.solve(cs,new Buffer)
+    val res = ChocoX.solve(cs)
 
     println("-----------\n"+cs.commands.mkString("\n"))
     println("-----------")

@@ -1,7 +1,7 @@
 package reopp.common.benchmarks
 
 import reopp.common.choco.dataconnectors._
-import reopp.common.{IntPredicate, Utils}
+import reopp.common.{NoneSol, OptionSol, IntPredicate, Utils}
 import Utils._
 import choco.kernel.model.variables.integer.IntegerExpressionVariable
 import choco.Choco
@@ -84,7 +84,7 @@ object ChoLoanRequest extends App {
 //  )
 
   var time: Long = 0
-  var res: Option[ChoSolution] = None
+  var res: OptionSol[ChoSolution] = NoneSol()
   var spent: Long = 0
   var total: Long = 0
 

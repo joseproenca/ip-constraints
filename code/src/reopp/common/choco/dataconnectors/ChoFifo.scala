@@ -1,6 +1,6 @@
 package reopp.common.choco.dataconnectors
 
-import reopp.common.Utils
+import reopp.common.{OptionSol, Utils}
 import Utils._
 import reopp.common.choco._
 
@@ -21,7 +21,7 @@ class ChoFifo(a: String, b: String, dt: Option[Int], uid: Int) extends connector
     bv --> DataAssgn(dataVar(b,uid),data.get)
   )
 
-  override def update(s: Option[ChoSolution]) {
+  override def update(s: OptionSol[ChoSolution]) {
     if (s.isDefined) {
     if (s.get.hasFlowOn(flowVar(a, uid))) {
       //      println("Writer: FLOW! new size: "+size)

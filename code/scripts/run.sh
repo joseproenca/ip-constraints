@@ -11,7 +11,7 @@ for ((i=10;i<=70;i=i+10)); do
   printf "Choco, $i"                                    >> $OUT/Schedules.csv
   for run in {1..10}; do
     printf ", "                                         >> $OUT/Schedules.csv
-    java -cp $JAR common.benchmarks.ChoSchedules $i >> $OUT/Schedules.csv
+    java -cp $JAR reopp.common.benchmarks.ChoSchedules $i >> $OUT/Schedules.csv
   done
   echo ""                                               >> $OUT/Schedules.csv
 done
@@ -20,7 +20,7 @@ for ((i=10;i<=70;i=i+10)); do
   printf "PAS, $i"                                      >> $OUT/Schedules.csv
   for run in {1..10}; do
     printf ", "                                         >> $OUT/Schedules.csv
-    java -cp $JAR common.benchmarks.GCSchedules $i  >> $OUT/Schedules.csv
+    java -cp $JAR reopp.common.benchmarks.GCSchedules $i  >> $OUT/Schedules.csv
   done
   echo ""                                               >> $OUT/Schedules.csv
 done
@@ -29,7 +29,7 @@ for ((i=10;i<=70;i=i+10)); do
   printf "PAC, $i"                                      >> $OUT/Schedules.csv
   for run in {1..10}; do
     printf ", "                                         >> $OUT/Schedules.csv
-    java -cp $JAR common.benchmarks.GCSchedules $i c >> $OUT/Schedules.csv
+    java -cp $JAR reopp.common.benchmarks.GCSchedules $i c >> $OUT/Schedules.csv
   done
   echo ""                                               >> $OUT/Schedules.csv
 done
@@ -38,7 +38,7 @@ for ((i=10;i<=70;i=i+10)); do
   printf "PAS-SAT, $i"                                  >> $OUT/Schedules.csv
   for run in {1..10}; do
     printf ", "                                         >> $OUT/Schedules.csv
-    java -cp $JAR common.benchmarks.GCSchedules $i n i >> $OUT/Schedules.csv
+    java -cp $JAR reopp.common.benchmarks.GCSchedules $i n i >> $OUT/Schedules.csv
   done
   echo ""                                               >> $OUT/Schedules.csv
 done
@@ -51,7 +51,7 @@ for ((i=10;i<=150;i=i+20)); do
   printf "Choco, $i"                                    >> $OUT/Primes.csv
   for run in {1..10}; do
     printf ", "                                         >> $OUT/Primes.csv
-    java -cp $JAR common.benchmarks.ChoPrimes $i    >> $OUT/Primes.csv
+    java -cp $JAR reopp.common.benchmarks.ChoPrimes $i    >> $OUT/Primes.csv
   done
   echo ""                                               >> $OUT/Primes.csv
 done
@@ -60,7 +60,7 @@ for ((i=10;i<=150;i=i+20)); do
   printf "PAS, $i"                                      >> $OUT/Primes.csv
   for run in {1..10}; do
     printf ", "                                         >> $OUT/Primes.csv
-    java -cp $JAR common.benchmarks.GCPrimes $i     >> $OUT/Primes.csv
+    java -cp $JAR reopp.common.benchmarks.GCPrimes $i     >> $OUT/Primes.csv
   done
   echo ""                                               >> $OUT/Primes.csv
 done
@@ -69,7 +69,7 @@ for ((i=10;i<=150;i=i+20)); do
   printf "PAC, $i"                                      >> $OUT/Primes.csv
   for run in {1..10}; do
     printf ", "                                         >> $OUT/Primes.csv
-    java -cp $JAR common.benchmarks.GCPrimes $i c   >> $OUT/Primes.csv
+    java -cp $JAR reopp.common.benchmarks.GCPrimes $i c   >> $OUT/Primes.csv
   done
   echo ""                                               >> $OUT/Primes.csv
 done
@@ -78,7 +78,7 @@ for ((i=10;i<=150;i=i+20)); do
   printf "PAS-SAT, $i"                                  >> $OUT/Primes.csv
   for run in {1..10}; do
     printf ", "                                         >> $OUT/Primes.csv
-    java -cp $JAR common.benchmarks.GCPrimes $i n i >> $OUT/Primes.csv
+    java -cp $JAR reopp.common.benchmarks.GCPrimes $i n i >> $OUT/Primes.csv
   done
   echo ""                                               >> $OUT/Primes.csv
 done
@@ -92,7 +92,7 @@ for ((i=10;i<=150;i=i+20)); do
   printf "Choco, $i"                                    >> $OUT/ParSpouts.csv
   for run in {1..1}; do
     printf ", "                                         >> $OUT/ParSpouts.csv
-    java -cp $JAR common.benchmarks.ChoParSpouts $i    >> $OUT/ParSpouts.csv
+    java -cp $JAR reopp.common.benchmarks.ChoParSpouts $i    >> $OUT/ParSpouts.csv
   done
   echo ""                                               >> $OUT/ParSpouts.csv
 done
@@ -101,7 +101,7 @@ for ((i=10;i<=150;i=i+20)); do
   printf "PAS, $i"                                      >> $OUT/ParSpouts.csv
   for run in {1..1}; do
     printf ", "                                         >> $OUT/ParSpouts.csv
-    java -cp $JAR common.benchmarks.GCParSpouts $i     >> $OUT/ParSpouts.csv
+    java -cp $JAR reopp.common.benchmarks.GCParSpouts $i     >> $OUT/ParSpouts.csv
   done
   echo ""                                               >> $OUT/ParSpouts.csv
 done
@@ -110,7 +110,7 @@ for ((i=10;i<=150;i=i+20)); do
   printf "PAC, $i"                                      >> $OUT/ParSpouts.csv
   for run in {1..1}; do
     printf ", "                                         >> $OUT/ParSpouts.csv
-    java -cp $JAR common.benchmarks.GCParSpouts $i c   >> $OUT/ParSpouts.csv
+    java -cp $JAR reopp.common.benchmarks.GCParSpouts $i c   >> $OUT/ParSpouts.csv
   done
   echo ""                                               >> $OUT/ParSpouts.csv
 done
@@ -119,7 +119,7 @@ for ((i=10;i<=150;i=i+20)); do
   printf "PAS-SAT, $i"                                  >> $OUT/ParSpouts.csv
   for run in {1..1}; do
     printf ", "                                         >> $OUT/ParSpouts.csv
-    java -cp $JAR common.benchmarks.GCParSpouts $i n i >> $OUT/ParSpouts.csv
+    java -cp $JAR reopp.common.benchmarks.GCParSpouts $i n i >> $OUT/ParSpouts.csv
   done
   echo ""                                               >> $OUT/ParSpouts.csv
 done
@@ -133,7 +133,7 @@ for ((i=0;i<=10;i=i+1)); do
   printf "Choco, $i"                                    >> $OUT/Approval.csv
   for run in {1..10}; do
     printf ", "                                         >> $OUT/Approval.csv
-    java -cp $JAR common.benchmarks.ChoApproval $i    >> $OUT/Approval.csv
+    java -cp $JAR reopp.common.benchmarks.ChoApproval $i    >> $OUT/Approval.csv
   done
   echo ""                                               >> $OUT/Approval.csv
 done
@@ -142,7 +142,7 @@ for ((i=0;i<=10;i=i+1)); do
   printf "PAS, $i"                                      >> $OUT/Approval.csv
   for run in {1..10}; do
     printf ", "                                         >> $OUT/Approval.csv
-    java -cp $JAR common.benchmarks.GCApproval $i     >> $OUT/Approval.csv
+    java -cp $JAR reopp.common.benchmarks.GCApproval $i     >> $OUT/Approval.csv
   done
   echo ""                                               >> $OUT/Approval.csv
 done
@@ -151,7 +151,7 @@ for ((i=0;i<=10;i=i+1)); do
   printf "PAC, $i"                                      >> $OUT/Approval.csv
   for run in {1..10}; do
     printf ", "                                         >> $OUT/Approval.csv
-    java -cp $JAR common.benchmarks.GCApproval $i c   >> $OUT/Approval.csv
+    java -cp $JAR reopp.common.benchmarks.GCApproval $i c   >> $OUT/Approval.csv
   done
   echo ""                                               >> $OUT/Approval.csv
 done
@@ -160,7 +160,7 @@ for ((i=0;i<=10;i=i+1)); do
   printf "PAS-SAT, $i"                                  >> $OUT/Approval.csv
   for run in {1..10}; do
     printf ", "                                         >> $OUT/Approval.csv
-    java -cp $JAR common.benchmarks.GCApproval $i n i >> $OUT/Approval.csv
+    java -cp $JAR reopp.common.benchmarks.GCApproval $i n i >> $OUT/Approval.csv
   done
   echo ""                                               >> $OUT/Approval.csv
 done

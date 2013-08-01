@@ -1,7 +1,7 @@
 package reopp.common.examples
 
 import reopp.common.guardedcommands.dataconnectors.ConnectorGen._
-import reopp.common.{Solution, Predicate}
+import reopp.common.{SomeSol, OptionSol, Solution, Predicate}
 import z3.scala.{Z3AST, Z3Context}
 import reopp.common.guardedcommands.IntPred
 import reopp.common.Utils._
@@ -49,18 +49,18 @@ object Subtract extends App {
       reader("res",2)
 
 
-  var sol: Option[Solution] = connector.getConstraints.solveChocoDyn
+  var sol: OptionSol[Solution] = connector.getConstraints.solveChocoDyn
 
   sol match {
-    case Some(s) => println("Solved!\n"+s)
-    case None => println("no solution")
+    case SomeSol(s) => println("Solved!\n"+s)
+    case _ => println("no solution")
   }
 
   sol = connector.getConstraints.solveXZ3
 
   sol match {
-    case Some(s) => println("Z Solved!\n"+s)
-    case None => println("Z no solution")
+    case SomeSol(s) => println("Z Solved!\n"+s)
+    case _ => println("Z no solution")
   }
 
   //  connector.step

@@ -1,6 +1,6 @@
 package reopp.common.guardedcommands
 
-import _root_.z3.scala.{Z3Config, Z3Context}
+import _root_.z3.scala.Z3Context
 import reopp.common.guardedcommands.chocobuilder.{ChocoBuilderInt, ChocoBuilderSAT}
 import chocodyn.{ChocoDyn, DynSolution}
 import chocox.{ChocoX, CXSolution}
@@ -8,12 +8,12 @@ import org.sat4j.minisat.SolverFactory
 import org.sat4j.core.VecInt
 import org.sat4j.specs.{TimeoutException, ContradictionException, ISolver}
 import collection.mutable.{Set => MutSet, Map => MutMap, ListBuffer}
-import reopp.common.{Buffer, Constraints, Solution, Utils}
+import reopp.common._
 import Utils._
-import reopp.common.choco.{ConstrBuilder,ChoSolution,ChoConstraints,FalseC}
-import scala.Some
+import reopp.common.choco.{ConstrBuilder,ChoSolution,FalseC}
 import reopp.common.guardedcommands.z3.{XZ3, Z3Solution, Z3}
 import reopp.common
+import scala.Some
 
 /**
  * Created with IntelliJ IDEA.
@@ -30,8 +30,8 @@ class Formula extends Constraints[GCSolution,Formula] {
   var justInit = false
 
   var commands = Set[GuardedCom]()
-//  var eqvars = Set[(String,String)]()
-  private var da = DomainAbst()
+  //  var eqvars = Set[(String,String)]()
+  private val da = DomainAbst()
   private var solvedDomain = false
   //  var someVars: Option[MutMap[String,Int]] = None
 
@@ -39,7 +39,7 @@ class Formula extends Constraints[GCSolution,Formula] {
 
 
   //  var buf = new Buffer
-  private var buf: Option[Buffer] = None
+//  private var buf: Option[Buffer] = None
 //  def getBuf: Option[Buffer] = buf
 
   override def toString = commands.mkString("\n")
@@ -51,8 +51,8 @@ class Formula extends Constraints[GCSolution,Formula] {
    */
 //  def solve = lazyDataSolve  // predicate abstraction + choco (using guesses)
 //  def solve = solveChocoX    // choco - 1st attempt (predicates that keep track of all functions)
-  def solve = solveChocoDyn  // choco - 2nd attempt (dynamic mapping between ints (in choco) and the value they represent)
-//  def solve = solveXZ3       // z3    - same as chocoDyn. Tricks used to be able to recover solution and to avoid incomplete theories (not possible to say "if A is instantiated...")
+//  def solve = solveChocoDyn  // choco - 2nd attempt (dynamic mapping between ints (in choco) and the value they represent)
+  def solve = solveXZ3       // z3    - same as chocoDyn. Tricks used to be able to recover solution and to avoid incomplete theories (not possible to say "if A is instantiated...")
 
   /**
    * Collect the domain of every guarded command in field 'da'.
@@ -271,7 +271,7 @@ class Formula extends Constraints[GCSolution,Formula] {
    * Predicate abstraction + SAT + loop until data solution is found.
    * @return Data solution for the constraints.
    */
-  def solveIterative : Option[GCSolution] = {
+  def solveIterative : OptionSol[GCSolution] = {
     // solveDomain; toCNF; solveBool?; [partialEval; quotient; dataAssign(done?); solveData(done?); incrementAndSolve?]
     val t1 = System.currentTimeMillis()
     val cnf = toCNF
@@ -280,11 +280,11 @@ class Formula extends Constraints[GCSolution,Formula] {
 //    val t3 = System.currentTimeMillis()
 //    println("[SAT toCNF-Solve] "+(t2-t1)+" - "+(t3-t2))
     if (!optSolBool.isDefined)
-      return None
+      return NoneSol()
 //    println("INIT GUESS:\n"+optSolBool.get.pretty)
 
     if (justInit) {
-      return Some(new GCSolution(optSolBool.get,Map[String, Integer]()))
+      return SomeSol(new GCSolution(optSolBool.get,Map[String, Integer]()))
     }
 
     val res = loopPartialEval(partialEval(optSolBool.get),cnf,optSolBool.get,0)
@@ -293,7 +293,7 @@ class Formula extends Constraints[GCSolution,Formula] {
   }
 
   //private var counter
-  private def loopPartialEval(pEval: PEval,cnf: (CNF.Core,MutMap[String,Int]), solBool: GCBoolSolution,time: Long): Option[GCSolution] = {
+  private def loopPartialEval(pEval: PEval,cnf: (CNF.Core,MutMap[String,Int]), solBool: GCBoolSolution,time: Long): OptionSol[GCSolution] = {
 //    println("#> solved  pEval             - "+pEval)
     pEval.quotient()
 //    println("#> calculated quotient       - "+pEval)
@@ -301,13 +301,13 @@ class Formula extends Constraints[GCSolution,Formula] {
     pEval.applyDataAssgn(solBool)
 //    println("#> solved simple data assign - "+pEval)
 //    log.println("[apply data] "+(System.currentTimeMillis()-time))
-    if (pEval.isFinished) return Some(pEval.getSol(solBool))
+    if (pEval.isFinished) return SomeSol(pEval.getSol(solBool))
     pEval.solveSimpleData(solBool,da)
 //    println("#> solved domain elements    - "+pEval)
-    if (pEval.isFinished) return Some(pEval.getSol(solBool))
+    if (pEval.isFinished) return SomeSol(pEval.getSol(solBool))
     val (optSol2,newcnf) = incrementAndSolve(cnf._1,cnf._2,solBool,pEval)
 //    println("#> incremented and solved new constr.")//+newcnf)
-    if (!optSol2.isDefined) return None
+    if (!optSol2.isDefined) return NoneSol()
 
 //    println("#> restarting loop...") //        - "+optSol2.get.pretty)
     loopPartialEval(partialEval(optSol2.get),newcnf,optSol2.get,time)
@@ -378,7 +378,7 @@ class Formula extends Constraints[GCSolution,Formula] {
           if (i>0) res += varname(i)  -> true  //print(""+varname(i)+" ")
           else     res += varname(-i) -> false //print("~"+varname(-i)+" ")
         }
-        Some(new GCBoolSolution(res))
+        Some(new GCBoolSolution(res,None))
         //println("")
         //problem.findModel.mkString(" ")
       } else {
@@ -422,7 +422,7 @@ class Formula extends Constraints[GCSolution,Formula] {
    * Assumes determined and closed connectors.
    * @return Data solution or 'None' if there is no solution (maybe because the assumption does not hold.)
    */
-  def quickDataSolve : Option[GCSolution] = {
+  def quickDataSolve : OptionSol[GCSolution] = {
     val t0 = System.currentTimeMillis()
     solveDomain()
 
@@ -435,18 +435,18 @@ class Formula extends Constraints[GCSolution,Formula] {
 //    println("[QSAT Domain-toCNF-Solve] "+(t1-t0)+" - "+(t2-t1)+" - "+(t3-t2))
     if (!optSolBool.isDefined) {
       println("Fail boolean satisfaction...")
-      return None
+      return NoneSol()
     }
 
     val pEval = partialEval(optSolBool.get)
     val done = pEval.freshTraversal(None)
 
     if (done)
-      Some(pEval.getSol(optSolBool.get))
+      SomeSol(pEval.getSol(optSolBool.get))
     else {
       println("failed... peval:\n"+pEval.toString)
       println("failed... boolSol:\n"+optSolBool.get)
-      None
+      NoneSol()
     }
   }
 
@@ -457,7 +457,7 @@ class Formula extends Constraints[GCSolution,Formula] {
    * @param z3 context required by Z3
    * @return Data solution
    */
-  def quickDataSolve(z3: Z3Context): Option[GCSolution] = {
+  def quickDataSolve(z3: Z3Context): OptionSol[GCSolution] = {
     val t0 = System.currentTimeMillis()
     solveDomain()
 //    close  // OPTMISED in gc2boolz3, based on this.bfv
@@ -469,17 +469,17 @@ class Formula extends Constraints[GCSolution,Formula] {
     val t3 = System.currentTimeMillis()
 //    println("[QZ3  Domain-toBoolZ3+Solve] "+(t1-t0)+" - "+(t3-t1))
     if (!optSolBool.isDefined)
-      return None
+      return NoneSol()
 
     val pEval = partialEval(optSolBool.get)
     val done = pEval.freshTraversal(None)
 
     if (done)
-      Some(pEval.getSol(optSolBool.get))
+      SomeSol(pEval.getSol(optSolBool.get))
     else {
 //      println("failed... peval:\n"+pEval.toString)
 //      println("failed... boolSol:\n"+optSolBool.get.pretty)
-      None
+      NoneSol()
     }
   }
 
@@ -490,29 +490,31 @@ class Formula extends Constraints[GCSolution,Formula] {
    *  Optimised choco: Lazy constraints and smart variable ordering.
    * @return Data solution
    */
-  def lazyDataSolve : Option[GCSolution] = {
-    buf = Some(new Buffer)
+  def lazyDataSolve : OptionSol[GCSolution] = {
+//    buf = Some(new Buffer)
     close()
     solveDomain()
 
     val builders = ChocoBuilderSAT.gc2BoolConstrBuilders(this,da)
 //    println("boolean constraints: \n"+builders.mkString("\n"))
 //    val buf = new Buffer // using the same to solve boolean constraints and to get a solution while traversing the tree.
-    val optSolBool = ChocoBuilderSAT.solveChocoBool(buf.get,da,builders)
+    val optSolBool = ChocoBuilderSAT.solveChocoBool(da,builders)
 
     if (!optSolBool.isDefined)
-      return None
+      return NoneSol(optSolBool.getBuffer)
+
+    val buf = optSolBool.getBuffer // MUST exist after solveChocoBool
 
     val pEval = partialEval(optSolBool.get)
     val done = pEval.freshTraversal(buf)
 
     if (done){
       val sol = pEval.getSol(optSolBool.get)
-      sol.buf = buf
-      Some(sol)
+//      sol.buf = buf
+      SomeSol(sol)
     }
     else
-      None
+      NoneSol(buf)
   }
 
 //  /**
@@ -543,29 +545,27 @@ class Formula extends Constraints[GCSolution,Formula] {
    * Solve solutions using Choco and external predicates/functions, based on book-keeping of hash values.
    * @return Solution for the data constraints.
    */
-  def solveChocoX: Option[CXSolution] = {
+  def solveChocoX: OptionSol[CXSolution] = {
 //    ChocoX.solve(getConstraints)
-    buf = Some(new Buffer)
     close()
-    ChocoX.solve(this,buf.get)
+    ChocoX.solve(this)
   }
 
   /**
    * Solve solutions using Choco and external predicates/functions, based on a dynamic map from ints to data values.
    * @return Solution for the data constraints.
    */
-  def solveChocoDyn: Option[DynSolution] = {
+  def solveChocoDyn: OptionSol[DynSolution] = {
     //    ChocoX.solve(getConstraints)
-    buf = Some(new Buffer)
     close()
-    ChocoDyn.solve(this,buf.get)
+    ChocoDyn.solve(this)
   }
 
   /**
    * Experimental - solve solutions using Z3 and external predicates/functions, using a custom theory, based on a dynamic map from ints to data values.
    * @return Solution for the data constraints.
    */
-  def solveXZ3: Option[GCSolution] = {
+  def solveXZ3: OptionSol[GCSolution] = {
     close()
     XZ3.solvexz3(this)
   }
@@ -578,7 +578,7 @@ class Formula extends Constraints[GCSolution,Formula] {
    * Choco as SMT
    * @return Data constraints
    */
-  def solveChoco : Option[ChoSolution] = {
+  def solveChoco : OptionSol[ChoSolution] = {
     // not closing constraints
     // NOW closing
     close()
@@ -586,7 +586,7 @@ class Formula extends Constraints[GCSolution,Formula] {
   }
 
 
-  def solvez3: Option[Z3Solution] = {
+  def solvez3: OptionSol[Z3Solution] = {
     Z3.solvez3(this)
   }
 
@@ -601,43 +601,42 @@ class Formula extends Constraints[GCSolution,Formula] {
    * Predicate abstraction + Choco (as SAT solver) + loop until data solution is found
    * @return Data solution
    */
-  def solveChocoSat : Option[GCSolution] = {
-    buf = Some(new Buffer)
+  def solveChocoSat : OptionSol[GCSolution] = {
     solveDomain()
     // solveDomain; toCNF; solveBool?; [partialEval; quotient; dataAssign(done?); solveData(done?); incrementAndSolve?]
     val time = System.currentTimeMillis()
-//    val buf = new Buffer
     val builders = ChocoBuilderSAT.gc2BoolConstrBuilders(this,da)
 //    println("#> solving abst using choco SAT cnf - "+da.pp)
 //    println("builder: "+builders.mkString("\n"))
-    val optSolBool = ChocoBuilderSAT.solveChocoBool(buf.get,da,builders)
+    val optSolBool = ChocoBuilderSAT.solveChocoBool(da,builders)
+
 //    log.println("[Cho/SAT solve] "+(System.currentTimeMillis()-time))
     if (!optSolBool.isDefined)
-      return None
+      return  NoneSol(optSolBool.getBuffer)
 //    println("INIT GUESS:\n"+optSolBool.get.pretty)
 
-    if (justInit) return Some(new GCSolution(optSolBool.get,Map[String, Integer]()))
+    if (justInit) return SomeSol(new GCSolution(optSolBool.get,Map[String, Integer]()))
 
     val res = loopPartialEvalCho(partialEval(optSolBool.get),builders,optSolBool.get)
 //    log.println("[all solve]     "+(System.currentTimeMillis()-time))
-    if (res.isDefined) res.get.buf = buf
+//    if (res.isDefined) res.get.buf = buf
     res
   }
 
   private def loopPartialEvalCho(pEval: PEval,builders: Iterable[ConstrBuilder], solBool: GCBoolSolution)
-      : Option[GCSolution] = {
+      : OptionSol[GCSolution] = {
 //    println("#> solved  pEval             - "+pEval)
     pEval.quotient()
 //    println("#> calculated quotient       - "+pEval)
     pEval.applyDataAssgn(solBool)
 //    println("#> solved simple data assign - "+pEval)
-    if (pEval.isFinished) return Some(pEval.getSol(solBool))
+    if (pEval.isFinished) return SomeSol(pEval.getSol(solBool))
     pEval.solveSimpleData(solBool,da)
 //    println("#> solved domain elements    - "+pEval)
-    if (pEval.isFinished) return Some(pEval.getSol(solBool))
+    if (pEval.isFinished) return SomeSol(pEval.getSol(solBool))
     val (optSol2,newbuilders) = incrementAndSolve(builders,solBool,pEval)
 //    println("#> incremented and solved new constr.")//+newcnf)
-    if (!optSol2.isDefined) return None
+    if (!optSol2.isDefined) return NoneSol(solBool.getBuffer)
 
 //    println("#> restarting loop...") //        - "+optSol2.get.pretty)
     loopPartialEvalCho(partialEval(optSol2.get),newbuilders,optSol2.get)
@@ -645,7 +644,7 @@ class Formula extends Constraints[GCSolution,Formula] {
 
   private def incrementAndSolve(builders: Iterable[ConstrBuilder],
                                 sol: GCBoolSolution,
-                                pEval: PEval) : (Option[GCBoolSolution],Iterable[ConstrBuilder]) = {
+                                pEval: PEval) : (OptionSol[GCBoolSolution],Iterable[ConstrBuilder]) = {
     //                        sdelta: Map[String,Int],
     //                        srest: Set[MutSet[String]]) : Option[GCBoolSolution] = {// (Map[String,Int], Set[MutSet[String]]) = {
     // for each remaining group, negate it in the constraints
@@ -666,7 +665,8 @@ class Formula extends Constraints[GCSolution,Formula] {
         }
       }
     }
-    (ChocoBuilderSAT.solveChocoBool(buf.get,da,newBuilders),newBuilders)
+    // BUFFER needed to be defined outside ChochBuilderSAT, because of the incrementing of the solution.
+    (ChocoBuilderSAT.solveChocoBool(sol.getBuffer.get,da,newBuilders),newBuilders)
   }
 
 

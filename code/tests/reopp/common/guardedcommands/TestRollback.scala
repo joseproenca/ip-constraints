@@ -1,9 +1,9 @@
-package common.guardedcommands
+package reopp.common.guardedcommands
 
 import org.scalatest.FunSpec
-import common.{Connector, Function, Predicate}
-import common.guardedcommands.dataconnectors.ConnectorGen._
-import common.Utils.flowVar
+import reopp.common.{Connector, Function, Predicate}
+import reopp.common.guardedcommands.dataconnectors.ConnectorGen._
+import reopp.common.Utils.flowVar
 
 /**
  * Test if the rollback function is exectuted.

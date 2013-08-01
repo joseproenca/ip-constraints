@@ -118,14 +118,20 @@ class Buffer {
    */
   def rollback(f: Function, undo: Function, data: Option[Any]) {
 //    print("rollbacking "+f+"("+data+") with "+undo)
-//    print(" @"+hashCode+calculatedF.keys.mkString("[",",","]"))
-    for ((f2,d) <- calculatedF.keys) {
+//    println(" @"+hashCode+calculatedF.keys.mkString("[",",","]"))
+    for (((f2,d),dres) <- calculatedF) {
 //      print(" - "+f2+"("+d+")")
-      if (f2 == f)
-        if (!data.isDefined || (data.get != d))
-          undo.calculate(d)
-//        else print(" *** succeeded - not rollingback ***")
+      if (f2 == f) {
+        if (!data.isDefined || (data.get != d)) {
+//          println(" *** succeeded - rollingback ***" +f+"("+d+") = "+ dres+" - except "+data)
+          undo.calculate(d,dres)
+        }
+//        else println(" *** succeeded - not rollingback ***")
+      }
+//      else println(" *** skipping - wrong function ***")
     }
 //    println(" done.")
   }
+
+//  def rollbackAll()
 }

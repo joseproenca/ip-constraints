@@ -19,7 +19,7 @@ abstract class Connector[S<: Solution, C <: Constraints[S,C]](val ends: List[Str
    * Given a (possible) solution updates the current state.
    * @param s solution
    */
-  def update(s: Option[S]) {} // default: do nothing
+  def update(s: OptionSol[S]) {} // default: do nothing
 
 
   /**
@@ -45,10 +45,10 @@ abstract class Connector[S<: Solution, C <: Constraints[S,C]](val ends: List[Str
    * Default solver for the constraints is used.
    * @return Possible solution for the current step
    */
-  def step: Option[S] = {
+  def doStep: OptionSol[S] = {
     val s = getConstraints.solve
-//    if (s.isDefined) update(s.get)
     update(s)
+//    println("-- step done --\n"+s)
     s
   }
 
@@ -57,7 +57,7 @@ abstract class Connector[S<: Solution, C <: Constraints[S,C]](val ends: List[Str
    * Keeps performing steps until no dataflow is possible.
    */
   def run() {
-    if (step.isDefined) run()
+    if (doStep.isDefined) run()
   }
 
 

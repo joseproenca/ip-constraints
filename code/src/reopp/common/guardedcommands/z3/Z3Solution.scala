@@ -1,8 +1,7 @@
 package reopp.common.guardedcommands.z3
 
 import z3.scala.{Z3Model, Z3Context}
-import reopp.common.Solution
-import reopp.common.EmptySol
+import reopp.common.{Buffer, Solution, EmptySol}
 
 /**
  * Created with IntelliJ IDEA.

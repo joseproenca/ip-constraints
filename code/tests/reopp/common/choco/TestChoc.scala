@@ -1,4 +1,4 @@
-package common.choco
+package reopp.common.choco
 
 /**
  * Created by IntelliJ IDEA.
@@ -8,7 +8,7 @@ package common.choco
  * To change this template use File | Settings | File Templates.
  */
 
-import common.Utils
+//import reopp.common.Utils
 import org.scalatest.FunSpec
 import choco.Choco
 import choco.cp.solver.CPSolver

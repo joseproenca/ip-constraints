@@ -3,7 +3,7 @@ package reopp.common.choco
 import choco.kernel.model.variables.integer.IntegerVariable
 import choco.cp.solver.CPSolver
 import scala.collection.mutable.{Map => MuMap}
-import reopp.common.{Solution, EmptySol}
+import reopp.common.{Buffer, Solution, EmptySol}
 import reopp.common
 
 /**
@@ -14,8 +14,11 @@ import reopp.common
  * To change this template use File | Settings | File Templates.
  */
 
-class ChoSolution(val choSol: CPSolver, varMap: Map[String, IntegerVariable]) extends Solution {
+class ChoSolution(val choSol: CPSolver, varMap: Map[String, IntegerVariable], buf: Option[Buffer])
+    extends Solution {
   val extension = MuMap[String, Int]()
+
+  override def getBuffer = buf
 
 
   def getDataOn(v: String) = getVal(v).map(Int.box(_))
@@ -87,7 +90,7 @@ object ChoSolution {
   }
 
   implicit object NoSol extends EmptySol[ChoSolution] {
-    def sol = new ChoSolution(new CPSolver(),Map())
+    def sol = new ChoSolution(new CPSolver(),Map(),None)
   }
 }
 

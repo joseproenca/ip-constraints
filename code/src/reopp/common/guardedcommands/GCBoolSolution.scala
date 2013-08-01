@@ -1,7 +1,6 @@
 package reopp.common.guardedcommands
 
-import reopp.common.{Utils, Solution}
-import reopp.common.EmptySol
+import reopp.common.{Buffer, Utils, Solution, EmptySol}
 
 /**
  * Created with IntelliJ IDEA.
@@ -11,7 +10,9 @@ import reopp.common.EmptySol
  * To change this template use File | Settings | File Templates.
  */
 
-class GCBoolSolution(var varMap: Map[String, Boolean]) extends Solution {
+class GCBoolSolution(var varMap: Map[String, Boolean], buf: Option[Buffer]) extends Solution {
+  override def getBuffer = buf
+
   def hasFlowOn(end: String) =
     if (varMap contains end) varMap(end) else false
 
@@ -35,7 +36,7 @@ class GCBoolSolution(var varMap: Map[String, Boolean]) extends Solution {
 
 object GCBoolSolution {
   implicit object NoSol extends EmptySol[GCBoolSolution] {
-    def sol = new GCBoolSolution(Map())
+    def sol = new GCBoolSolution(Map(),None)
   }
 }
 

@@ -4,13 +4,15 @@ import _root_.z3.scala.{Z3Config, Z3AST, Z3Context}
 import reopp.common.guardedcommands._
 import reopp.common.guardedcommands.dataconnectors._
 import scala.math.pow
-import choco.kernel.model.variables.integer.IntegerExpressionVariable
-import choco.Choco
-import reopp.common.{Predicate, Solution, IntPredicate, Utils}
+import _root_.choco.kernel.model.variables.integer.IntegerExpressionVariable
+import _root_.choco.Choco
+import reopp.common._
 import Utils._
 import reopp.common.guardedcommands.IntPred
 import z3.Z3
 import reopp.common.guardedcommands.dataconnectors.ConstraintGen._
+import reopp.common.guardedcommands.Neg
+import reopp.common.guardedcommands.Pred
 
 /**
  * Created with IntelliJ IDEA.
@@ -135,7 +137,7 @@ object AllApprovalData extends App {
 //    println("  # THE PROBLEM:\n"+problem.commands.mkString(" - ","\n - ","\n"))
 
     var time: Long = 0
-    var res: Option[Solution] = null
+    var res: OptionSol[Solution] = null
     var spent: Long = 0
 
     //// QUICK-SAT ////

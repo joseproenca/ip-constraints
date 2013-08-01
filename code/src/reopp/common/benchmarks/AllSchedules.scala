@@ -2,7 +2,7 @@ package reopp.common.benchmarks
 
 import _root_.z3.scala.{Z3AST, Z3Config, Z3Context}
 import reopp.common.guardedcommands._
-import reopp.common.{IntPredicate, Solution, Utils}
+import reopp.common.{OptionSol, IntPredicate, Solution, Utils}
 import Utils._
 import reopp.common.guardedcommands.Var
 import reopp.common.guardedcommands.dataconnectors.ConstraintGen._
@@ -178,7 +178,7 @@ object AllSchedules extends App {
     println("Schedules - size "+n)
 
     var time: Long = 0
-    var res: Option[Solution] = null
+    var res: OptionSol[Solution] = null
     var spent: Long = 0
 
 

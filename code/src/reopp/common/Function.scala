@@ -3,7 +3,7 @@ package reopp.common
 import scala.collection.JavaConverters._
 
 /**
- * Unary function that is embedded in the [[common.Constraints]].
+ * Unary function that is embedded in the [[reopp.common.Constraints]].
  * Transformer channels use these functions in their constraints.
  *
  * Created by jose on 16/07/12.
@@ -14,10 +14,10 @@ abstract class Function {
 }
 
 object Function {
-  /** Constructs a [[common.Function]] from a scala partial [[scala.Function1]].
+  /** Constructs a [[reopp.common.Function]] from a scala partial [[scala.Function1]].
     * Typically the function is a block of `case x: Type => ...`. If no case matches it outputs ``():Unit.
     * @param body is the scala [[scala.Function1]].
-    * @return new [[common.Function]] that can be embedded in the synchronous constraints.
+    * @return new [[reopp.common.Function]] that can be embedded in the synchronous constraints.
     */
   def apply[A]()(body: A => Any): Function =
     new Function {
@@ -30,16 +30,18 @@ object Function {
         try x match { case y: A => body(y) }
         catch {
           case e: scala.MatchError => {}    // return Unit if undefined
+          case e: java.lang.ClassCastException => {}    // return Unit if undefined
           case e => throw e
+          // note: 'A' is lost at runtime, so the matchError does not work.
         }
       }
     }
 
   /**
-   * Same as [[common.Function.apply()]] with a redefined name as `toString`.
+   * Same as [[reopp.common.Function.apply()]] with a redefined name as `toString`.
    * @param name is the new `toString` value.
    * @param body is the scala [[scala.Function1]]
-   * @return the new [[common.Function]].
+   * @return the new [[reopp.common.Function]].
    */
   def apply[A](name:String)(body: Any => Any): Function =
     new Function {
@@ -52,7 +54,9 @@ object Function {
         try x match { case y: A => body(y) }
         catch {
           case e: scala.MatchError => {}  // return Unit if undefined
+          case e: java.lang.ClassCastException => {}    // return Unit if undefined
           case e => throw e
+          // note: 'A' is lost at runtime, so the matchError does not work.
         }
       }
 

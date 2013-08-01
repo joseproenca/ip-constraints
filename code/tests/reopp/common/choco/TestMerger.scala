@@ -1,8 +1,8 @@
-package common.choco
+package reopp.common.choco
 
 import org.scalatest.FunSpec
-import common.choco.ChoConnector.ChoBuilder._
-import common.choco.connectors.{ChoReader, ChoMerger, ChoWriter}
+import reopp.common.choco.ChoConnector.ChoBuilder._
+import reopp.common.choco.connectors.{ChoReader, ChoMerger, ChoWriter}
 
 /**
  * Created with IntelliJ IDEA.

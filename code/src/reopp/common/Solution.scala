@@ -14,6 +14,8 @@ trait Solution {
   /** What data flow on a given end (variable). */
   def getDataOn(end: String): Option[Any]
   //def pretty: String
+  /** Buffer with intermediate calculations. */
+  def getBuffer: Option[Buffer]= None
 }
 
 /**

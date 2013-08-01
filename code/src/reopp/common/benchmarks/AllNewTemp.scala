@@ -6,7 +6,7 @@ import reopp.common.guardedcommands.z3.Z3
 import choco.kernel.model.variables.integer.IntegerExpressionVariable
 import choco.Choco
 import reopp.common.guardedcommands.Formula
-import reopp.common.{Solution, IntFunction, IntPredicate}
+import reopp.common.{OptionSol, Solution, IntFunction, IntPredicate}
 /**
  * Created with IntelliJ IDEA.
  *
@@ -147,7 +147,7 @@ object AllNewTemp extends App {
     //    println("  # THE PROBLEM:\n"+problem.commands.mkString(" - ","\n - ","\n"))
 
     var time: Long = 0
-    var res: Option[Solution] = null
+    var res: OptionSol[Solution] = null
     var spent: Long = 0
 
 

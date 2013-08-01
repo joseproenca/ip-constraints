@@ -1,12 +1,12 @@
-package dreams
+package reopp.dreams
 
 import org.scalatest.FunSpec
-import common.guardedcommands.dataconnectors.GCLossy
+import reopp.common.guardedcommands.dataconnectors.GCLossy
 
-import common.guardedcommands.{Formula, GCSolution}
-import common.Utils
+import reopp.common.guardedcommands.{Formula, GCSolution}
+import reopp.common.{OptionSol, Utils}
 import Utils._
-import common.guardedcommands.GCConnector.GCBuilder
+import reopp.common.guardedcommands.GCConnector.GCBuilder
 
 /**
  * Created by IntelliJ IDEA.
@@ -27,7 +27,7 @@ class TestDreams extends FunSpec {
     val wr = new connectors.Writer(2)
     {
       var counter = 0
-      override protected def processSol(sol:Option[Sol],freshSol:Boolean): Nothing = {
+      override protected def processSol(sol:OptionSol[Sol],freshSol:Boolean): Nothing = {
         val a = mkVar("a",uid)
 
         if (freshSol) println("counter! "+counter)

@@ -2,16 +2,31 @@ package reopp.common.guardedcommands.chocox
 
 import reopp.common.guardedcommands._
 import reopp.common.choco.genericconstraints.PredManager
-import choco.kernel.model.variables.integer.IntegerVariable
-import choco.kernel.model.constraints.{Constraint => ChocoConstr}
-import choco.cp.solver.CPSolver
-import reopp.common.{Buffer, Predicate, Utils}
-import choco.Choco
-import choco.kernel.common.logging.{Verbosity, ChocoLogging}
-import choco.cp.model.CPModel
+import _root_.choco.kernel.model.variables.integer.IntegerVariable
+import _root_.choco.kernel.model.constraints.{Constraint => ChocoConstr}
+import _root_.choco.cp.solver.CPSolver
+import reopp.common._
+import _root_.choco.Choco
+import _root_.choco.kernel.common.logging.{Verbosity, ChocoLogging}
+import _root_.choco.cp.model.CPModel
 import collection.mutable.{Set => MutSet, Map => MutMap}
 import reopp.common.choco.ChoUtils._
 import reopp.common
+import reopp.common.guardedcommands.Or
+import reopp.common.guardedcommands.Equiv
+import reopp.common.guardedcommands.Neg
+import reopp.common.guardedcommands.IntPred
+import reopp.common.guardedcommands.GuardedCom
+import reopp.common.guardedcommands.FunAssgn
+import reopp.common.guardedcommands.VarAssgn
+import reopp.common.guardedcommands.Var
+import reopp.common.guardedcommands.DataAssgn
+import reopp.common.guardedcommands.Pred
+import reopp.common.guardedcommands.Impl
+import reopp.common.guardedcommands.And
+import reopp.common.guardedcommands.Seq
+import reopp.common.guardedcommands.NFunAssgn
+import reopp.common.guardedcommands.IntAssgn
 
 /**
  * Created with IntelliJ IDEA.
@@ -147,7 +162,9 @@ object ChocoX {
   }
 
 
-  def solve(gcs: Formula,buf: Buffer): Option[CXSolution] = {
+  def solve(gcs: Formula): OptionSol[CXSolution] = {
+    val buf = new Buffer
+
     val DEBUG = false
     ChocoLogging.setVerbosity(Verbosity.OFF)
 
@@ -195,8 +212,8 @@ object ChocoX {
     //    println(s.pretty())
 
     val res =
-      if (solved) Some(new CXSolution(s,varMap.toMap,buffer,datahash.toMap,funhash.toMap,newpred.toMap))
-      else  None
+      if (solved) SomeSol(new CXSolution(s,varMap.toMap,buffer,datahash.toMap,funhash.toMap,newpred.toMap))
+      else  NoneSol()
 
     if (DEBUG) {
       if (solved) println(res.get)

@@ -1,7 +1,7 @@
 package reopp.common.choco.connectors
 
 import reopp.common.choco._
-import reopp.common.Utils
+import reopp.common.{OptionSol, Utils}
 
 
 /**
@@ -24,7 +24,7 @@ class ChoWriter(x:String,uid:Int,var size:Int) extends ChoConnector(List(x),uid)
   def getConstraints = if (size>0) ChoConstraints(TrueC) else nfConstr
 
 
-  override def update(s: Option[ChoSolution]) {
+  override def update(s: OptionSol[ChoSolution]) {
     if (s.isDefined)
     if (s.get hasFlowOn Utils.flowVar(x,uid)) {
       size -= 1

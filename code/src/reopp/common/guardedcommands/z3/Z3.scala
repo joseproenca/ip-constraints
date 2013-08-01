@@ -1,16 +1,31 @@
 package reopp.common.guardedcommands.z3
 
 import _root_.z3.scala._
+import _root_.z3.scala.dsl.Distinct
+import _root_.z3.scala.dsl.IntVar
 import _root_.z3.scala.dsl.{Distinct, IntVar}
 import reopp.common.guardedcommands._
 import reopp.common.guardedcommands.Var
-import reopp.common.{guardedcommands}
-import reopp.common.{Utils, IntPredicate, IntFunction}
+import reopp.common._
 import Utils._
 import collection.mutable.{Map => MutMap, ListBuffer}
-import reopp.common.{IntPredicate, IntFunction}
 import reopp.common.examples.Even
 import reopp.common
+import reopp.common.guardedcommands.IntPred
+import reopp.common.guardedcommands.GuardedCom
+import reopp.common.guardedcommands.FunAssgn
+import reopp.common.guardedcommands.VarAssgn
+import scala.Some
+import reopp.common.guardedcommands.Pred
+import reopp.common.guardedcommands.And
+import reopp.common.guardedcommands.Seq
+import reopp.common.guardedcommands.Or
+import reopp.common.guardedcommands.Neg
+import reopp.common.guardedcommands.Var
+import reopp.common.guardedcommands.DataAssgn
+import reopp.common.guardedcommands.Impl
+import reopp.common.guardedcommands.NFunAssgn
+import reopp.common.guardedcommands.IntAssgn
 
 
 /**
@@ -29,7 +44,7 @@ object Z3 {
    * @param gcs formula to be solved
    * @return Possible solution to the formula
    */
-  def solvez3(gcs: Formula): Option[Z3Solution] = {
+  def solvez3(gcs: Formula): OptionSol[Z3Solution] = {
     val z3 = new Z3Context(new Z3Config("MODEL" -> true))
     val z3ast = gc2z3(gcs,z3)
     solvez3(z3ast,z3)
@@ -40,7 +55,7 @@ object Z3 {
    * @param gcs formula to be solved
    * @return possible solution to the formula
    */
-  def solveboolz3(gcs: Formula): Option[Z3Solution] = {
+  def solveboolz3(gcs: Formula): OptionSol[Z3Solution] = {
     val z3 = new Z3Context(new Z3Config("MODEL" -> true))
     val z3term = gc2boolz3(gcs,z3)
     Z3.solvez3(z3term,z3)
@@ -53,23 +68,23 @@ object Z3 {
    * @param z3 context
    * @return possible solution to const
    */
-  def solvez3(const: Z3AST, z3: Z3Context): Option[Z3Solution] = {
+  def solvez3(const: Z3AST, z3: Z3Context): OptionSol[Z3Solution] = {
     z3.assertCnstr(const)
 
     z3.checkAndGetModel() match {
       case (None, m) =>
         println("Z3 failed. The reason is: " + z3.getSearchFailure.message)
-        None
+        NoneSol()
       case (Some(false), m) =>
         println("Unsat.")
-        None
+        NoneSol()
       case (Some(true), model) => {
         //        for (c <- model.getModelConstants) println ("const "+c)
         //        println("v1: " + model.evalAs[Boolean](v1))
         //        println("v2: " + model.evalAs[Boolean](v2))
         //        println("v3: " + model.evalAs[Boolean](v3))
 //        println("model:\n"+model)
-        Some(new Z3Solution(z3,model))
+        SomeSol(new Z3Solution(z3,model))
         //        model.delete
       }
     }

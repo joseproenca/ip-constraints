@@ -1,6 +1,6 @@
 package reopp.common.guardedcommands.dataconnectors
 
-import reopp.common.Utils
+import reopp.common.{OptionSol, Utils}
 import Utils._
 import reopp.common.guardedcommands._
 
@@ -22,7 +22,7 @@ class GCReader(x: String, uid: Int, var size: Int) extends GCConnector(List(x), 
     if (size != 0) Formula()
     else nfConstr
 
-  override def update(s: Option[GCSolution]) {
+  override def update(s: OptionSol[GCSolution]) {
     if (s.isDefined)
     if (s.get hasFlowOn flowVar(x, uid)) {
       println("//////////////////")

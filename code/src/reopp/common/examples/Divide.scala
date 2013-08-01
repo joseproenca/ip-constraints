@@ -1,6 +1,7 @@
 package reopp.common.examples
 
 import reopp.common.guardedcommands.dataconnectors.ConnectorGen._
+import reopp.common.{NoneSol, SomeSol}
 
 /**
  * Divide 100 by the input value. Shows the usage of partial functions.
@@ -30,8 +31,8 @@ object Divide extends App {
   val sol = connector.getConstraints.solveChocoDyn
 
   sol match {
-    case Some(s) => println("solved!\n"+s)
-    case None    => println("no sol")
+    case SomeSol(s) => println("solved!\n"+s)
+    case _          => println("no sol")
   }
 
 }

@@ -1,11 +1,11 @@
-package common.guardedcommands
+package reopp.common.guardedcommands
 
-import common.{Utils}
+import reopp.common.{Utils}
 import Utils._
 import org.scalatest.FunSpec
-import common.guardedcommands.dataconnectors.{GCFilter, GCTransf}
-import common.guardedcommands.dataconnectors.ConstraintGen._
-import common.examples.{Double, Odd, Even}
+import reopp.common.guardedcommands.dataconnectors.{GCFilter, GCTransf}
+import reopp.common.guardedcommands.dataconnectors.ConstraintGen._
+import reopp.common.examples.{Double, Odd, Even}
 
 /**
  * Created with IntelliJ IDEA.
@@ -103,8 +103,8 @@ class TestFunctions extends FunSpec {
 
     it ("c1 should have flow on both filters")
     {assert (res1.get.hasFlowOn(flowVar("c",0)) && res1.get.hasFlowOn(flowVar("d",0)))}
-    it ("c2 should have flow on 2nd filter with data 6")
-    {assert (!res2.get.hasFlowOn(flowVar("c",0)) && res2.get(dataVar("d",0))==6)}
+    it ("c2 should have flow on 2nd filter with data 6.")
+    {assert (!res2.get.hasFlowOn(flowVar("c",0)) && res2.get.getDataOn(dataVar("d",0))==Some(6))}
     it ("c3 should have no flow on both filters")
     {assert (!res3.get.hasFlowOn(flowVar("c",0)) && !res3.get.hasFlowOn(flowVar("d",0)))}
 

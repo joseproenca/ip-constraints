@@ -1,10 +1,10 @@
-package workers
+package reopp.workers
 
 import org.scalatest.FunSpec
-import common.choco.{ChoConstraints, ChoSolution}
+import reopp.common.choco.{ChoConstraints, ChoSolution}
 import strategies._
-import common.guardedcommands.{GCSolution, Formula}
-import common.guardedcommands.GCConnector.GCBuilder
+import reopp.common.guardedcommands.{GCSolution, Formula}
+import reopp.common.guardedcommands.GCConnector.GCBuilder
 
 
 /**

@@ -5,7 +5,7 @@ import choco.Choco
 import z3.scala.{Z3AST, Z3Context}
 import reopp.common.IntPredicate
 
-/** Example of an [[common.IntPredicate]]. */
+/** Example of an [[reopp.common.IntPredicate]]. */
 class Even extends IntPredicate {
    val choPred = (x: IntegerExpressionVariable) => Choco.eq(Choco.mod(x, 2), 0)
    val z3Pred = (z:Z3Context,v:Z3AST) => z.mkEq(z.mkMod(v,z.mkInt(2,z.mkIntSort())),z.mkInt(0,z.mkIntSort()))

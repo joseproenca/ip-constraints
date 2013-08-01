@@ -1,6 +1,6 @@
 package reopp.common.choco.dataconnectors
 
-import reopp.common.Utils
+import reopp.common.{OptionSol, Utils}
 import Utils._
 import reopp.common.choco._
 
@@ -30,7 +30,7 @@ class ChoSyncFifo(a: String, b: String, var data: Option[Int], uid: Int) extends
 
   def getConstraints = if (data.isDefined) fullFifo else emptyFifo
 
-  override def update(s: Option[ChoSolution]) {
+  override def update(s: OptionSol[ChoSolution]) {
     if (s.isDefined)
     if (s.get.hasFlowOn(flowVar(a, uid))) {
       //      println("Writer: FLOW! new size: "+size)

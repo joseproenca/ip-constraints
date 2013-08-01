@@ -1,12 +1,11 @@
 package reopp.common.benchmarks
 
 import reopp.common.guardedcommands._
-import reopp.common.{Utils, IntPredicate}
+import reopp.common.{OptionSol, NoneSol, Utils, IntPredicate}
 import Utils._
 import reopp.common.guardedcommands.dataconnectors._
 import choco.kernel.model.variables.integer.IntegerExpressionVariable
 import choco.Choco
-import reopp.common.IntPredicate
 
 /**
  * Created with IntelliJ IDEA.
@@ -83,7 +82,7 @@ object GCLoanRequest extends App {
       Formula(True --> Var(flowVar("isEn",0)))) // force data before filters
 
   var time: Long = 0
-  var res: Option[GCSolution] = None
+  var res: OptionSol[GCSolution] = NoneSol()
   var spent: Long = 0
   var total: Long = 0
 

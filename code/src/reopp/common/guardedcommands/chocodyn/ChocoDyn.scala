@@ -1,16 +1,32 @@
 package reopp.common.guardedcommands.chocodyn
 
 import collection.mutable.{Map => MutMap, Set => MutSet}
-import choco.kernel.model.variables.integer.IntegerVariable
-import reopp.common.{Utils, Buffer, Predicate}
+import _root_.choco.kernel.model.variables.integer.IntegerVariable
+import reopp.common._
 import reopp.common.guardedcommands._
-import choco.kernel.model.constraints.{Constraint => ChocoConstr}
-import choco.Choco
+import _root_.choco.kernel.model.constraints.{Constraint => ChocoConstr}
+import _root_.choco.Choco
 import reopp.common.choco.ChoUtils._
-import choco.kernel.common.logging.{Verbosity, ChocoLogging}
-import choco.cp.solver.CPSolver
-import choco.cp.model.CPModel
+import _root_.choco.kernel.common.logging.{Verbosity, ChocoLogging}
+import _root_.choco.cp.solver.CPSolver
+import _root_.choco.cp.model.CPModel
 import reopp.common.choco.genericconstraints.PredManager
+import reopp.common.guardedcommands.Or
+import reopp.common.guardedcommands.Equiv
+import reopp.common.guardedcommands.Neg
+import reopp.common.guardedcommands.IntPred
+import reopp.common.guardedcommands.GuardedCom
+import reopp.common.guardedcommands.FunAssgn
+import reopp.common.guardedcommands.VarAssgn
+import reopp.common.guardedcommands.Var
+import reopp.common.guardedcommands.DataAssgn
+import scala.Some
+import reopp.common.guardedcommands.Pred
+import reopp.common.guardedcommands.Impl
+import reopp.common.guardedcommands.And
+import reopp.common.guardedcommands.Seq
+import reopp.common.guardedcommands.NFunAssgn
+import reopp.common.guardedcommands.IntAssgn
 
 
 /**
@@ -112,7 +128,9 @@ object ChocoDyn {
 
 
 
-  def solve(gcs: Formula,buf: Buffer): Option[DynSolution] = {
+  def solve(gcs: Formula): OptionSol[DynSolution] = {
+    val buf = new Buffer
+
     val DEBUG = false
     ChocoLogging.setVerbosity(Verbosity.OFF)
 
@@ -158,8 +176,8 @@ object ChocoDyn {
     //    println(s.pretty())
 
     val res =
-      if (solved) Some(new DynSolution(s,varMap.toMap,buffer,dataMap,np))
-      else  None
+      if (solved) SomeSol(new DynSolution(s,varMap.toMap,buffer,dataMap,np))
+      else  NoneSol(buf)
 
     if (DEBUG) {
       if (solved) println(res.get)

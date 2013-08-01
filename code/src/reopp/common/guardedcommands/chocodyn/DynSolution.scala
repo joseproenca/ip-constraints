@@ -1,6 +1,6 @@
 package reopp.common.guardedcommands.chocodyn
 
-import reopp.common.{EmptySol, Predicate, Buffer, Solution}
+import reopp.common.{EmptySol, Buffer, Solution}
 import choco.cp.solver.CPSolver
 import choco.kernel.model.variables.integer.IntegerVariable
 import reopp.common.guardedcommands.GCSolution
@@ -20,7 +20,7 @@ class DynSolution(choSol: CPSolver, varMap:Map[String,IntegerVariable],
   //  println("datahash:\n"+datahash.mkString("/n"))
   //  println("funhash:\n"+funhash.mkString("/n"))
   //  println("solution:\n"+this)
-  buf = Some(b)
+  override def getBuffer = Some(b)
 
   override def getDataOn(v: String): Option[Any] = {
     if (varMap contains v)
