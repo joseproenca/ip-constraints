@@ -52,15 +52,15 @@ object Subtract extends App {
   var sol: OptionSol[Solution] = connector.getConstraints.solveChocoDyn
 
   sol match {
-    case SomeSol(s) => println("Solved!\n"+s)
-    case _ => println("no solution")
+    case SomeSol(s) => println("Choco: Solved!\n"+s)
+    case _ => println("Choco: no solution")
   }
 
   sol = connector.getConstraints.solveXZ3
 
   sol match {
-    case SomeSol(s) => println("Z Solved!\n"+s)
-    case _ => println("Z no solution")
+    case SomeSol(s) => println("Z: Solved!\n"+s)
+    case _ => println("Z: no solution")
   }
 
   //  connector.step

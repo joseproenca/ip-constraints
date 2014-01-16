@@ -48,7 +48,7 @@ abstract class Node[S<:Solution, C<:Constraints[S,C]]
   // Auxiliar functions
 
   def init() {
-    //    println("INIT? ["+hashCode()+"] "+behaviour.isProactive)
+//        println("INIT? ["+hashCode()+"] "+behaviour.isProactive)
     if (behaviour.isProactive) deployer ! this
   }
 
@@ -128,7 +128,7 @@ abstract class Node[S<:Solution, C<:Constraints[S,C]]
 object Node {
   def apply[S<:Solution, C<:Constraints[S,C]]
       (deployer: OutputChannel[Any],map: Iterable[(String,String)],conn : Int => Connector[S,C])
-      (implicit noSol:EmptySol[S], b:CBuilder[S,C]): Node[S,C] =
+      (implicit b:CBuilder[S,C]): Node[S,C] =
     new Node[S,C](deployer) {
       //      val uid = this.hashCode()
       val behaviour = conn(uid)
@@ -148,12 +148,12 @@ object Node {
 
   def apply[S<:Solution, C<:Constraints[S,C]]
   (deployer: OutputChannel[Any],conn : Int => Connector[S,C])
-  (implicit noSol:EmptySol[S], b:CBuilder[S,C]): Node[S,C] =
+  (implicit b:CBuilder[S,C]): Node[S,C] =
     apply[S,C](deployer, Set[(String,String)](), conn)
 
   def apply[S<:Solution, C<:Constraints[S,C]]
   (deployer: OutputChannel[Any],conn : Int => Connector[S,C], map: (String,String)*)
-  (implicit noSol:EmptySol[S], b:CBuilder[S,C]): Node[S,C] =
+  (implicit b:CBuilder[S,C]): Node[S,C] =
     apply[S,C](deployer, map.toIterable, conn)
 
 }

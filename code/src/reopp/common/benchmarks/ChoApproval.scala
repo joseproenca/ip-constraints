@@ -74,7 +74,7 @@ object ChoApproval extends App {
 //  println("prob: "+problem.constrBuilders)
 
   val time = System.currentTimeMillis()
-  val res = problem.solve
+  val res = problem.solve()
   val spent = System.currentTimeMillis() - time
 
   print(spent)

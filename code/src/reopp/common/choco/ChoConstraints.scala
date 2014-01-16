@@ -93,7 +93,12 @@ class ChoConstraints extends Constraints[ChoSolution,ChoConstraints] {
 
   }
 
-  def solve: OptionSol[ChoSolution] = solve(List(), new Buffer)
+//  def solve: OptionSol[ChoSolution] = solve(List(), new Buffer)
+  
+  def solve(tried:Option[NoneSol]): OptionSol[ChoSolution] = tried match {
+    case Some(NoneSol(Some(buf:Buffer))) => solve(buf)
+    case _ => solve(List(), new Buffer)
+  }
 
   def solve(buf: Buffer): OptionSol[ChoSolution] = solve(List(),buf)
 

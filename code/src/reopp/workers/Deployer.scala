@@ -2,6 +2,8 @@ package reopp.workers
 
 import strategies.{Strategy, StrategyBuilder}
 import reopp.common.{Constraints, Solution, CBuilder}
+import reopp.common.Connector
+import reopp.common.EmptySol
 
 
 /**
@@ -17,45 +19,71 @@ class Deployer[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
   (implicit builder: CBuilder[S,C], sb: StrategyBuilder[S,C,Str])
   extends scala.actors.Actor {
 //  val maxWorkers: Int
-  var currentWorkers: Int = 0
-  val pendingTasks = scala.collection.mutable.Queue[Node[S,C]]()
-  var counter = 0
+  private var currentWorkers: Int = 0
+  private val pendingTasks = scala.collection.mutable.Queue[Node[S,C]]()
+  private var counter = 0
   
-  def requestTasks() {
+  private var nodes: List[Node[S,C]] = Nil
+  
+  /** Creates a new worker (node), associated to this deployer.
+   *  Keeps track of created nodes just to allow starting all of them in one go. */
+  def add(con: => Connector[S,C]): Node[S,C] = {
+    val res = Node[S,C](this, (uid:Int) => con )(builder)
+    nodes ::= res
+    res
+  }
+  
+  /** Starts all nodes created with "add" in one go. */
+  def init() = for (n <- nodes) n.init
+  
+  private def requestTasks() {
 //    println("new worker? "+(currentWorkers < maxWorkers)+"/"+ (!pendingTasks.isEmpty))
     if (currentWorkers < maxWorkers && !pendingTasks.isEmpty) {
       val w = new Worker[S,C,Str](this, sb.apply)
       val started = w.work(pendingTasks.dequeue())
       if (started) {
         currentWorkers += 1
-//        println("added worker. current reopp.workers/pending tasks: "+currentWorkers+"/"+pendingTasks.size)
+//        println(s"added worker. Now: $currentWorkers (with ${pendingTasks.size} pending tasks)")
       }
       requestTasks()
     }
   }
   
-  def workerDone() {
+  private def workerDone() {
     currentWorkers -= 1
 //    println("worker done. current reopp.workers/pending tasks: "+currentWorkers+"/"+pendingTasks.size)
     requestTasks()
   }
   
   def act(): Nothing = react {
+    // Sent by nodes when a new step is found.
     case 'SOLVED =>
       counter += 1
 //      println("#######"+counter+"#######")
       workerDone()
-      act()
+      nextMessage()
+    // Sent by nodes, indicating they are proactive (waiting to start). 
     case node: Node[S,C] =>
-//      println("new node")
 //      if (!(pendingTasks contains node))
         pendingTasks enqueue node
+//      println(s"new node. pending tasks: ${pendingTasks.size}")
       requestTasks()
       act()
     case 'DONE =>
 //      println("#####--"+counter+"--#####")
       workerDone()
-      act()
+      nextMessage()
+  }
+  
+  private def nextMessage() {
+      if (currentWorkers > 0) {
+//    	println(s"still has workers: $currentWorkers (with ${pendingTasks.size} pending tasks)")
+        act()
+      }
+      else {
+//        println("No more active... workers")
+        exit()        
+      }
   }
 }
 

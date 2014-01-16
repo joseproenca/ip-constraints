@@ -76,9 +76,9 @@ class TestFunctions extends FunSpec {
 
     //    println(c1.commands)
 
-    val res1 = c1.solve
-    val res2 = c2.solve
-    val res3 = c3.solve
+    val res1 = c1.solve(None)
+    val res2 = c2.solve(None)
+    val res3 = c3.solve(None)
 //    val res4 = c4.solve
 //    val res4p= c4.solveBool
 //

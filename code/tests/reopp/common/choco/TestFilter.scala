@@ -50,7 +50,7 @@ class TestFilter extends FunSpec {
 
     println(c.constrBuilders)
 
-    val res = c.solve
+    val res = c.solve()
     if (res.isDefined) println("solved:\n"+res.get)
     else println("no solution")
 

@@ -3,6 +3,8 @@ package reopp.workers
 import actors.OutputChannel
 import strategies.Strategy
 import reopp.common.{OptionSol, Solution, CBuilder, Constraints}
+import reopp.common.NoneSol
+import reopp.common.SomeSol
 
 /**
  * Created by IntelliJ IDEA.
@@ -27,10 +29,11 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
   private var pendingWorkers = Set[ActorRef]()   // conflict received, acknowledged, and waiting for their graph
 //  var locks = Set[ActorRef](this)      // conflict won: needed to release locks
   private var paused = false // true if no expansion exists, but it is waiting for conflicts or graphs
+  private var triedSol: Option[NoneSol] = None
 
 
   def work(node: Node[S,C]): Boolean = {
-    debug("starting node - "+node.connections.values.head.head._1)
+    debug("starting node - "+(if (!node.connections.values.isEmpty) node.connections.values.head.head._1 else ""))
     // ...
     val nodes = strat.initNodes(node)
     val claimed = claim(nodes)
@@ -94,6 +97,7 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
 
   def success(sol:OptionSol[S]) {
     debug("DONE\n"+sol)
+    debugGraph
     for (n <- strat.owned) {
       n.behaviour.update(sol)
       n.owner = None // cleaning locks (before any init)
@@ -216,9 +220,9 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
 
     case 'CONFLICT => gotConflict
 
-    case (other: Str) => gotGraph(other)
-
     case 'NOCONFLICT => gotNoConflict
+
+    case (other: Str) => gotGraph(other)
   }
 
 
@@ -228,12 +232,17 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
     if (strat.canSolve) {
       debug("solving...")
       mark('.')
-      val sol = strat.solve
-      if (sol.isDefined) {
-        success(sol)
-        quit("found a solution")
+      val sol = strat.solve(triedSol)
+      sol match {
+        case SomeSol(_) => 
+          success(sol)
+          quit("found a solution")
+        case x:NoneSol =>
+          triedSol = Some(x)
       }
+          
     }
+    // here: either it could not solve, or it tried and failed.
     // find nodes to expand to
     debug("expanding...")
     val next = strat.nextNodes
@@ -246,10 +255,7 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
         act()
       }
       cleanLocks()
-      for (n <- strat.owned)
-        println(" - "+n.hashCode())
-      for (n <- strat.fringe)
-        println(" * "+n.hashCode())
+      debugGraph()
       quit("no solution, no expansion")
     }
     // claim new nodes
@@ -259,7 +265,7 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
       nextRound()
     // send conflicts
     else {
-      debug("in conflict... - "+claimed._2.mkString("[",",","]"))
+      debug("in conflict... - "+claimed._2.map(_.uid).mkString("[",",","]"))
       for (othernd <- claimed._2)
         safeSendConfl(othernd)
       //        inConflict ++= claimed._1
@@ -344,6 +350,14 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
 
   def mark(msg: Char) {
     print(msg)
+  }
+  
+  
+  private def debugGraph() {
+	for (n <- strat.owned)
+      debug(" o "+n.hashCode())
+    for (n <- strat.fringe)
+      debug(" f "+n.hashCode())
   }
 
 }

@@ -41,7 +41,7 @@ class TestMerger extends FunSpec {
 
     println(c.constrBuilders)
 
-    val r = c.solve
+    val r = c.solve()
     if (r.isDefined) println("solved:\n"+r.get)
     else println("no solution")
 

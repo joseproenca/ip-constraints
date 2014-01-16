@@ -76,6 +76,7 @@ abstract class GCConnector(ends: List[String], uid: Int = 0) extends Connector[G
 }
 
 object GCConnector {
+  /** Needed to carry the sync and noflow operations for GCConnectors. */ 
   implicit object GCBuilder extends CBuilder[GCSolution,Formula] {
     def sync(e1: String, id1: Int, e2: String, id2: Int): Formula = {
       val sr = Var(flowVar(e1,id1))

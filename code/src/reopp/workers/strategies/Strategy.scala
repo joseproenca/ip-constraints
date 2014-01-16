@@ -30,8 +30,10 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
   // merges the information from another traversal
   def merge(s:St)
 
+  def solve(implicit builder:CBuilder[S,C]): OptionSol[S] = solve(None)
+  
   // aux functions
-  def solve(implicit builder:CBuilder[S,C]): OptionSol[S] = {
+  def solve(tried:Option[NoneSol])(implicit builder:CBuilder[S,C]): OptionSol[S] = {
 //    var beh = new Behaviour[S,C](val ends: List[String],val uid: Int)
     if (owned.isEmpty) return NoneSol()
 
@@ -53,7 +55,7 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
     }
 
 //    println("solving: "+c)
-    c.solve
+    c.solve(tried)
   }
 
   // TODO: BROKEN!!! behaviour.sync connects local end "a" to neighbour ends "b" by "b:=a". Need the right order!

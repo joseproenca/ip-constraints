@@ -60,12 +60,12 @@ class TestChoc extends FunSpec {
 
     val c = s1.getConstraints++ s2.getConstraints
     //s1.connections += this -> Set(("a","b",43))
-    val c2 = c ++ ChoConnector.ChoBuilder.sync("b",43,"a",42) //s1.sync(this,c)
+    val c2: ChoConstraints = c ++ ChoConnector.ChoBuilder.sync("b",43,"a",42) //s1.sync(this,c)
     c2.close()
 
     println(c2)
 
-    val r = c2.solve //c2.minimise(dataVar("a",42))
+    val r = c2.solve() //c2.minimise(dataVar("a",42))
     if (r.isDefined) {
       println(r.get.choSol.getModel.pretty())
       println("solved:\n"+r.get)

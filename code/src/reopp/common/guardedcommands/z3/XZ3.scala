@@ -39,32 +39,38 @@ object XZ3 {
     val z3 = new Z3Context(new Z3Config("MODEL" -> true))
     val theory = buildTheory(z3) // each theory has state, including buffering of intermediate values. Cannot be reused.
     val z3ast = gc2xz3(gcs,theory)
-//    println("------------------")
-//    for (z <- z3ast) println(z)
-//    for (z <- theory.extraAssigns) println(z)
-//    println("------------------")
+    println("------------------")
+    for (z <- z3ast) println(z)
+    for (z <- theory.extraAssigns) println(z)
+    println("------------------")
     solvexz3(z3ast,theory)
   }
 
   def solvexz3(const: Iterable[Z3AST],theory: XTheory): OptionSol[GCSolution] = {
     val z3 = theory.getContext
+    val solver = z3.mkSolver()
     for (z <- theory.extraAssigns)
-      z3.assertCnstr(z)
+      solver.assertCnstr(z)
     for (z <- const)
-      z3.assertCnstr(z)
+      solver.assertCnstr(z)
 
-    z3.checkAndGetModel() match {
-//      case (None, m) =>
-//        println("Z3 failed. The reason is: " + z3.getSearchFailure.message)
-//        None
-//      case (Some(false), m) =>
-//        println("Unsat.")
-//        None
-      case (Some(true), model) =>
-        SomeSol(GCWrapper(new XZ3Solution(theory,model),theory.buf))
-      case _ =>
-        NoneSol(theory.buf) // rollback all here? probably not the best place.
-    }
+    if (!solver.check().isDefined || !solver.check().get)
+      NoneSol(theory.buf)
+    else
+      SomeSol(GCWrapper(new XZ3Solution(theory,solver.getModel()),theory.buf))
+
+//    z3.checkAndGetModel() match {
+////      case (None, m) =>
+////        println("Z3 failed. The reason is: " + z3.getSearchFailure.message)
+////        None
+////      case (Some(false), m) =>
+////        println("Unsat.")
+////        None
+//      case (Some(true), model) =>
+//        SomeSol(GCWrapper(new XZ3Solution(theory,model),theory.buf))
+//      case _ =>
+//        NoneSol(theory.buf) // rollback all here? probably not the best place.
+//    }
 
   }
 
@@ -526,7 +532,7 @@ object XZ3 {
 
     def ask(i:Int) = Function("ask-" + i) {
       case s:String =>
-        println(i + ". "+s)
+        println("--------- "+i + ". "+s)
         readLine()
     }
     val conn4 = writer("a",List("A?")) ++

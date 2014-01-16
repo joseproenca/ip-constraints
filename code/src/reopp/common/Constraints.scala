@@ -7,14 +7,20 @@ package reopp.common
  * Created by jose on 02/05/12.
  */
 
-trait Constraints[+S<:Solution,C<:Constraints[S,C]] {
+trait Constraints[S<:Solution,C<:Constraints[S,C]] {
 //  type mytype <: Constraints[S]
 
   /** Try to solve the current constraints.
     *
     * @return `Some(s)` if a solution `s` is found, and `None` otherwise.
     */
-  def solve: OptionSol[S]
+  def solve(): OptionSol[S] = solve(None:Option[NoneSol])
+
+  /** Try to solve the current constraints.
+    *
+    * @return `Some(s)` if a solution `s` is found, and `None` otherwise.
+    */
+  def solve(tried: Option[NoneSol]): OptionSol[S]
 
   /** Calculate a new constraint after combining `this` with `other`.
     *

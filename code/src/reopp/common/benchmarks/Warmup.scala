@@ -92,7 +92,7 @@ object Warmup {
       val spent = System.currentTimeMillis() - time
 
       val time2 = System.currentTimeMillis()
-      val res2 = problem.solve
+      val res2 = problem.solveChocoDyn
       val spent2 = System.currentTimeMillis() - time2
 
 //      if (res.isDefined) print(spent+" ")
