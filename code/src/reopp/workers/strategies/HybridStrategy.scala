@@ -41,7 +41,8 @@ class HybridStrategy[S <: Solution, C <: Constraints[S, C]] extends Strategy[S,C
   }
 
   // merges the information from another traversal
-  def merge(s: HybridStrategy[S, C]) {
+  override def merge(s: HybridStrategy[S, C]) {
+    super.merge(s)
     owned ++= s.owned
     fringe ++= s.fringe
     fringe --= owned

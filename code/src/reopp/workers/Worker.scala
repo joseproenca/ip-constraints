@@ -29,7 +29,7 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
   private var pendingWorkers = Set[ActorRef]()   // conflict received, acknowledged, and waiting for their graph
 //  var locks = Set[ActorRef](this)      // conflict won: needed to release locks
   private var paused = false // true if no expansion exists, but it is waiting for conflicts or graphs
-  private var triedSol: Option[NoneSol] = None
+//  private var triedSol: Option[NoneSol] = None
 
 
   def work(node: Node[S,C]): Boolean = {
@@ -232,13 +232,13 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
     if (strat.canSolve) {
       debug("solving...")
       mark('.')
-      val sol = strat.solve(triedSol)
+      val sol = strat.solve
       sol match {
         case SomeSol(_) => 
           success(sol)
           quit("found a solution")
         case x:NoneSol =>
-          triedSol = Some(x)
+          strat.triedSol = Some(x)
       }
           
     }
@@ -365,7 +365,7 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
 object Worker {
   def apply[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
       (node:Node[S,C],deployer: OutputChannel[Any], strat:Str)
-      (implicit builder: CBuilder[S,C]){
+      (implicit builder: CBuilder[S,C]) : Worker[S,C,Str] = {
     val w = new Worker[S,C,Str](deployer,strat)
     w.work(node)
     w

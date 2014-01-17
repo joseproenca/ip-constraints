@@ -18,6 +18,8 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
   val owned = scala.collection.mutable.Set[Nd]()
   val fringe = scala.collection.mutable.Set[Nd]()
   var droppedFringe = Set[Nd]()
+  var triedSol: Option[NoneSol] = None // managed by the workers
+
 
   // abstract methods //
 
@@ -27,13 +29,21 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
   def initNodes(n:Nd): Iterable[Nd]
   // Checks if it makes sense to search now for a solution.
   def canSolve: Boolean
-  // merges the information from another traversal
-  def merge(s:St)
+  /** Merges the information from another traversal. Should be extended by subclasses.
+   *  Right now it only merges the previous buffer. */
+  def merge(s:St) {
+    (triedSol,s.triedSol) match {
+      case (None,Some(NoneSol(Some(_)))) => triedSol = s.triedSol
+      case (Some(NoneSol(None)),Some(NoneSol(Some(_)))) => triedSol = s.triedSol
+      case (Some(NoneSol(Some(b1))),Some(NoneSol(Some(b2)))) => b1.safeImport(b2)
+      case _ => {}
+    }
+  }
 
-  def solve(implicit builder:CBuilder[S,C]): OptionSol[S] = solve(None)
+  def solve(implicit builder:CBuilder[S,C]): OptionSol[S] = solve(triedSol)
   
   // aux functions
-  def solve(tried:Option[NoneSol])(implicit builder:CBuilder[S,C]): OptionSol[S] = {
+  private def solve(tried:Option[NoneSol])(implicit builder:CBuilder[S,C]): OptionSol[S] = {
 //    var beh = new Behaviour[S,C](val ends: List[String],val uid: Int)
     if (owned.isEmpty) return NoneSol()
 

@@ -19,7 +19,7 @@ object ChoUtils {
     for (gc <- gcs.commands)
       if (gc.g == f.True)
         optimChocoVars(gc.st,vars)
-    vars
+//    vars
   }
 
   private def optimChocoVars(s: f.Statement,vars: VarMap): Unit = s match {

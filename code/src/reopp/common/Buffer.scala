@@ -17,8 +17,8 @@ import scala.collection.immutable.Map
 
 class Buffer {
 //  println("buf: "+hashCode)
-  private var calculatedP: Map[(Predicate,Any),Boolean] = Map()
-  private var calculatedF: Map[(Function,Any),Any] = Map()
+  protected var calculatedP: Map[(Predicate,Any),Boolean] = Map()
+  protected var calculatedF: Map[(Function,Any),Any] = Map()
 
 
   /**
@@ -134,4 +134,21 @@ class Buffer {
   }
 
 //  def rollbackAll()
+  
+  /**
+   * Imports another buffer in a conservative approach:
+   * if a value is defined and different in both, ignore it (to be recalculated).
+   */
+  def safeImport(other:Buffer) {
+    for ((f,r) <- other.calculatedF)
+      if (calculatedF contains f) {
+        if (calculatedF.get(f) != r) calculatedF -= f
+      } 
+      else calculatedF += (f -> r)
+    for ((p,r) <- other.calculatedP)
+      if (calculatedP contains p) {
+        if (calculatedP.get(p) != r) calculatedP -= p
+      } 
+      else calculatedP += (p -> r)
+  }
 }

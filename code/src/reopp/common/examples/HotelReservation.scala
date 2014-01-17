@@ -88,7 +88,7 @@ object HotelReservation extends App {
   }
 
   val approve = Predicate("approve"){
-    case l:List[String] =>
+    case l:List[_] =>
       println("approve: "+l.mkString(", ")+". [y,n]")
       readLine() == "y"
     case other =>
@@ -97,7 +97,7 @@ object HotelReservation extends App {
   }
 
   val book = Function("book"){
-    case l : List[String] =>
+    case l : List[_] =>
       println("Options: "+l.mkString(", ")+
         ". Which one? (1.."+l.length+")")
       val res = readInt()

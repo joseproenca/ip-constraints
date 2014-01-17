@@ -15,7 +15,8 @@ class OneStepStrategy[S<:Solution,C<:Constraints[S,C]] extends Strategy[S,C,OneS
   def canSolve = true
 
   // merges the information from another traversal
-  def merge(s: OneStepStrategy[S, C]) {
+  override def merge(s: OneStepStrategy[S, C]) {
+    super.merge(s)
     owned ++= s.owned
     fringe ++= s.fringe
     fringe --= owned
