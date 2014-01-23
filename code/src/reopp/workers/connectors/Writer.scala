@@ -17,7 +17,7 @@ class Writer(var n:Int,deployer: OutputChannel[Any]) extends Node[GCSolution, Fo
 
   //val uid = hashCode()
 
-  val behaviour = new GCWriter("w",uid,(1 to n).map(Int.box(_)).toList)
+  val connector = new GCWriter("w",uid,(1 to n).map(Int.box(_)).toList)
 
   // suggests which ends must have dataflow if "end" has also dataflow
   def guessRequirements(nd: Node[GCSolution, Formula]) = Set()

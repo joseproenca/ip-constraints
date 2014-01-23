@@ -49,7 +49,7 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
 
     // get first node and behaviour
     val init = owned.head
-    val behh = init.behaviour
+    val behh = init.connector
 
     // collect it's constraints + neighbour constraints
 //    var  (c,included)  = neighbourConstr(init,Set(),beh.constraints)
@@ -58,7 +58,7 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
     // collect the constraints + neighbour constraints of owned ports,
     // avoiding adding repeated neighbours (via "included") -- DROPPED (reopp.common neighbours of 2 nodes must be added 2x)
     for (n <- (owned - init)) {
-      c ++= n.behaviour.getConstraints
+      c ++= n.connector.getConstraints
       c = neighbourConstr(n,c)(builder)
 //      val pair = neighbourConstr(n,included,c)
 //      c = pair._1; included = pair._2
@@ -87,8 +87,8 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
 
 
   private def sync(n1:Nd,n2:Nd, basec: C)(implicit cbuilder: CBuilder[S,C]): C = {
-    val uid1 = n1.behaviour.uid
-    val uid2 = n2.behaviour.uid
+    val uid1 = n1.connector.uid
+    val uid2 = n2.connector.uid
     var res = basec
 
     for ((e1,u1,e2,u2) <- n1.flowconn)
@@ -100,7 +100,7 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
 
   // n1 owend, n2 not owned -> border n1.ends inters. n2.ends
   private def border(n1:Nd,n2:Nd, basec: C)(implicit cbuilder: CBuilder[S,C]): C = {
-    val uid1 = n1.behaviour.uid
+    val uid1 = n1.connector.uid
     var res = basec
 
     if (n1.connections contains n2)

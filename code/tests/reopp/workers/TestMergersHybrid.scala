@@ -40,8 +40,8 @@ class TestMergersHybrid extends FunSpec {
 
     val lock:scala.concurrent.Lock = new scala.concurrent.Lock()
     val thread = Thread.currentThread()
-//    println("reader: "+rd.behaviour.uid)
-    rd.behaviour.listen(() => {
+//    println("reader: "+rd.connector.uid)
+    rd.connector.listen(() => {
       lock.acquire()
       missing -=1
       lock.release()
@@ -51,19 +51,19 @@ class TestMergersHybrid extends FunSpec {
     //    println(" - "+rd.hashCode())
 
     // create and connect mergers
-    val ends = createBranches[St,D](size,Set((rd,rd.behaviour.ends.head)),deployer)
+    val ends = createBranches[St,D](size,Set((rd,rd.connector.ends.head)),deployer)
 
     // create and connect writers
     var writers = List[Nd]()
     for ((node,end) <- ends) {
       val wr = new connectors.Writer(1,deployer)
       writers ::= wr
-//      println("writer: "+wr.behaviour.uid)
+//      println("writer: "+wr.connector.uid)
       //      println(" - "+wr.hashCode())
 
       // ORDER IMPORTANT: source then sink!
-      //node.connect(wr,end,wr.behaviour.ends.head)
-      node(end) <-- wr(wr.behaviour.ends.head)
+      //node.connect(wr,end,wr.connector.ends.head)
+      node(end) <-- wr(wr.connector.ends.head)
     }
 
     // start readers and writers
@@ -82,7 +82,7 @@ class TestMergersHybrid extends FunSpec {
         println("time: "+(t2 - t1))
 
         it ("reader is free")
-        { assert(rd.behaviour.size == 0) }
+        { assert(rd.connector.size == 0) }
     }
 
   }

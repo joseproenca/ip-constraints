@@ -17,7 +17,7 @@ class Reader (var n:Int,deployer: OutputChannel[Any]) extends Node[GCSolution, F
 
 //  val uid = hashCode()
 
-  val behaviour = //new ChoReaderPassive("r",uid,n)
+  val connector = //new ChoReaderPassive("r",uid,n)
     new GCReader("r",uid,n) { override def isProactive = false }
 
   // suggests which ends must have dataflow if "end" has also dataflow

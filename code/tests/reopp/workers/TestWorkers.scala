@@ -44,7 +44,7 @@ class TestWorkers extends FunSpec {
 //    lossy.neighbours ::= wr
 
 //    wr.connect(lossy , wr.behaviour.ends.head , lossy.behaviour.ends.head)
-    lossy(lossy.behaviour.ends.head) <-- wr(wr.behaviour.ends.head)
+    lossy(lossy.connector.ends.head) <-- wr(wr.connector.ends.head)
 
     // trigger all primitives (only proactive ones will start)
     wr.init

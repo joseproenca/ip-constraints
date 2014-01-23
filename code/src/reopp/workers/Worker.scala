@@ -99,7 +99,7 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
     debug("DONE\n"+sol)
     debugGraph
     for (n <- strat.owned) {
-      n.behaviour.update(sol)
+      n.connector.update(sol)
       n.owner = None // cleaning locks (before any init)
     }
     for (n <- strat.owned)

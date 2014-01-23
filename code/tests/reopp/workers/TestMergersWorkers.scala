@@ -37,20 +37,20 @@ class TestMergersWorkers extends FunSpec {
 //
 //    // create reader
 //    val rd = new connectors.Reader(math.pow(reopp.workers,size).toInt,deployer)
-//    println("reader: "+rd.behaviour.uid)
+//    println("reader: "+rd.connector.uid)
 //
 //    // create and connect mergers
-//    val ends = createBranches[St,SB,D](size,Set((rd,rd.behaviour.ends.head)),deployer)
+//    val ends = createBranches[St,SB,D](size,Set((rd,rd.connector.ends.head)),deployer)
 //
 //    // create and connect writers
 //    for ((node,end) <- ends) {
 //      val wr = new connectors.Writer(1,deployer)
-//      println("writer: "+wr.behaviour.uid)
+//      println("writer: "+wr.connector.uid)
 //
-//      node.behaviour.connections +=
-//        wr -> Set((end,wr.behaviour.ends.head,wr.behaviour.uid))
-//      wr.behaviour.connections +=
-//        node -> Set((wr.behaviour.ends.head,end,node.behaviour.uid))
+//      node.connector.connections +=
+//        wr -> Set((end,wr.connector.ends.head,wr.connector.uid))
+//      wr.connector.connections +=
+//        node -> Set((wr.connector.ends.head,end,node.connector.uid))
 //      node.neighbours ::= wr
 //      wr.neighbours ::= node
 //    }
@@ -74,22 +74,22 @@ class TestMergersWorkers extends FunSpec {
 
     // create reader
     val rd = new connectors.Reader(math.pow(workers,size).toInt,deployer)
-    println("reader: "+rd.behaviour.uid)
+    println("reader: "+rd.connector.uid)
 //    println(" - "+rd.hashCode())
 
     // create and connect mergers
-    val ends = createBranches[St2,D2](size,Set((rd,rd.behaviour.ends.head)),deployer)
+    val ends = createBranches[St2,D2](size,Set((rd,rd.connector.ends.head)),deployer)
 
     // create and connect writers
     var writers = List[Nd]()
     for ((node,end) <- ends) {
       val wr = new connectors.Writer(1,deployer)
       writers ::= wr
-      println("writer: "+wr.behaviour.uid)
+      println("writer: "+wr.connector.uid)
 //      println(" - "+wr.hashCode())
 
-//      node.connect(wr,end,wr.behaviour.ends.head)
-      node(end) <-- wr(wr.behaviour.ends.head)
+//      node.connect(wr,end,wr.connector.ends.head)
+      node(end) <-- wr(wr.connector.ends.head)
 
     }
 

@@ -19,7 +19,7 @@ abstract class Node[S<:Solution, C<:Constraints[S,C]]
   val uid = hashCode()
 
   // abstract method:
-  val behaviour: Connector[S, C]
+  val connector: Connector[S, C]
 
   // neighbours to pairs of sync'd ends
   var connections    = Map[Node[S,C],Set[(String,String,Int)]]()
@@ -49,7 +49,7 @@ abstract class Node[S<:Solution, C<:Constraints[S,C]]
 
   def init() {
 //        println("INIT? ["+hashCode()+"] "+behaviour.isProactive)
-    if (behaviour.isProactive) deployer ! this
+    if (connector.isProactive) deployer ! this
   }
 
   def apply(e:String): End[S,C] = new End(this,e)
@@ -131,7 +131,7 @@ object Node {
       (implicit b:CBuilder[S,C]): Node[S,C] =
     new Node[S,C](deployer) {
       //      val uid = this.hashCode()
-      val behaviour = conn(uid)
+      val connector = conn(uid)
 
       // suggests which ends must have dataflow if "end" has also dataflow
       def guessRequirements(nd: Node[S, C]) =
@@ -182,9 +182,9 @@ class End[S<:Solution, C<:Constraints[S,C]](val n: Node[S,C], val e: String) {
 
     // better design: expose connections and flowconn only via an interface...
     me.connections +=
-      other -> Set((myend,otherend,other.behaviour.uid))
+      other -> Set((myend,otherend,other.connector.uid))
     other.connections +=
-      me -> Set((otherend,myend,me.behaviour.uid))
+      me -> Set((otherend,myend,me.connector.uid))
 
     //      val myendNodes: Set[Node[S,C]] = this.invConnections(myend)
     val newMyEndNodes:Set[Node[S,C]] = me.invConnections(myend) ++ Set(other)
@@ -193,6 +193,6 @@ class End[S<:Solution, C<:Constraints[S,C]](val n: Node[S,C], val e: String) {
     other.invConnections += otherend -> newOtherEndNodes
 
     // flow connections
-    me.flowconn += ((myend,me.behaviour.uid,otherend,other.behaviour.uid))
+    me.flowconn += ((myend,me.connector.uid,otherend,other.connector.uid))
   }
 }
