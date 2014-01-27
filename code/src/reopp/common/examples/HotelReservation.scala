@@ -250,12 +250,12 @@ object HotelReservation extends App {
                  // up to 2 workers
   deployer.start()
 
-  val node_w = deployer.add {
+  val node_w = deployer add (
     writer("req",List(
       Req("1"),Req("2"),Req("3"))) ++
     nexrouter("req",List("s1","s2","s3")) ++
     srchAppr(1) ++ srchAppr(2) ++ srchAppr(3)
-  }
+  )
   val node_1 = row(1)
   val node_2 = row(2)
   val node_3 = row(3)
