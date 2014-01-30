@@ -106,9 +106,13 @@ object HotelReservation extends App {
       println("book: strange type - "+other+" : "+other.getClass)
   }
 
-  def cancelB = Function("cancelB"){
-    case (x,_) => println("canceling booking "+x+".") // returns Unit
-  }
+//  def cancelB = Function("cancelB"){
+//    case (x,_) => println("canceling booking "+x+".") // returns Unit
+//  }
+
+  def cancelB = (x: (List[_],_)) =>
+    println("canceling booking: "+x._1.mkString(", ")+".") // returns Unit
+ 
 
   def invoice = Function("invoice"){
     case x => println("sending invoice for "+x+": "+x.getClass) // returns Unit
@@ -266,6 +270,7 @@ object HotelReservation extends App {
     sdrain("so"+i,"ap"+i)
   def row(i:Int) = deployer.add {
     transf("ap"+i,"bk"+i,book,cancelB) ++
+//    transf("ap"+i,"bk"+i,book,(x:Any) => println("canceling: "+x)) ++
     monitor("bk"+i,"inv"+i,invoice) ++
     filter("inv"+i,"paid"+i,paid) ++
     sdrain("inv"+i,"paid"+i) ++

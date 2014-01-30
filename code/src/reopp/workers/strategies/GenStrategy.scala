@@ -18,4 +18,8 @@ object GenDeployer {
   def hybrid(workers:Int) = { 
 	  new Deployer[S,C,HybridStrategy[S,C]](workers)
   }
+
+  def all(workers:Int) = { 
+	  new Deployer[S,C,CompleteStrategy[S,C]](workers)
+  }
 }

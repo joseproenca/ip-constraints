@@ -32,7 +32,18 @@ class Deployer[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
     nodes ::= res
     res
   }
-  
+
+  /** Creates a new worker (node), associated to this deployer.
+   *  Keeps track of created nodes just to allow starting all of them in one go.
+   *  @param deps pairs of dependent port names, Used for hybrid strategy ([[strategies.HybridStrategy]]).
+   *         For each (a,b), if 'a' is not on the border of the region, 'b' cannot be either.
+   */
+   def add(con: => Connector[S,C],deps: Iterable[(String,String)]): Node[S,C] = {
+    val res = Node[S,C](this, deps, (uid:Int) => con )(builder)
+    nodes ::= res
+    res
+  }
+
   /** Starts all nodes created with "add" in one go. */
   def init() = for (n <- nodes) n.init
   

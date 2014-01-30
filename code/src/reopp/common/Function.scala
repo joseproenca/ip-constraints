@@ -31,7 +31,7 @@ object Function {
         catch {
           case e: scala.MatchError => {}    // return Unit if undefined
           case e: java.lang.ClassCastException => {}    // return Unit if undefined
-          case e => throw e
+          case e: Throwable => throw e
           // note: 'A' is lost at runtime, so the matchError does not work.
         }
       }
@@ -43,7 +43,7 @@ object Function {
    * @param body is the scala [[scala.Function1]]
    * @return the new [[reopp.common.Function]].
    */
-  def apply[A](name:String)(body: Any => Any): Function =
+  def apply(name:String)(body: Any => Any): Function =
     new Function {
       def calculate(x: Any) = {
 //        val input = x
@@ -51,15 +51,33 @@ object Function {
 //          case jl: java.util.List[Any] => input = jl.asScala.toList
 //          case _ => {}
 //        }
-        try x match { case y: A => body(y) }
+        try x match { case y: Any => body(y) }
         catch {
           case e: scala.MatchError => {}  // return Unit if undefined
           case e: java.lang.ClassCastException => {}    // return Unit if undefined
-          case e => throw e
+          case e: Throwable => throw e
           // note: 'A' is lost at runtime, so the matchError does not work.
         }
       }
 
       override def toString = name
     }
+  
+  /**
+   * Allows Scala functions to be implicitly converted to Functions.
+   * Makes definition of transformer channels easier.
+   */
+  implicit def func2Func[A,B](body:A=>B): Function =
+    new Function {
+      def calculate(x: Any) = {
+        try x match { case y: A => body(y) }
+        catch {
+          case e: scala.MatchError => {}  // return Unit if undefined
+          case e: java.lang.ClassCastException => {}    // return Unit if undefined
+          case e: Throwable => throw e
+          // note: 'A' is lost at runtime, so the matchError does not work.
+        }
+      }
+  }
+
 }

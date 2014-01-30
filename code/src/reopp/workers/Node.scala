@@ -126,8 +126,15 @@ abstract class Node[S<:Solution, C<:Constraints[S,C]]
 }
 
 object Node {
+  /**
+   * Creates a new node, with a new connector, linked to a deployer (with a strategy).
+   * @param deployer the associated [[Deployer]] reference
+   * @param deps pairs of dependent port names, Used for hybrid strategy ([[strategies.HybridStrategy]]).
+   *    		For each (a,b), if 'a' is not on the border of the region, 'b' cannot be either.
+   * @param conn function that, given a unique ID (of the node), returns the connector of this node.
+   */
   def apply[S<:Solution, C<:Constraints[S,C]]
-      (deployer: OutputChannel[Any],map: Iterable[(String,String)],conn : Int => Connector[S,C])
+      (deployer: OutputChannel[Any],deps: Iterable[(String,String)],conn : Int => Connector[S,C])
       (implicit b:CBuilder[S,C]): Node[S,C] =
     new Node[S,C](deployer) {
       //      val uid = this.hashCode()
@@ -135,12 +142,12 @@ object Node {
 
       // suggests which ends must have dataflow if "end" has also dataflow
       def guessRequirements(nd: Node[S, C]) =
-        if (map.isEmpty || !connections.contains(nd)) Set()
+        if (deps.isEmpty || !connections.contains(nd)) Set()
         else {
           var res: Set[Node[S,C]] = Set()
-          for ((a,b) <- map)
-            if (invConnections contains a)
-              res ++= invConnections(b)
+          for ((a,b) <- deps)
+            if (invConnections contains a) // if 'a' is connected
+              res ++= invConnections(b)	   // then 'b's connections are required
           res
         }
     }
