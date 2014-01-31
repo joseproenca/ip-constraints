@@ -7,6 +7,16 @@ import reopp.common.guardedcommands.GCConnector
 import reopp.common.Function
 import reopp.common.Predicate
 import scala.util.Random
+import reopp.common.Solution
+import reopp.common.OptionSol
+import reopp.common.IntFunction
+import choco.kernel.model.variables.integer.IntegerExpressionVariable
+import choco.Choco
+import z3.scala.Z3Context
+import z3.scala.Z3AST
+import reopp.common.IntPredicate
+import reopp.common.choco.ChoConnector
+import reopp.common.choco.dataconnectors._
 
 /**
  * @author Jose Proenca
@@ -33,6 +43,10 @@ Possible methods: "sat", "smt", "ahc", "all", "partial1", "partial2", "partial4"
     exit
   }
   
+  args(1)="500"
+  args(2)="smt"
+  args(3)=""
+  
   val n = Integer.parseInt(args(1))
   val sat = args(2) startsWith "sat"
   val smt = args(2) startsWith "smt"
@@ -41,7 +55,7 @@ Possible methods: "sat", "smt", "ahc", "all", "partial1", "partial2", "partial4"
   val p1 = args(2) startsWith "partial1"
   val p2 = args(2) startsWith "partial2"
   val p4 = args(2) startsWith "partial4"
-  val print = args(2) startsWith "print"
+  val print = (args.size > 3) && (args(3) startsWith "print")
 
 //  val deployer =
 //	 if      (p1) GenDeployer.hybrid(1)
@@ -51,6 +65,13 @@ Possible methods: "sat", "smt", "ahc", "all", "partial1", "partial2", "partial4"
 //                 // up to 2 workers
 //  deployer.start()
   
+  private def show(time:Long,mode:String,res:OptionSol[Solution]) {
+      if (print) { 
+        if (res.isDefined) println(mode+" - solved in "+time+" ms:\n"+res.get)
+        else println(mode+" - no solution (in "+time+" ms)")
+      }
+      else println(mode+"        - "+time)            
+  }
   
   //////////////////////////
   /// Sensors experiment ///
@@ -112,16 +133,94 @@ Possible methods: "sat", "smt", "ahc", "all", "partial1", "partial2", "partial4"
 
       
     // Running the experiments //
-      
-    if (print) {
-    	val cons = conn.getConstraints
-	    println(cons)
-        println(cons.solveChocoX)
+          
+    if (sat) {
+      val cons = conn.getConstraints
+      cons.close
+      val time = System.currentTimeMillis()
+      val res = cons.solveChocoSat
+      val spent = System.currentTimeMillis() - time
+      show(spent,"SAT",res)
     }
-    
+    else if (smt) {
+      val cons = conn.getConstraints
+      val time = System.currentTimeMillis()
+      val res = cons.solveChocoX
+      val spent = System.currentTimeMillis() - time
+      show(spent,"SMT",res)
+    }
+    /*
+    else if (ahc) {
+		  // convert to min + hour*60 + temp*60*24 + temp*60*24*2
+	    def genTimedTemp2 =
+		    (25*rand.nextFloat).toInt *60*24*2 +
+		    (if(rand.nextBoolean) 0 else 1) *60*24 +
+		    (24*rand.nextFloat).toInt *60 +
+		    (60*rand.nextFloat).toInt 
+
+		def genWriters2(i:Int): ChoConnector = i match {
+		  case 1 => new ChoWriter("w1",0,List(genTimedTemp2))
+		  case i if i>0 => new ChoWriter("w"+i,0,List(genTimedTemp2)) ++ genWriters2(i-1)
+		}
+		val getTimeCho = (x:IntegerExpressionVariable) =>
+		      // recover hours and min
+//		      Choco.mod(x,60*24)
+		  	  Choco.plus(x,2) // MODULO IS BROKEN!
+		val getTempCho = (x:IntegerExpressionVariable) =>
+		      // recover temp and unit - (x-x%(60*24))/(60*24)
+//		      Choco.div(Choco.minus(x,getTimeCho(x)),60*24)
+		  	  Choco.plus(x,10)
+		val f2cCho = (x:IntegerExpressionVariable) =>
+		      // convert temp (and unit) to celcius
+		      // ((x-(x%2)-32 * 5/9) + 0) - zero is the code for Celcius
+//		      Choco.div(Choco.mult(Choco.minus(Choco.minus(x,Choco.mod(x,2)),32),5),9)
+//		      Choco.div(Choco.mult(Choco.minus(x,32),5),9)
+		  	  Choco.plus(x,100)
+		val notNightCho = (x:IntegerExpressionVariable) =>
+			  // x>1200 || x<420
+//			  Choco.not(Choco.or(Choco.gt(x,1200),Choco.lt(x,420)))
+		  	  Choco.TRUE
+		val isFCho = (x:IntegerExpressionVariable) =>
+			  // x%2 = 1
+//			  Choco.eq(Choco.mod(x,2),1)
+			  Choco.TRUE
+		val isCCho = (x:IntegerExpressionVariable) =>
+			  // x%2 = 0
+//			  Choco.eq(Choco.mod(x,2),0)
+			  Choco.FALSE
+        val conn2 =
+	      genWriters2(n) ++
+	      new ChoNMerger((for(i<-1 to n) yield "w"+i).toList, "w",0) ++
+//	      new ChoTransf("w","gTime",0,(x:IntegerExpressionVariable) => Choco.mod(x,2))//++
+	      new ChoTransf("w","gTime",0,getTimeCho)++
+	      new ChoTransf("w","gTemp",0,getTempCho)++
+	      new ChoFilter("gTime","night",0,notNightCho) ++
+	      new ChoFilter("gTemp","isF",0,isFCho)++
+	      new ChoTransf("isF","f2c",0,f2cCho) ++
+	      new ChoFilter("gTemp","isC",0,isCCho)++
+	      new ChoMerger("isC","f2c","ctemp",0) ++
+	      new ChoSDrain("night","ctemp",0)++
+	      new ChoReader("ctemp",0,1)
+
+		val cons = conn2.getConstraints
+//		println(cons)
+		cons.close
+		val time = System.currentTimeMillis()
+        val res = cons.solve()
+        val spent = System.currentTimeMillis() - time
+        show(spent,"AHC",res)
+    }
+    */
     
     
   }
+  
+  // Transactions //
+  else if (args(0) startsWith "transitions-spar") {
+    println("transitions-spar")
+  }
+
+  
 
 
 }
