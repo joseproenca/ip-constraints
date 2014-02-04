@@ -33,9 +33,12 @@ import reopp.common.guardedcommands.IntAssgn
  *
  * Created by jose on 05/02/13.
  *
- * Static library of functions to convert from guarded commands to Choco constraints,
- * using
+ * Static library of functions to convert from guarded commands to Choco constraints.
+ * Use [[reopp.common.guardedcommands.chocodyn]] instead. ChocoX has bugs:
+ * sometimes a wrong value is given as solution, e.g., "x -> 1", but when
+ * "x == 1" is added to the constraints no solution is found.
  */
+@deprecated
 object ChocoX {
   type VarMap     = MutMap[String, IntegerVariable]
   type DataHash   = MutMap[Integer, Any]

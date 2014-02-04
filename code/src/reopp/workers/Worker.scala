@@ -388,7 +388,7 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
   }
 
   def mark(msg: Char) {
-    print(msg)
+//    print(msg)
   }
   
   

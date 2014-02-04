@@ -59,4 +59,7 @@ object ConnectorGen {
   def noflow(a: String, i: Int = 0) = new GCConnector(List(a),i) {
     def getConstraints = Formula(True --> Neg(Var(Utils.flowVar(a,i))))
   }
+  def empty(i: Int = 0) = new GCConnector(List(),i) {
+    def getConstraints = Formula()
+  }
 }

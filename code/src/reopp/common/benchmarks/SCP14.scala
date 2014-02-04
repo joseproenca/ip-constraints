@@ -17,6 +17,13 @@ import z3.scala.Z3AST
 import reopp.common.IntPredicate
 import reopp.common.choco.ChoConnector
 import reopp.common.choco.dataconnectors._
+import reopp.workers.Node
+import reopp.common.guardedcommands.Formula
+import reopp.common.guardedcommands.GCSolution
+import scala.actors.Actor._
+import scala.actors.Actor
+import reopp.common.NoneSol
+import reopp.common.guardedcommands.dataconnectors.GCReader
 
 /**
  * @author Jose Proenca
@@ -30,32 +37,37 @@ import reopp.common.choco.dataconnectors._
  * Possible connectors: "sensors", "transitions-spar", "transitions-sseq",... 
  *
  */
-object SCP14 extends App {
+object SCP14 {
+  def main(args:Array[String]) {
   
-  //  Warmup.go
-
   if (args.size < 3) {
     println("""
 Wrong usage. It should be: SCP14 <connector> <size> <method>
-Possible connectors: "sensors", "transitions-spar", "transitions-sseq",... 
+Possible connectors: "sensors", "transactions-spar", "transactions-sseq1",
+  "transactions-sseqn", "transactions-bpar", "transactions-bseq1",
+  "transactions-bseqn", pairwise
 Possible methods: "sat", "smt", "ahc", "all", "partial1", "partial2", "partial4" 
 """)
-    exit
+    return
   }
   
-  args(1)="500"
-  args(2)="smt"
-  args(3)=""
+  Warmup.go
+
+  
+//  args(0)="pairwise"
+//  args(1)="50"
+//  args(2)="partial1"
+//  args(3)=""
   
   val n = Integer.parseInt(args(1))
   val sat = args(2) startsWith "sat"
   val smt = args(2) startsWith "smt"
   val ahc = args(2) startsWith "ahc"
-  val all = args(2) startsWith "smt"
+  val all = args(2) startsWith "all"
   val p1 = args(2) startsWith "partial1"
   val p2 = args(2) startsWith "partial2"
   val p4 = args(2) startsWith "partial4"
-  val print = (args.size > 3) && (args(3) startsWith "print")
+  val debug = (args.size > 3) && (args(3) startsWith "debug")
 
 //  val deployer =
 //	 if      (p1) GenDeployer.hybrid(1)
@@ -65,8 +77,8 @@ Possible methods: "sat", "smt", "ahc", "all", "partial1", "partial2", "partial4"
 //                 // up to 2 workers
 //  deployer.start()
   
-  private def show(time:Long,mode:String,res:OptionSol[Solution]) {
-      if (print) { 
+  def show(time:Long,mode:String,res:OptionSol[Solution]) {
+      if (debug) { 
         if (res.isDefined) println(mode+" - solved in "+time+" ms:\n"+res.get)
         else println(mode+" - no solution (in "+time+" ms)")
       }
@@ -78,7 +90,7 @@ Possible methods: "sat", "smt", "ahc", "all", "partial1", "partial2", "partial4"
   //////////////////////////
 
   if (args(0) startsWith "sensors") {
-    println("Sensors")
+    if (debug) println("Sensors")
     
     case class TimedTemp(temp:Int,unit:String
                     ,hour:Int,min:Int)    
@@ -215,12 +227,227 @@ Possible methods: "sat", "smt", "ahc", "all", "partial1", "partial2", "partial4"
     
   }
   
-  // Transactions //
-  else if (args(0) startsWith "transitions-spar") {
-    println("transitions-spar")
+  ///////////////////////////
+  /// Transactions - Sync ///
+  ///////////////////////////
+
+  else if (args(0) startsWith "transactions-s") {
+    val seq = args(0) startsWith "transactions-sseq" 
+    val fst = args(0) startsWith "transactions-sseq1" 
+    if (debug) {
+      if (fst)      println("transactions-sseq-failFst")
+      else if (seq) println("transactions-sseq-failLast")
+      else	      println("transactions-spar")
+    }
+    
+    val id = Function("id") {
+      case x => x
+    }
+    val fail = Predicate("fail") {
+      case _ => false // { print("fail-"); false}
+    }
+    val success = Predicate("success") {
+      case _ => true // { print("succ-"); true }
+    }
+    def genS(i:Int,si:Int,o:Int,f:Function,ok:Predicate,fi:Function) = {
+//      println(s"generating S from $i to $o")
+      transf("out"+i,"a"+o,f) ++
+      filter("a"+o,"out"+o,ok) ++
+      negfilter("a"+o,"b"+o,ok) ++
+      merger("b"+o,"sto"+o,"c"+o) ++
+      transf("c"+o,"sto"+si,fi)      
+    }
+    def genSSeqs(from:Int,to:Int): GCConnector = to match {
+      case 0 => empty()
+      case `from` => genS(to,to,to+1,id,success,id)
+      case _ if to>0 => genS(to,to,to+1,id,success,id) ++ genSSeqs(from,to-1)
+    }
+    def genSPars(i:Int): GCConnector = i match {
+      case 0 => empty()
+      case 1 => genS(1,-2,2,id,success,id)
+      case _ if i>0 => genS(i,-i-1,i+1,id,success,id) ++ genSPars(i-1)
+    }
+    def genNoflow(i:Int): GCConnector = i match {
+      case 0 => empty()
+      case 1 => noflow("sto2")
+      case _ if i>0 => noflow("sto"+(i+1)) ++ genNoflow(i-1)
+    }
+    
+	val conn = if (fst)
+	  writer("out1",List(1)) ++
+      reader("sto1",1) ++
+      genS(1,1,2,id,fail,id) ++
+      genSSeqs(2,n) ++
+      noflow("sto"+(n+1))
+    else if (seq)        
+	  writer("out1",List(1)) ++
+      reader("sto1",1) ++
+      genSSeqs(1,n-1) ++
+      genS(n,n,n+1,id,fail,id) ++
+      noflow("sto"+(n+1))
+	else
+      writer("out1",List(1)) ++
+      reader("sto1",1) ++
+      genSPars(n) ++
+      genNoflow(n)
+      
+      
+    // Running the experiments //
+          
+    if (sat) {
+      val cons = conn.getConstraints
+      cons.close
+      val time = System.currentTimeMillis()
+      val res = cons.solveChocoSat
+      val spent = System.currentTimeMillis() - time
+      show(spent,"SAT",res)
+    }
+    else if (smt) {
+      val cons = conn.getConstraints
+      val time = System.currentTimeMillis()
+      val res = cons.solveChocoDyn
+      val spent = System.currentTimeMillis() - time
+      show(spent,"SMT",res)
+    } 
   }
 
+  ///////////////////////////////
+  /// Transactions - Built-in ///
+  ///////////////////////////////
+
+  else if (args(0) startsWith "transactions-b") {
+    val seq = args(0) startsWith "transactions-bseq" 
+    val fst = args(0) startsWith "transactions-bseq1" 
+    if (debug) {
+      if (fst)      println("transactions-bseq-failFst")
+      else if (seq) println("transactions-bseq-failLast")
+      else	      println("transactions-bpar")
+    }
+ 
+    val id = Function("id") {
+      case x => x
+    }
+    val fail = Predicate("fail") {
+      case _ => false //{ print("fail-"); false}
+    }
+    val success = Predicate("success") {
+      case _ => true //{ print("succ-"); true }
+    }
+    def genB(i:Int,o:Int,f:Function,ok:Predicate,fi:Function) = {
+      transf("out"+i,"a"+o,f,fi) ++
+      filter("a"+o,"out"+o,ok) ++
+      sdrain("a"+o,"out"+o)
+    }
+    def genBSeqs(from:Int,to:Int): GCConnector = to match {
+      case 0 => empty()
+      case `from` => genB(to,to+1,id,success,id)
+      case _ if to>0 => genB(to,to+1,id,success,id) ++ genBSeqs(from,to-1)
+    }
+    def genBPars(i:Int): GCConnector = i match {
+      case 0 => empty()
+      case 1 => genB(1,2,id,success,id)
+      case _ if i>0 => genB(i,i+1,id,success,id) ++ genBPars(i-1)
+    }
+    
+    val conn = if (fst)
+      writer("out1",List(1)) ++
+      genB(1,2,id,fail,id) ++
+      genBSeqs(2,n)
+    else if (seq)        
+	  writer("out1",List(1)) ++
+      genBSeqs(1,n-1) ++
+      genB(n,n+1,id,fail,id)
+    else
+      writer("out1",List(1)) ++
+      genBPars(n)
+      
+    // Running the experiments //
+          
+    if (sat) {
+      val cons = conn.getConstraints
+      cons.close
+      val time = System.currentTimeMillis()
+      val res = cons.solveChocoSat
+      val spent = System.currentTimeMillis() - time
+      show(spent,"SAT",res)
+    }
+    else if (smt) {
+      val cons = conn.getConstraints
+      val time = System.currentTimeMillis()
+      val res = cons.solveChocoDyn
+      val spent = System.currentTimeMillis() - time
+      show(spent,"SMT",res)
+    } 
+  }
   
+  /////////////////////////////
+  /// Parallel asyncrhonous ///
+  /////////////////////////////
 
+  else if (args(0) startsWith "pairwise") {
+    if (debug) println("Pairwise asynchronous")
+	
+    val workers: Int = if (p1) 1 else if (p2) 2 else if (p4) 4 else if (all) 0 
+    				   else throw new RuntimeException("Only 1, 2, or 4 workers.")
+    
+	val deployer = if (all) GenDeployer.all(1)
+				   else     GenDeployer.hybrid(workers)
+	deployer.start
+    
+	val counter = new Actor {
+	  var c = n
+	  var time: Long = 0
+	  def act() = react {
+	  	case _ =>
+	  	  c -= 1
+//	  	  print(".")
+	  	  if (c == 0) {
+	  		val spent = System.currentTimeMillis() - time
+	  	    show(spent,if (all) "ALL" else "Partial"+workers,NoneSol())
+	  	  }
+	  	  else act()
+	}}
+	
+	def genReader(i:Int) =
+	  new GCReader("x"+i, 0, 1) {
+		  val port = reopp.common.Utils.flowVar("x"+i, uid)
+		  override def update(s: OptionSol[GCSolution]) {
+			  if (s.isDefined){
+//				  println("Got solution: "+s.get)
+				  if (s.get hasFlowOn port) {
+//					 println("\nGot data - "+i+": "+s.get.getDataOn(reopp.common.Utils.dataVar("x"+i,uid)))
+					 counter ! ()
+					 size -= 1
+				  }
+			  }
+		  }
+	  }
+	def genPair(i:Int) = deployer add {
+      writer("x"+i, List(i)) ++ // for (n<-(1 to 50).toList) yield i) ++ 
+//      reader("x"+i)
+      genReader(i) 
+    } 
+    def connectPair(i:Int,n1:Node[GCSolution,Formula],n2:Node[GCSolution,Formula]) = {
+      val ad = deployer add (adrain("x"+i,"x"+(i+1)))
+      ad("x"+i)  <-- n1("x"+i)
+      ad("x"+(i+1))  <-- n2("x"+(i+1))
+      ad
+    } 
+    
+    var prev = genPair(1) // n >= 1
+    for (i <- 2 to n) {
+      val next = genPair(i)
+      connectPair(i-1,prev,next)
+      prev = next
+    }
+    
+        // Running the experiments //
 
-}
+    counter.time = System.currentTimeMillis()
+    counter.start
+    deployer.init
+//    Thread.sleep(1000)
+//    deployer ! 'STATUS
+    
+  }
+}}
