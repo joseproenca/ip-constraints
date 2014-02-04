@@ -96,7 +96,7 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
   }
 
   def success(sol:OptionSol[S]) {
-    debug("DONE\n"+sol)
+    debug(s"DONE nds@${strat.owned.map(_.hashCode).mkString("[",",","]")}\n"+sol)
     debugGraph
     for (n <- strat.owned) {
       n.connector.update(sol)
@@ -140,7 +140,7 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
           }
         }
         else {
-          debug("sent conflict! - "+other.get.hashCode())
+          debug("sent conflict! -> ["+other.get.hashCode().toString.substring(5)+"]")
           other.get ! 'CONFLICT
           inConflict += other.get
           pendingConflicts += other.get -> Set(nd)
@@ -176,25 +176,37 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
   def quit(reason: String) {
     if (pendingConflicts.isEmpty && pendingWorkers.isEmpty)
       this ! 'QUIT
-    else debug("WAITING!! ["+reason+"] - conflicts: "+pendingConflicts.size+", missing reopp.workers: "+pendingWorkers.size)
+    else debug("WAITING!! ["+reason+"] - conflicts: "+pendingConflicts.size+", missing workers: "+pendingWorkers.size)
     loop(react {
       case 'GO   => {}
       case 'CONFLICT =>
         pendingConflicts -= sender
         // if it is the first time it is a conflict, reply NO
         if (!(inConflict contains sender)) {
+          debug(s"sent NoConfl -> [${sender.hashCode().toString.substring(5)}]")
           sender ! 'NOCONFLICT
         }
         // if it was in conflict and I'm stronger, wait for traversal,
         else if (hashCode() > sender.hashCode()) pendingWorkers += sender
         // if it was in conflict and I'm weaker all is good.
+        // - BUT it could be waiting for a strategy to quit - must say it cannot have it.
+        else {
+          debug(s"sent NoSTRAT -> [${sender.hashCode().toString.substring(5)}]")
+          sender ! 'NOSTRAT
+        }
         quit(reason)
 
       case (other: Str) =>
 //        strat merge other
-        // need to free other nodes as well
+        // need to free other nodes as well, and INIT them (initially I forgot this)
         for (nd <- other.owned)
           nd.owner = None
+        for (nd <- other.owned)
+          nd.init
+        pendingWorkers -= sender        
+        quit(reason)
+
+      case 'NOSTRAT =>
         pendingWorkers -= sender
         quit(reason)
 
@@ -202,6 +214,7 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
         pendingConflicts -= sender
         quit(reason)
       }
+      ///////////////
       case 'QUIT =>
         debug("quiting - "+reason)
 //        println("quiting - "+reason)
@@ -210,6 +223,7 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
         else
           deployer ! 'DONE
         exit(reason)
+      case 'STATUS => printStatus
     })
   }
 
@@ -223,7 +237,19 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
     case 'NOCONFLICT => gotNoConflict
 
     case (other: Str) => gotGraph(other)
+
+    case 'NOSTRAT => gotNoStrat
+
+    case 'STATUS => printStatus
   }
+
+  private def printStatus =
+      println(s" +- ${hashCode.toString.substring(5)}" +
+    		  s"\n | workers: ${pendingWorkers.map(_.hashCode().toString.substring(5)).mkString(",")}" +
+    		  s"\n | conflicts: ${inConflict.map(_.hashCode().toString.substring(5)).mkString(",")}" +
+    		  s"\n | pending: ${pendingConflicts.keys.map(_.hashCode().toString.substring(5)).mkString(",")}" +
+    		  s"\n | paused: $paused" +
+    		  s"\n | nodes: ${strat.owned.mkString(",")}")      
 
 
   private def gotGo {
@@ -249,8 +275,9 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
     if (next.isEmpty) {
       // Wait for strategies or conflicts that can unstuck the expansion
       if (!(pendingConflicts.isEmpty && pendingWorkers.isEmpty)) {
-        debug("waiting for pending (Conflicts/Workers) - "+pendingConflicts.keys.map(_.hashCode()).mkString(", ")+" / "
-                                        +pendingWorkers.map(_.hashCode()).mkString(", "))
+        debug("waiting for pending (Conflicts/Workers) - "+
+            pendingConflicts.keys.map(_.hashCode().toString.substring(5)).mkString(", ")+" / "+
+            pendingWorkers.map(_.hashCode().toString.substring(5)).mkString(", "))
         paused = true
         act()
       }
@@ -261,11 +288,13 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
     // claim new nodes
     debug("claiming...")
     val claimed = claim(next)
+    debug(s"claimed ${claimed._1.size}")
     if (claimed._1.isEmpty)
       nextRound()
     // send conflicts
     else {
-      debug("in conflict... - "+claimed._2.map(_.uid).mkString("[",",","]"))
+      debug("in conflict... - nds@"+claimed._2.map(_.uid).mkString("[",",","]")+" - own nds@"
+          +strat.owned.map(_.uid).mkString("[",",","]"))
       for (othernd <- claimed._2)
         safeSendConfl(othernd)
       //        inConflict ++= claimed._1
@@ -315,6 +344,16 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
     act()
   }
 
+  private def gotNoStrat() {
+    debug("got noStrat")
+    pendingWorkers -= sender
+    if (paused) {
+      paused = false
+      nextRound()
+    }
+    act()
+  }
+
   private def gotNoConflict {
     // TODO: if a conflict is cancelled, the nodes need to be re-added to the fringe! - DONE
     debug("got noconflict")
@@ -345,7 +384,7 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
 
 
   def debug(msg: String) {
-//    println("["+hashCode()+"] "+msg)
+//    println("["+hashCode().toString.substring(5)+"] "+msg)
   }
 
   def mark(msg: Char) {

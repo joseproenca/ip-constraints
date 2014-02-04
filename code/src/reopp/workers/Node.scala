@@ -48,7 +48,7 @@ abstract class Node[S<:Solution, C<:Constraints[S,C]]
   // Auxiliar functions
 
   def init() {
-//        println("INIT? ["+hashCode()+"] "+behaviour.isProactive)
+//    println("INIT? nd@["+hashCode()+"] "+connector.isProactive)
     if (connector.isProactive) deployer ! this
   }
 

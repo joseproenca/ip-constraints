@@ -21,7 +21,8 @@ class Deployer[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
 //  val maxWorkers: Int
   private var currentWorkers: Int = 0
   private val pendingTasks = scala.collection.mutable.Queue[Node[S,C]]()
-  private var counter = 0
+  private var tmpWorkers = List[scala.actors.Actor]()
+//  private var counter = 0
   
   private var nodes: List[Node[S,C]] = Nil
   
@@ -51,6 +52,7 @@ class Deployer[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
 //    println("new worker? "+(currentWorkers < maxWorkers)+"/"+ (!pendingTasks.isEmpty))
     if (currentWorkers < maxWorkers && !pendingTasks.isEmpty) {
       val w = new Worker[S,C,Str](this, sb.apply)
+      tmpWorkers ::= w
       val started = w.work(pendingTasks.dequeue())
       if (started) {
         currentWorkers += 1
@@ -69,7 +71,7 @@ class Deployer[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
   def act(): Nothing = react {
     // Sent by nodes when a new step is found.
     case 'SOLVED =>
-      counter += 1
+//      counter += 1
 //      println("#######"+counter+"#######")
       workerDone()
       nextMessage()
@@ -84,9 +86,15 @@ class Deployer[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
 //      println("#####--"+counter+"--#####")
       workerDone()
       nextMessage()
+    case 'STATUS =>
+      println(s"workers: $currentWorkers, tasks: $pendingTasks")
+      println(tmpWorkers.map(_.hashCode().toString.substring(5)).mkString(","))
+      for (w <- tmpWorkers) w ! 'STATUS // those alive will print their status...
+//      exit()
   }
   
   private def nextMessage() {
+//	  requestTasks()
       if (currentWorkers > 0) {
 //    	println(s"still has workers: $currentWorkers (with ${pendingTasks.size} pending tasks)")
         act()
