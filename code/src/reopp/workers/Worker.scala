@@ -177,7 +177,7 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
     if (pendingConflicts.isEmpty && pendingWorkers.isEmpty)
       this ! 'QUIT
     else debug("WAITING!! ["+reason+"] - conflicts: "+pendingConflicts.size+", missing workers: "+pendingWorkers.size)
-    loop(react {
+    loop( /*print(",");*/ react {
       case 'GO   => {}
       case 'CONFLICT =>
         pendingConflicts -= sender
@@ -229,7 +229,7 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
 
 
   // solve a round
-  def act(): Nothing = react {
+  def act(): Nothing = {/*print(".");*/ react {
     case 'GO => gotGo
 
     case 'CONFLICT => gotConflict
@@ -241,7 +241,7 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
     case 'NOSTRAT => gotNoStrat
 
     case 'STATUS => printStatus
-  }
+  }}
 
   private def printStatus =
       println(s" +- ${hashCode.toString.substring(5)}" +
@@ -249,7 +249,7 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
     		  s"\n | conflicts: ${inConflict.map(_.hashCode().toString.substring(5)).mkString(",")}" +
     		  s"\n | pending: ${pendingConflicts.keys.map(_.hashCode().toString.substring(5)).mkString(",")}" +
     		  s"\n | paused: $paused" +
-    		  s"\n | nodes: ${strat.owned.mkString(",")}")      
+    		  s"\n | nodes: nds@${strat.owned.map(_.hashCode).mkString("[",",","]")}")      
 
 
   private def gotGo {
@@ -286,10 +286,11 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
       quit("no solution, no expansion")
     }
     // claim new nodes
-    debug("claiming...")
+    // PROBLEM: sometimes the only expansion points are already claimed - loops...
+    debug(s"claiming: ${next.size}")
     val claimed = claim(next)
-    debug(s"claimed ${claimed._1.size}")
-    if (claimed._1.isEmpty)
+    debug(s"conflicts: ${claimed._1.size}")
+    if (claimed._1.isEmpty) // no conflicts
       nextRound()
     // send conflicts
     else {

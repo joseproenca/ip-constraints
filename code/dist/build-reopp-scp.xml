@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project default="create_run_jar" name="Create Runnable Jar for Project Reo++ with Jar-in-Jar Loader">
+
+    <property name="eclipse" value="/Applications/eclipse/"/>
+    <property name="eclipse.plugins" value="${eclipse}/plugins"/>
+    <property name="eclipse.junit"
+      value="${eclipse.plugins}/org.junit_4.11.0.v201303080030"/>
+    <property name="eclipse.scala"
+      value="${eclipse}/configuration/org.eclipse.osgi/bundles/257/1/.cp/lib"/>
+
+
     <!--this file was created by Eclipse Runnable JAR Export Wizard-->
     <!--ANT 1.7 is required                                        -->
     <target name="create_run_jar">
@@ -8,21 +17,21 @@
                 <attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
                 <attribute name="Rsrc-Main-Class" value="reopp.common.benchmarks.ScalaRunner"/>
                 <attribute name="Class-Path" value="."/>
-                <attribute name="Rsrc-Class-Path" value="./ com.microsoft.z3.jar choco-solver-2.1.5.jar org.sat4j.core.jar scalatest_2.10-1.9.1.jar scalaz3_2.10-2.0-J1.7.jar PCC_javathreads.jar junit.jar org.hamcrest.core_1.3.0.v201303031735.jar scala-library.jar scala-actors.jar scala-reflect.jar"/>
+                <attribute name="Rsrc-Class-Path" value="./ com.microsoft.z3.jar choco-solver-2.1.5.jar org.sat4j.core.jar scalatest_2.10-1.9.1.jar scalaz3_2.10-2.0-J1.7.jar junit.jar org.hamcrest.core_1.3.0.v201303031735.jar scala-library.jar scala-actors.jar scala-reflect.jar"/>
             </manifest>
             <zipfileset src="jar-in-jar-loader.zip"/>
-            <fileset dir="/Users/jose/Documents/research/reo/reopp/code/out/production/reopp"/>
-            <zipfileset dir="/Users/jose/Documents/research/reo/reopp/code/lib/4.3-osx-64b/bin" includes="com.microsoft.z3.jar"/>
-            <zipfileset dir="/Users/jose/Documents/research/reo/reopp/code/lib" includes="choco-solver-2.1.5.jar"/>
-            <zipfileset dir="/Users/jose/Documents/research/reo/reopp/code/lib" includes="org.sat4j.core.jar"/>
-            <zipfileset dir="/Users/jose/Documents/research/reo/reopp/code/lib" includes="scalatest_2.10-1.9.1.jar"/>
-            <zipfileset dir="/Users/jose/Documents/research/reo/reopp/code/lib" includes="scalaz3_2.10-2.0-J1.7.jar"/>
-            <zipfileset dir="/Users/jose/Documents/research/reo/reopp/code/PCC-javathreads/out/artifacts/javabenchmarks" includes="PCC_javathreads.jar"/>
-            <zipfileset dir="/Applications/eclipse/plugins/org.junit_4.11.0.v201303080030" includes="junit.jar"/>
-            <zipfileset dir="/Applications/eclipse/plugins" includes="org.hamcrest.core_1.3.0.v201303031735.jar"/>
-            <zipfileset dir="/Applications/eclipse/configuration/org.eclipse.osgi/bundles/257/1/.cp/lib" includes="scala-library.jar"/>
-            <zipfileset dir="/Applications/eclipse/configuration/org.eclipse.osgi/bundles/257/1/.cp/lib" includes="scala-actors.jar"/>
-            <zipfileset dir="/Applications/eclipse/configuration/org.eclipse.osgi/bundles/257/1/.cp/lib" includes="scala-reflect.jar"/>
+            <fileset dir="../out/production/reopp"/>
+            <zipfileset dir="../lib/4.3-osx-64b/bin" includes="com.microsoft.z3.jar"/>
+            <zipfileset dir="../lib" includes="choco-solver-2.1.5.jar"/>
+            <zipfileset dir="../lib" includes="org.sat4j.core.jar"/>
+            <zipfileset dir="../lib" includes="scalatest_2.10-1.9.1.jar"/>
+            <zipfileset dir="../lib" includes="scalaz3_2.10-2.0-J1.7.jar"/>
+            <zipfileset dir="${eclipse.junit}" includes="junit.jar"/>
+            <zipfileset dir="${eclipse.plugins}" 
+              includes="org.hamcrest.core_1.3.0.v201303031735.jar"/>
+            <zipfileset dir="${eclipse.scala}" includes="scala-library.jar"/>
+            <zipfileset dir="${eclipse.scala}" includes="scala-actors.jar"/>
+            <zipfileset dir="${eclipse.scala}" includes="scala-reflect.jar"/>
         </jar>
     </target>
 </project>

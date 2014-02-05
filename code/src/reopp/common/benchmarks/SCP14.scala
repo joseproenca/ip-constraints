@@ -38,16 +38,21 @@ import reopp.common.guardedcommands.dataconnectors.GCReader
  *
  */
 object SCP14 {
+  
+  def printHelp {
+      System.err.println(
+"""Wrong usage. It should be: SCP14 <connector> <size> <method>
+Possible connectors: "sensors", "transactions-spar", "transactions-sseq1",
+  "transactions-sseqn", "transactions-bpar", "transactions-bseq1",
+  "transactions-bseqn", "pairwise"
+Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4" 
+""")
+  }
+  
   def main(args:Array[String]) {
   
   if (args.size < 3) {
-    println("""
-Wrong usage. It should be: SCP14 <connector> <size> <method>
-Possible connectors: "sensors", "transactions-spar", "transactions-sseq1",
-  "transactions-sseqn", "transactions-bpar", "transactions-bseq1",
-  "transactions-bseqn", pairwise
-Possible methods: "sat", "smt", "ahc", "all", "partial1", "partial2", "partial4" 
-""")
+    printHelp
     return
   }
   
@@ -55,8 +60,8 @@ Possible methods: "sat", "smt", "ahc", "all", "partial1", "partial2", "partial4"
 
   
 //  args(0)="pairwise"
-//  args(1)="50"
-//  args(2)="partial1"
+//  args(1)="25"
+//  args(2)="all"
 //  args(3)=""
   
   val n = Integer.parseInt(args(1))
@@ -82,7 +87,7 @@ Possible methods: "sat", "smt", "ahc", "all", "partial1", "partial2", "partial4"
         if (res.isDefined) println(mode+" - solved in "+time+" ms:\n"+res.get)
         else println(mode+" - no solution (in "+time+" ms)")
       }
-      else println(mode+"        - "+time)            
+      else print(time+" ") //println(mode+"        - "+time)            
   }
   
   //////////////////////////
@@ -160,6 +165,10 @@ Possible methods: "sat", "smt", "ahc", "all", "partial1", "partial2", "partial4"
       val res = cons.solveChocoX
       val spent = System.currentTimeMillis() - time
       show(spent,"SMT",res)
+    }
+    else {
+      printHelp
+      return
     }
     /*
     else if (ahc) {
@@ -309,6 +318,10 @@ Possible methods: "sat", "smt", "ahc", "all", "partial1", "partial2", "partial4"
       val spent = System.currentTimeMillis() - time
       show(spent,"SMT",res)
     } 
+    else {
+      printHelp
+      return
+    }
   }
 
   ///////////////////////////////
@@ -378,6 +391,10 @@ Possible methods: "sat", "smt", "ahc", "all", "partial1", "partial2", "partial4"
       val spent = System.currentTimeMillis() - time
       show(spent,"SMT",res)
     } 
+    else {
+      printHelp
+      return
+    }
   }
   
   /////////////////////////////
@@ -387,8 +404,13 @@ Possible methods: "sat", "smt", "ahc", "all", "partial1", "partial2", "partial4"
   else if (args(0) startsWith "pairwise") {
     if (debug) println("Pairwise asynchronous")
 	
-    val workers: Int = if (p1) 1 else if (p2) 2 else if (p4) 4 else if (all) 0 
-    				   else throw new RuntimeException("Only 1, 2, or 4 workers.")
+    val workers: Int = if (p1) 1 else if (p2) 2 else if (p4) 4 else 0 
+//    				   else throw new RuntimeException("Only 1, 2, or 4 workers.")
+    if (!(p1||p2||p4||all)) {
+      System.err.println("Only 1, 2, or 4 workers, or \"all\".")
+      printHelp
+      return
+    }
     
 	val deployer = if (all) GenDeployer.all(1)
 				   else     GenDeployer.hybrid(workers)
@@ -400,7 +422,7 @@ Possible methods: "sat", "smt", "ahc", "all", "partial1", "partial2", "partial4"
 	  def act() = react {
 	  	case _ =>
 	  	  c -= 1
-//	  	  print(".")
+//	  	  print("-"+c+"\n")
 	  	  if (c == 0) {
 	  		val spent = System.currentTimeMillis() - time
 	  	    show(spent,if (all) "ALL" else "Partial"+workers,NoneSol())
@@ -408,15 +430,22 @@ Possible methods: "sat", "smt", "ahc", "all", "partial1", "partial2", "partial4"
 	  	  else act()
 	}}
 	
+	val isEven = Predicate("isEven") {
+	  case i:Int => i%2 == 0
+	}
+	
 	def genReader(i:Int) =
-	  new GCReader("x"+i, 0, 1) {
-		  val port = reopp.common.Utils.flowVar("x"+i, uid)
+	  new GCReader("y"+i, 0, 1) {
+		  val writerPort = reopp.common.Utils.flowVar("x"+i, uid)
+		  val readerPort = reopp.common.Utils.flowVar("y"+i, uid)
 		  override def update(s: OptionSol[GCSolution]) {
 			  if (s.isDefined){
-//				  println("Got solution: "+s.get)
-				  if (s.get hasFlowOn port) {
-//					 println("\nGot data - "+i+": "+s.get.getDataOn(reopp.common.Utils.dataVar("x"+i,uid)))
+				  if (s.get hasFlowOn writerPort) {
+//					  println("Sent data! solution: "+s.get)
 					 counter ! ()
+				  }
+				  if (s.get hasFlowOn readerPort) {
+//					 println("\nGot data - "+i+": "+s.get.getDataOn(reopp.common.Utils.dataVar("x"+i,uid)))
 					 size -= 1
 				  }
 			  }
@@ -425,6 +454,7 @@ Possible methods: "sat", "smt", "ahc", "all", "partial1", "partial2", "partial4"
 	def genPair(i:Int) = deployer add {
       writer("x"+i, List(i)) ++ // for (n<-(1 to 50).toList) yield i) ++ 
 //      reader("x"+i)
+      filter("x"+i,"y"+i,isEven) ++
       genReader(i) 
     } 
     def connectPair(i:Int,n1:Node[GCSolution,Formula],n2:Node[GCSolution,Formula]) = {
@@ -446,7 +476,7 @@ Possible methods: "sat", "smt", "ahc", "all", "partial1", "partial2", "partial4"
     counter.time = System.currentTimeMillis()
     counter.start
     deployer.init
-//    Thread.sleep(1000)
+//    Thread.sleep(2000)
 //    deployer ! 'STATUS
     
   }
