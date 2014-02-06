@@ -516,6 +516,7 @@ case class Var(name: String) extends Guard {
   def :=(f:common.Function,v:Var): Statement = FunAssgn(flow2data(name),flow2data(v.name),f)
   def :=(f:common.Function,vs:List[Var]): Statement = NFunAssgn(flow2data(name),vs.map(v => flow2data(v.name)),f)
   def :< (p:Predicate): Guard = Pred(flow2data(name),p)
+  def dataName = flow2data(name)
 }
 case class IntPred(v:String, p: IntPredicate) extends Guard
 case class Pred(v:String, p:Predicate) extends Guard

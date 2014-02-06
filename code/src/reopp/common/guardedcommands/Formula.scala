@@ -23,19 +23,19 @@ import scala.Some
  * To change this template use File | Settings | File Templates.
  */
 
-class Formula extends Constraints[GCSolution,Formula] {
+abstract class Formula extends Constraints[GCSolution,Formula] {
 
   private var log = System.out
 //  val log = new java.io.PrintStream(new java.io.FileOutputStream("/dev/null"))
   var justInit = false
 
-  var commands = Set[GuardedCom]()
+  val commands: Set[GuardedCom] //= Set[GuardedCom]()
   //  var eqvars = Set[(String,String)]()
   private val da = DomainAbst()
   private var solvedDomain = false
   //  var someVars: Option[MutMap[String,Int]] = None
 
-  private var closed = false
+  protected val closed = false
 
 
   //  var buf = new Buffer
@@ -160,25 +160,24 @@ class Formula extends Constraints[GCSolution,Formula] {
     (cnf2,vars)
   }
 
-  /**
-   * Add SOME-FLOW and CC3 constraints.
-   * CC3 not yet in use.
-   */
-  @deprecated
-  private def closeOld() {
-    if (!closed) {
-      var flowvars: Guard = !True
-      for (v <- fv())
-        if (isFlowVar(v)) {
-          flowvars = (Var(v) \/ flowvars)
-//          commands +=  Var(v) \/ Var(flow2snk(v)) \/ Var(flow2src(v))
-        }
-      //if (useCC3)
-      commands += flowvars
-      closed = true
-    }
-
-  }
+//  /**
+//   * Add SOME-FLOW and CC3 constraints.
+//   * CC3 not yet in use.
+//   */
+//  @deprecated
+//  private def closeOld() {
+//    if (!closed) {
+//      var flowvars: Guard = !True
+//      for (v <- fv())
+//        if (isFlowVar(v)) {
+//          flowvars = (Var(v) \/ flowvars)
+////          commands +=  Var(v) \/ Var(flow2snk(v)) \/ Var(flow2src(v))
+//        }
+//      //if (useCC3)
+//      commands += flowvars
+//      closed = true
+//    }
+//  }
 
   /**
    * Add SOME-FLOW and CC3 constraints.
@@ -186,7 +185,8 @@ class Formula extends Constraints[GCSolution,Formula] {
    * Used before using Choco (predicate abstraction + lazy & Choco as SMT).
    * Other approaches (Z3 and SAT4J) use optimised version.
    */
-  def close() {
+  def close(): Formula = {
+    var comms = Set[GuardedCom]()
 //    println("## closing...")
     if (!closed) {
 //      println("## not closed yet...")
@@ -199,10 +199,15 @@ class Formula extends Constraints[GCSolution,Formula] {
         for (v <- bvars.tail)
           flowConstraint = flowConstraint \/  Var(v)
 //        println("closing - adding "+flowConstraint)
-        commands += flowConstraint
+        comms += flowConstraint
       }
-      closed = true
+      val thisComms = commands
+      new Formula {
+        override val commands = thisComms ++ comms 
+        override val closed = true
+      }
     }
+    else this
   }
 
   def flatten() {
@@ -492,13 +497,13 @@ class Formula extends Constraints[GCSolution,Formula] {
    */
   def lazyDataSolve : OptionSol[GCSolution] = {
 //    buf = Some(new Buffer)
-    close()
-    solveDomain()
+    val closed = close()
+    closed.solveDomain()
 
-    val builders = ChocoBuilderSAT.gc2BoolConstrBuilders(this,da)
+    val builders = ChocoBuilderSAT.gc2BoolConstrBuilders(closed,closed.da)
 //    println("boolean constraints: \n"+builders.mkString("\n"))
 //    val buf = new Buffer // using the same to solve boolean constraints and to get a solution while traversing the tree.
-    val optSolBool = ChocoBuilderSAT.solveChocoBool(da,builders)
+    val optSolBool = ChocoBuilderSAT.solveChocoBool(closed.da,builders)
 
     if (!optSolBool.isDefined)
       return NoneSol(optSolBool.getBuffer)
@@ -547,8 +552,8 @@ class Formula extends Constraints[GCSolution,Formula] {
    */
   def solveChocoX: OptionSol[CXSolution] = {
 //    ChocoX.solve(getConstraints)
-    close()
-    ChocoX.solve(this)
+    val closed = close
+    ChocoX.solve(closed)
   }
 
   def solveChocoDyn(): OptionSol[DynSolution] = solveChocoDyn(None)
@@ -560,8 +565,8 @@ class Formula extends Constraints[GCSolution,Formula] {
    */
   def solveChocoDyn(tried:Option[NoneSol]): OptionSol[DynSolution] = {
     //    ChocoX.solve(getConstraints)
-    close()
-    ChocoDyn.solve(this,tried)
+    val closed = close
+    ChocoDyn.solve(closed,tried)
   }
 
   /**
@@ -569,8 +574,8 @@ class Formula extends Constraints[GCSolution,Formula] {
    * @return Solution for the data constraints.
    */
   def solveXZ3: OptionSol[GCSolution] = {
-    close()
-    XZ3.solvexz3(this)
+    val closed = close
+    XZ3.solvexz3(closed)
   }
 
   /////////////////////////
@@ -584,8 +589,8 @@ class Formula extends Constraints[GCSolution,Formula] {
   def solveChoco : OptionSol[ChoSolution] = {
     // not closing constraints
     // NOW closing
-    close()
-    ChocoBuilderInt.solveChoco(this)
+    val closed = close
+    ChocoBuilderInt.solveChoco(closed)
   }
 
 
@@ -680,20 +685,20 @@ class Formula extends Constraints[GCSolution,Formula] {
   def ++(other: Formula): Formula = {
     val thiscommands = commands
     new Formula(){
-      commands = thiscommands ++ other.commands
+      override val commands = thiscommands ++ other.commands
     }
   }
   def ++(others: Iterable[GuardedCom]): Formula = {
     val thiscommands = commands
     new Formula(){
-      commands = thiscommands ++ others
+      override val commands = thiscommands ++ others
     }
   }
 
   def ++(other: GuardedCom): Formula = {
     val thiscommands = commands
     new Formula(){
-      commands = thiscommands + other
+      override val commands = thiscommands + other
     }
   }
 }
@@ -701,12 +706,12 @@ class Formula extends Constraints[GCSolution,Formula] {
 
 object Formula {
   def apply(gs: Iterable[GuardedCom]): Formula = {
-    val g = new Formula()
-    g.commands = gs.toSet
-    g
+    new Formula() {
+    	override val commands = gs.toSet
+  	}
   }
   def apply(gs: GuardedCom*): Formula = apply(gs.toSet)
   def apply(g: GuardedCom): Formula = apply(Set(g))
-  def apply(): Formula = new Formula()
+  def apply(): Formula = apply(List[GuardedCom]())
 
 }

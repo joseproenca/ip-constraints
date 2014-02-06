@@ -28,7 +28,7 @@ object GCSpouts extends App {
 
 
   def genFilters(times: Int): Formula = {
-    var res = new Formula()
+    var res = Formula()
     for (i <- 0 to (times-1)) {
       res ++= new GCFilter("a","b",i,IntPred(dataVar("a",i),gtwo)).getConstraints ++
               new GCFilter("b","c",i,Neg(IntPred(dataVar("b",i),lfive))).getConstraints

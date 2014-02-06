@@ -15,8 +15,8 @@ import Utils._
 class GCSimpleVarFilter(an : String, bn : String, pred: Predicate, uid: Int)
   extends GCConnector(List(an,bn),uid) {
 
-  val a = mkVar(an,uid)
-  val b = mkVar(bn,uid)
+  val a = mkVar(an)
+  val b = mkVar(bn)
 
   var data: Option[AnyRef] = None
 

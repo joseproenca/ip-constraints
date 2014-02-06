@@ -28,6 +28,7 @@ abstract class GCConnector(ends: List[String], uid: Int = 0) extends Connector[G
       case _ => new ComplexConnector(List(this,other),ends ++ other.ends, uid)
     }
 
+  implicit def mkVar(s:String): Var = Utils.mkVar(s,uid)
 
 
   /////////////////////////////////////////////////////////////////////////

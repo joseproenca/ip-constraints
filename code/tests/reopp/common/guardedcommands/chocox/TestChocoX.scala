@@ -38,8 +38,7 @@ class TestChocoX extends FunSpec {
 
 
 
-    val cs = c2.getConstraints
-    cs.close()
+    val cs = c2.getConstraints.close
 
     ////
     val a = mkVar("a")
