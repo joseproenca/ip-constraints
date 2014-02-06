@@ -37,6 +37,9 @@ STATEMENT ::= var  |  var := var  |  STATEMENT /\ STATEMENT  |  var := (func,var
 In this case, a predicate ```pred``` is defined as an arbitrary scala function that, given a parameter ```x:Any``` returns a boolean, and a function ```func``` that returns a value instead. Each variable ```var``` is created based on a name (string) and the ```uniqueID``` of the  connector. Finally, ```vars``` represents a variable or a list of variables (type ```List[Var]```). The following example shows how to define a simple connector with two ports and a buffer, which can be empty or full. When empty, it can receive data from its input port, becoming full, and when full it can send its buffered value through the output port. As a twist, it can also receive a value and send it atomically (in the same round) to its output port, after being transformed: if the data is an integer, it will be doubled, otherwise it will be transformed into a string.
 
 ```scala
+import reopp.common.guardedcommands._
+import reopp.common._
+
 class TransfFifo(ins: String, outs: String, var data: Option[Any], uid: Int = 0)
     extends GCConnector(List(ins,outs), uid) {
 
