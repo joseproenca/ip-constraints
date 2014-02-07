@@ -15,7 +15,7 @@ import reopp.common.guardedcommands.dataconnectors.ConnectorGen._
  * Time: 11:28
  */
 
-object RunInteractive extends App {
+object AliceBob extends App {
 
   /*
    alex --(hackUser)--> a1 --[checkPwd] --> a2 --(recallUser)--> a3 -\
