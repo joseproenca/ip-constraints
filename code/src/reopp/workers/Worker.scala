@@ -123,9 +123,9 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
 //    println("["+self.hashCode().toString.substring(5)+"] "+msg)
   }
   private def debugMsg(msg:String) = {
-    val other = if (sender == conflictMng) "CM"
-    		    else sender.hashCode().toString.substring(5)
-    debug(s" <- [$other] $msg")
+//    val other = if (sender == conflictMng) "CM"
+//    		    else sender.hashCode().toString.substring(5)
+//    debug(s" <- [$other] $msg")
   }
 
   def bug(x:Any) {

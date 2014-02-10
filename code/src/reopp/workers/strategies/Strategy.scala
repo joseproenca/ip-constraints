@@ -25,8 +25,8 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
 
   // Find the next nodes (from the fringe) to expand to.
   def nextNodes: Iterable[Nd]
-  // Find the initial nodes based on a prefered node "n".
-  def initNodes(n:Nd): Iterable[Nd]
+//  // Find the initial nodes based on a prefered node "n".
+//  def initNodes(n:Nd): Iterable[Nd]
   // Checks if it makes sense to search now for a solution.
   def canSolve: Boolean
   /** Merges the information from another traversal. Should be extended by subclasses.

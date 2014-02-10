@@ -62,7 +62,7 @@ class Deployer[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
   
   /** Checks if there are allowed workers and nodes ready to start, and create workers if needed.*/
   private def requestTasks() {
-    debug("new worker? "+(currentWorkers < maxWorkers)+"/"+ (!pendingTasks.isEmpty))
+    debug(s"new worker? ($currentWorkers/$maxWorkers)"+(currentWorkers < maxWorkers)+"/"+ (!pendingTasks.isEmpty))
     if (currentWorkers < maxWorkers && !pendingTasks.isEmpty) {
       val nextTask = pendingTasks.dequeue
       if (nextTask.canStart) {
@@ -101,7 +101,7 @@ class Deployer[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
     case Exit =>
       debug(s"exiting. workers: $currentWorkers, tasks: $pendingTasks")
       conflictManager ! Exit
-      println(tmpWorkers.map(_.hashCode().toString.substring(5)).mkString(","))
+      println(tmpWorkers.mkString(","))
       exit()
 //      println(tmpWorkers.map(_.hashCode().toString.substring(5)).mkString(","))
 //      for (w <- tmpWorkers) w ! 'STATUS // those alive will print their status...
@@ -125,8 +125,9 @@ class Deployer[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
   private def debug(msg: String) {
 //    println("[DEPL] "+msg)
   }
-  private def debugMsg(msg:String) =
-    debug(s" <- [${sender.hashCode().toString.substring(5)}] $msg")
+  private def debugMsg(msg:String) {
+//    debug(s" <- [${sender.hashCode().toString.substring(5)}] $msg")
+  }
 
 
 }

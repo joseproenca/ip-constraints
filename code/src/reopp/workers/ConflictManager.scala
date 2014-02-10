@@ -202,7 +202,8 @@ class ConflictManager//[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
   private def debug(msg: String) {
 //    println("[CM] "+msg)
   }
-  private def debugMsg(msg:String) =
-    debug(s" <- [${sender.hashCode().toString.substring(5)}] $msg")
+  private def debugMsg(msg:String) {
+//    debug(s" <- [${sender.hashCode().toString.substring(5)}] $msg")
+  }
   
 }

@@ -61,7 +61,7 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4"
   
 //  args(0)="pairwise"
 //  args(1)="30"
-//  args(2)="partial4"
+//  args(2)="all"
 //  args(3)=""
   
   val n = Integer.parseInt(args(1))
