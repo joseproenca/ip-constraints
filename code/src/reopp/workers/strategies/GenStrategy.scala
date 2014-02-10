@@ -11,15 +11,24 @@ object GenDeployer {
   private type C = Formula
   
 
+  /** Create and start a deployer that uses the OneStep strategy, for guarded commands. */
   def oneStep(workers:Int) = { 
-	  new Deployer[S,C,OneStepStrategy[S,C]](workers)
+	  val d = new Deployer[S,C,OneStepStrategy[S,C]](workers)
+	  d.start
+	  d
   }
 
+  /** Create and start a deployer that uses the Hybrid strategy, for guarded commands. */
   def hybrid(workers:Int) = { 
-	  new Deployer[S,C,HybridStrategy[S,C]](workers)
+	  val d = new Deployer[S,C,HybridStrategy[S,C]](workers)
+	  d.start
+	  d
   }
 
+  /** Create and start a deployer that uses the Complete strategy, for guarded commands. */
   def all(workers:Int) = { 
-	  new Deployer[S,C,CompleteStrategy[S,C]](workers)
+	  val d = new Deployer[S,C,CompleteStrategy[S,C]](workers)
+	  d.start
+	  d
   }
 }

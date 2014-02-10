@@ -1,11 +1,13 @@
 package reopp.workers
 
 import connectors.Merger
-import org.scalatest.FunSpec
+//import org.scalatest.FunSpec
 import reopp.common.choco.{ChoConstraints, ChoSolution}
 import strategies._
 import reopp.common.guardedcommands.{GCSolution, Formula}
 import reopp.common.guardedcommands.GCConnector.GCBuilder
+import org.junit.Test
+import org.junit.Assert._
 
 /**
  * Created with IntelliJ IDEA.
@@ -15,7 +17,7 @@ import reopp.common.guardedcommands.GCConnector.GCBuilder
  * To change this template use File | Settings | File Templates.
  */
 
-class TestMergersWorkers extends FunSpec {
+class TestMergersWorkers { //extends FunSpec {
   type S = GCSolution
   type C = Formula
   type St = CompleteStrategy[S,C]
@@ -67,7 +69,8 @@ class TestMergersWorkers extends FunSpec {
   size = 4
   workers = 2
 
-  describe ("Workers one step traversal - tree of merges.") {
+  //describe ("Workers one step traversal - tree of merges.") {
+  @Test def TestOneStepTraversalTree() {
     // create and run deployer
     val deployer = new Deployer[S,C,St2](workers)
     deployer.start()
@@ -94,13 +97,15 @@ class TestMergersWorkers extends FunSpec {
     }
 
     // start readers and writers
-    rd.init()
+    deployer ! rd //rd.init()
     for (wr <- writers)
-      wr.init()
+      deployer ! wr //wr.init()
 
     Thread.sleep(9000)
-    it ("reader is free")
-    { assert(rd.owner == None) }
+//    it ("reader is free")
+//    { assert(rd.owner == None) }
+    assertEquals("No workers",deployer.currentWorkers,0)
+    assertEquals("No tasks",deployer.pendingTasks.size,0)
   }
 
 

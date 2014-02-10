@@ -29,12 +29,6 @@ abstract class Node[S<:Solution, C<:Constraints[S,C]]
 
   def getNeighbours: Iterable[Node[S,C]] = invConnections.values.flatten
 
-  //  var neighbours = List[Node[S,C]]() // order MUST be the same as the order of ends in behaviour
-//  var neighbours = Set[OutputChannel[Any]]()
-
-  // shared lock
-  val lock:scala.concurrent.Lock = new scala.concurrent.Lock()
-  var owner: Option[OutputChannel[Any]] = None
 
 //  // what ends depend on "end" - just a guess to decide when to search for a solution
 //  def dependsOn(end: String): Set[String]
@@ -47,13 +41,15 @@ abstract class Node[S<:Solution, C<:Constraints[S,C]]
 
   // Auxiliar functions
 
-  def init() {
+  def canStart(): Boolean = {
 //    println("INIT? nd@["+hashCode()+"] "+connector.isProactive)
-    if (connector.isProactive) deployer ! this
+//    if (connector.isProactive) deployer ! this
+    connector.isProactive
   }
 
   def apply(e:String): End[S,C] = new End(this,e)
 
+  override def toString = s"nd[${hashCode.toString.substring(5)}]"
 
 //  /**
 //   * Add to connections from this and the other node, so we know how

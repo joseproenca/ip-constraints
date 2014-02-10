@@ -7,6 +7,8 @@
 .settings/
 scripts/
 out/
+docs/
+docs2/
 code/Sandbox
 code/src/reopp/common/choco/ConstrBuilder.scala.failed
 code/src/reopp/common/examples/Experiment.scala

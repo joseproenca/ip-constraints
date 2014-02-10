@@ -60,8 +60,8 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4"
 
   
 //  args(0)="pairwise"
-//  args(1)="25"
-//  args(2)="all"
+//  args(1)="30"
+//  args(2)="partial4"
 //  args(3)=""
   
   val n = Integer.parseInt(args(1))
@@ -414,7 +414,6 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4"
     
 	val deployer = if (all) GenDeployer.all(1)
 				   else     GenDeployer.hybrid(workers)
-	deployer.start
     
 	val counter = new Actor {
 	  var c = n

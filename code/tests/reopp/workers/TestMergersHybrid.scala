@@ -70,8 +70,8 @@ class TestMergersHybrid extends FunSpec {
     val t1 = System.currentTimeMillis()
 
     for (wr <- writers)
-      wr.init()
-    rd.init()
+      deployer ! wr //wr.init()
+    deployer ! rd //rd.init()
 
     try {
       Thread.sleep(30000)
