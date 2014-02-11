@@ -37,6 +37,7 @@ class HybridStrategy[S <: Solution, C <: Constraints[S, C]] extends Strategy[S,C
 
   // Checks if it makes sense to search now for a solution.
   override def canSolve: Boolean = {
+//    debug("can solve? "+priorityQueue.mkString(",")+s" (onwned - ${owned.mkString(",")})")
     priorityQueue.isEmpty
   }
 
@@ -49,7 +50,8 @@ class HybridStrategy[S <: Solution, C <: Constraints[S, C]] extends Strategy[S,C
 //    super.merge(s)
 //    priorityQueue ++= s.priorityQueue // :::= s.priorityQueue
     priorityQueue :::=  s.priorityQueue
-    priorityQueue filterNot (owned contains)
+    priorityQueue = priorityQueue filterNot (owned contains)
+//    debug("merged strat. prior: "+priorityQueue.mkString(",")+" / owned: "+owned.mkString(","))
   }
 
 
@@ -67,10 +69,17 @@ class HybridStrategy[S <: Solution, C <: Constraints[S, C]] extends Strategy[S,C
   }
 
   // again (assume priority subseteq fringe!):
+  // - check dependencies of selected node, and add them to the priorityQueue (NOT SURE).
   // - go for each neighbour
   // - check if it is owned (in the traversal)
   // - if so, enqueue fresh dependencies from it (in fringe, not in queue)
   def updatePriorityQueue(nd:Nd) {
+//    debug("updating prior for "+nd+": "+priorityQueue.mkString(","))
+    val deps = nd.guessRequirements(nd)
+    for (dep <- deps)
+      if ((fringe contains dep) && !(priorityQueue contains dep))
+            priorityQueue ::= dep
+    
     if (!(priorityQueue.isEmpty))
       if (priorityQueue.head == nd)
 //        priorityQueue.dequeue()
@@ -84,6 +93,8 @@ class HybridStrategy[S <: Solution, C <: Constraints[S, C]] extends Strategy[S,C
             priorityQueue ::= dep
         //            priorityQueue += dep
       }
+//      priorityQueue = priorityQueue filterNot(nd ==)
+//    debug("updated prior: "+priorityQueue.mkString(",")+s" (owned - ${owned.mkString(",")})")
     }
 //    println("UPDATED priority queue after claiming "+nd.hashCode()+" - "+priorityQueue.mkString("[",",","]"))
   }

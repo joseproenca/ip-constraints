@@ -49,7 +49,7 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
       conflictMng ! Claim(n)
       act()
     case Claimed(n:Nd) =>
-      debugMsg("gotNode")
+      debugMsg("gotNode "+n)
       strat.register(n)
       checkSolution
     case GiveUp(n:Nd) =>

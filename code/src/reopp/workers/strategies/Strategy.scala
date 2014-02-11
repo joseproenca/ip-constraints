@@ -44,6 +44,7 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
   
   // aux functions
   private def solve(tried:Option[NoneSol])(implicit builder:CBuilder[S,C]): OptionSol[S] = {
+//    debug("solving - "+owned.mkString(","))
 //    var beh = new Behaviour[S,C](val ends: List[String],val uid: Int)
     if (owned.isEmpty) return NoneSol()
 
@@ -65,7 +66,10 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
     }
 
 //    println("solving: "+c)
-    c.solve(tried)
+    val res = c.solve(tried)
+//    if (res.isDefined) debug("GOT SOL!!")
+//    else debug("failed")
+    res
   }
 
   // TODO: BROKEN!!! behaviour.sync connects local end "a" to neighbour ends "b" by "b:=a". Need the right order!
@@ -143,6 +147,11 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
     fringe ++= droppedFringe
     droppedFringe = Set()
   }
+
+  protected def debug(s:String) {
+//    println(s"str[${hashCode.toString.substring(5)}] $s")
+  }
+  
 
 }
 

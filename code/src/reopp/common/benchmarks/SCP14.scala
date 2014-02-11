@@ -24,6 +24,7 @@ import scala.actors.Actor._
 import scala.actors.Actor
 import reopp.common.NoneSol
 import reopp.common.guardedcommands.dataconnectors.GCReader
+import reopp.workers.Exit
 
 /**
  * @author Jose Proenca
@@ -60,8 +61,8 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4"
 
   
 //  args(0)="pairwise"
-//  args(1)="30"
-//  args(2)="all"
+//  args(1)="50"
+//  args(2)="partial2"
 //  args(3)=""
   
   val n = Integer.parseInt(args(1))
@@ -450,12 +451,16 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4"
 			  }
 		  }
 	  }
-	def genPair(i:Int) = deployer add {
-      writer("x"+i, List(i)) ++ // for (n<-(1 to 50).toList) yield i) ++ 
-//      reader("x"+i)
+	def genPair(i:Int) = deployer add (
+      writer("x"+i,
+          List(i)) ++ 
+          //for (n<-(1 to 50).toList) yield i) ++ 
       filter("x"+i,"y"+i,isEven) ++
+//      reader("x"+i)
       genReader(i) 
-    } 
+    ,Set()
+    ,Set("x"+i)
+    )
     def connectPair(i:Int,n1:Node[GCSolution,Formula],n2:Node[GCSolution,Formula]) = {
       val ad = deployer add (adrain("x"+i,"x"+(i+1)))
       ad("x"+i)  <-- n1("x"+i)
@@ -472,11 +477,16 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4"
     
         // Running the experiments //
 
-    counter.time = System.currentTimeMillis()
-    counter.start
+//    counter.time = System.currentTimeMillis()
+//    counter.start
+    
+    val time = System.currentTimeMillis()
     deployer.init
+    deployer.latch.await()
+    val spent = System.currentTimeMillis() - time
+    show(spent,if (all) "ALL" else "Partial"+workers,NoneSol())
 //    Thread.sleep(2000)
-//    deployer ! 'STATUS
+//    deployer ! Exit
     
   }
 }}

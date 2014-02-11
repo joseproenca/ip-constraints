@@ -47,8 +47,8 @@ class Deployer[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
    *  @param deps pairs of dependent port names, Used for hybrid strategy ([[strategies.HybridStrategy]]).
    *         For each (a,b), if 'a' is not on the border of the region, 'b' cannot be either.
    */
-   def add(con: => Connector[S,C],deps: Iterable[(String,String)]): Node[S,C] = {
-    val res = Node[S,C](this, deps, (uid:Int) => con )(builder)
+   def add(con: => Connector[S,C],deps: Iterable[(String,String)], prior:Iterable[String]): Node[S,C] = {
+    val res = Node[S,C](this, deps, prior, (uid:Int) => con)(builder)
     nodes ::= res
     res
   }

@@ -49,7 +49,9 @@ abstract class Node[S<:Solution, C<:Constraints[S,C]]
 
   def apply(e:String): End[S,C] = new End(this,e)
 
-  override def toString = s"nd[${hashCode.toString.substring(5)}]"
+  override def toString = 
+    //s"nd[${hashCode.toString.substring(5)}]"
+    s"{${connector.ends.mkString(".")}}"
 
 //  /**
 //   * Add to connections from this and the other node, so we know how
@@ -130,34 +132,39 @@ object Node {
    * @param conn function that, given a unique ID (of the node), returns the connector of this node.
    */
   def apply[S<:Solution, C<:Constraints[S,C]]
-      (deployer: OutputChannel[Any],deps: Iterable[(String,String)],conn : Int => Connector[S,C])
+      (deployer: OutputChannel[Any],
+          deps: Iterable[(String,String)],
+          prior: Iterable[String],
+          conn : Int => Connector[S,C])
       (implicit b:CBuilder[S,C]): Node[S,C] =
     new Node[S,C](deployer) {
       //      val uid = this.hashCode()
       val connector = conn(uid)
 
       // suggests which ends must have dataflow if "end" has also dataflow
-      def guessRequirements(nd: Node[S, C]) =
-        if (deps.isEmpty || !connections.contains(nd)) Set()
-        else {
-          var res: Set[Node[S,C]] = Set()
+      def guessRequirements(nd: Node[S, C]) = {
+        var res: Set[Node[S,C]] = Set()
+        if (!deps.isEmpty && connections.contains(nd)) {
           for ((a,b) <- deps)
             if (invConnections contains a) // if 'a' is connected
               res ++= invConnections(b)	   // then 'b's connections are required
-          res
         }
+        for (p <- prior)
+          res ++= invConnections(p)
+        res
+      }
     }
 
 
   def apply[S<:Solution, C<:Constraints[S,C]]
   (deployer: OutputChannel[Any],conn : Int => Connector[S,C])
   (implicit b:CBuilder[S,C]): Node[S,C] =
-    apply[S,C](deployer, Set[(String,String)](), conn)
+    apply[S,C](deployer, Set[(String,String)](),Set(), conn)
 
   def apply[S<:Solution, C<:Constraints[S,C]]
   (deployer: OutputChannel[Any],conn : Int => Connector[S,C], map: (String,String)*)
   (implicit b:CBuilder[S,C]): Node[S,C] =
-    apply[S,C](deployer, map.toIterable, conn)
+    apply[S,C](deployer, map.toIterable, Set(), conn)
 
 }
 
