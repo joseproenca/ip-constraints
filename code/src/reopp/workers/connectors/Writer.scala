@@ -13,7 +13,7 @@ import reopp.common.guardedcommands.dataconnectors.GCWriter
  * To change this template use File | Settings | File Templates.
  */
 
-class Writer(var n:Int,deployer: OutputChannel[Any]) extends Node[GCSolution, Formula](deployer) {
+class Writer(var n:Int) extends Node[GCSolution, Formula] {
 
   //val uid = hashCode()
 

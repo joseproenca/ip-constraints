@@ -76,17 +76,17 @@ class TestMergersWorkers { //extends FunSpec {
     deployer.start()
 
     // create reader
-    val rd = new connectors.Reader(math.pow(workers,size).toInt,deployer)
+    val rd = new connectors.Reader(math.pow(workers,size).toInt)
     println("reader: "+rd.connector.uid)
 //    println(" - "+rd.hashCode())
 
     // create and connect mergers
-    val ends = createBranches[St2,D2](size,Set((rd,rd.connector.ends.head)),deployer)
+    val ends = createBranches[St2](size,Set((rd,rd.connector.ends.head)))
 
     // create and connect writers
     var writers = List[Nd]()
     for ((node,end) <- ends) {
-      val wr = new connectors.Writer(1,deployer)
+      val wr = new connectors.Writer(1)
       writers ::= wr
       println("writer: "+wr.connector.uid)
 //      println(" - "+wr.hashCode())
@@ -97,9 +97,9 @@ class TestMergersWorkers { //extends FunSpec {
     }
 
     // start readers and writers
-    deployer ! rd //rd.init()
+    deployer ! Task(rd) //rd.init()
     for (wr <- writers)
-      deployer ! wr //wr.init()
+      deployer ! Task(wr) //wr.init()
 
     Thread.sleep(9000)
 //    it ("reader is free")
@@ -111,25 +111,25 @@ class TestMergersWorkers { //extends FunSpec {
 
 
 
-  private def createBranch[Stt<:Strategy[S,C,Stt],DD<:Deployer[S,C,Stt]]
-    (from:Nd, end:String, deployer:DD): (Nd,String,String) = {
-    val merger: Nd = new Merger(deployer)
+  private def createBranch[Stt<:Strategy[S,C,Stt]]
+    (from:Nd, end:String): (Nd,String,String) = {
+    val merger: Nd = new Merger
 
     from(end) <-- merger("c")
 
     (merger,"a","b")
   }
 
-  private def createBranches[Stt<:Strategy[S,C,Stt],DD<:Deployer[S,C,Stt]]
-    (n:Int,sinks:Set[(Nd,String)],deployer:DD): Set[(Nd,String)] = {
+  private def createBranches[Stt<:Strategy[S,C,Stt]]
+    (n:Int,sinks:Set[(Nd,String)]): Set[(Nd,String)] = {
     if (n<=0) sinks
     else {
       var sources = Set[(Nd,String)]()
       for (sk <- sinks) {
-        val (n,e1,e2) = createBranch[Stt,DD](sk._1,sk._2,deployer)
+        val (n,e1,e2) = createBranch[Stt](sk._1,sk._2)
         sources = sources ++ Set((n,e1),(n,e2))
       }
-      createBranches[Stt,DD](n-1,sources,deployer)
+      createBranches[Stt](n-1,sources)
     }
   }
 }

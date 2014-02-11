@@ -13,7 +13,7 @@ import reopp.common.guardedcommands.dataconnectors.GCLossy
  * To change this template use File | Settings | File Templates.
  */
 
-class Lossy(deployer: OutputChannel[Any]) extends Node[GCSolution, Formula](deployer) {
+class Lossy extends Node[GCSolution, Formula] {
 //  val uid = hashCode
   val connector = new GCLossy("a","b",uid)
 

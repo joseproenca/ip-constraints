@@ -37,7 +37,7 @@ class Deployer[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
   /** Creates a new worker (node), associated to this deployer.
    *  Keeps track of created nodes just to allow starting all of them in one go. */
   def add(con: => Connector[S,C]): Node[S,C] = {
-    val res = Node[S,C](this, (uid:Int) => con )(builder)
+    val res = Node[S,C]((uid:Int) => con )(builder)
     nodes ::= res
     res
   }
@@ -48,7 +48,7 @@ class Deployer[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
    *         For each (a,b), if 'a' is not on the border of the region, 'b' cannot be either.
    */
    def add(con: => Connector[S,C],deps: Iterable[(String,String)], prior:Iterable[String]): Node[S,C] = {
-    val res = Node[S,C](this, deps, prior, (uid:Int) => con)(builder)
+    val res = Node[S,C](deps, prior, (uid:Int) => con)(builder)
     nodes ::= res
     res
   }
@@ -56,8 +56,8 @@ class Deployer[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
   /** Starts all nodes created with "add" in one go. */
 //  def init() = for (n <- nodes) n.init
    def init() {
-     debug("sending nodes to self?")
-     for (n <- nodes) this ! n 
+     debug("sending nodes to self.")
+     for (n <- nodes) this ! Task(n) 
    }
   
   /** Checks if there are allowed workers and nodes ready to start, and create workers if needed.*/
@@ -66,8 +66,8 @@ class Deployer[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
     if (currentWorkers < maxWorkers && !pendingTasks.isEmpty) {
       val nextTask = pendingTasks.dequeue
       if (nextTask.canStart) {
-	      val w = new Worker[S,C,Str](self, conflictManager, sb.apply)
-	      tmpWorkers ::= w
+	      val w = new Worker[S,C,Str](conflictManager, sb.apply)
+//	      tmpWorkers ::= w
 	      w.work(nextTask)
 	      currentWorkers += 1
 	      debug(s"added worker. Now: $currentWorkers (with ${pendingTasks.size} pending tasks)")
@@ -78,7 +78,7 @@ class Deployer[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
   
   private def workerDone() {
     currentWorkers -= 1
-//    println("worker done. current reopp.workers/pending tasks: "+currentWorkers+"/"+pendingTasks.size)
+//    debug("worker done. current reopp.workers/pending tasks: "+currentWorkers+"/"+pendingTasks.size)
     requestTasks()
   }
   
@@ -90,22 +90,19 @@ class Deployer[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
       workerDone()
       nextMessage()
     // Sent by nodes, indicating they are proactive (waiting to start). 
-    case node: Node[S,C] => {
+    case Task(node: Node[S,C]) => {
       debugMsg("Node requested task")
-//      if (!(pendingTasks contains node))
       pendingTasks enqueue node
-//      println(s"new node. pending tasks: ${pendingTasks.size}")
+//      debug(s"new node. pending tasks: ${pendingTasks.size}")
       requestTasks()
       act()
     }
     case Exit =>
       debug(s"exiting. workers: $currentWorkers, tasks: $pendingTasks")
       conflictManager ! Exit
-      println(tmpWorkers.mkString(","))
-      exit()
-//      println(tmpWorkers.map(_.hashCode().toString.substring(5)).mkString(","))
+//      debug(tmpWorkers.mkString(","))
 //      for (w <- tmpWorkers) w ! 'STATUS // those alive will print their status...
-//      exit()
+      exit()
   }}
   
   private def nextMessage() {

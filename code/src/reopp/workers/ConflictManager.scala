@@ -69,7 +69,7 @@ class ConflictManager//[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
       forget(sender)
     case Updated(nds:Iterable[Nd]) =>
       debugMsg("Updated")
-      for (n <- nds) deployer ! n // add tasks to deployer (it will check if proactive) 
+      for (n <- nds) deployer ! Task(n) // add tasks to deployer (it will check if proactive) 
       deployer ! WorkerDone // ONLY after sending the nodes (tasks), to avoid quitting earlier.
       forget(sender)
        // PROBLEM: higher workers could exist. If so, ask them to "quitAndUpdate", even if
@@ -85,7 +85,7 @@ class ConflictManager//[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
     	  if (!(next contains sender)) { // sender is still the main owner!
 	          debug("Fixing wrong claim of a forgotten worker.")
 	    	  if (prev contains sender) {    	    
-	    	    for (n <- collectNodes(prev(sender))) deployer ! n 
+	    	    for (n <- collectNodes(prev(sender))) deployer ! Task(n) 
 	    	  }
 	    	  forget(sender)
     	  }

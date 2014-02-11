@@ -16,7 +16,7 @@ import scala.actors.Actor._
  */
 
 class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
-      (deployer: OutputChannel[Any], conflictMng: ConflictManager, strat: Str)
+      (conflictMng: ConflictManager, strat: Str)
       (implicit builder: CBuilder[S,C]) extends scala.actors.Actor {
 
   // type alias
@@ -151,7 +151,7 @@ object Worker {
   def apply[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
       (node:Node[S,C],deployer: OutputChannel[Any],conflictMng: ConflictManager, strat:Str)
       (implicit builder: CBuilder[S,C]) : Worker[S,C,Str] = {
-    val w = new Worker[S,C,Str](deployer,conflictMng,strat)
+    val w = new Worker[S,C,Str](conflictMng,strat)
     w.work(node)
     w
   }

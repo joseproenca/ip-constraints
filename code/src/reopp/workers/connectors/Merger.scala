@@ -14,7 +14,7 @@ import reopp.common.guardedcommands.dataconnectors.GCMerger
  * To change this template use File | Settings | File Templates.
  */
 
-class Merger (deployer: OutputChannel[Any]) extends Node[GCSolution, Formula](deployer) {
+class Merger extends Node[GCSolution, Formula] {
 //  val uid = hashCode
   val connector = new GCMerger("a","b","c",uid)
 

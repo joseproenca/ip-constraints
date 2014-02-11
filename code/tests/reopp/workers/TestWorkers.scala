@@ -34,8 +34,8 @@ class TestWorkers {//extends FunSpec {
 	    deployer.start()
 	
 	    // create nodes
-	    val wr = new connectors.Writer(2,deployer)
-	    val lossy = new connectors.Lossy(deployer)
+	    val wr = new connectors.Writer(2)
+	    val lossy = new connectors.Lossy
 	
 	    assertEquals("data not sent",wr.canStart,true) // still has data
 
@@ -55,8 +55,8 @@ class TestWorkers {//extends FunSpec {
 	    lossy(lossy.connector.ends.head) <-- wr(wr.connector.ends.head)
 	
 	    // trigger all primitives (only proactive ones will start)
-	    deployer ! wr
-	    deployer ! lossy
+	    deployer ! Task(wr)
+	    deployer ! Task(lossy)
 	
 //	    Thread.sleep(5000)
 //	    deployer ! Exit

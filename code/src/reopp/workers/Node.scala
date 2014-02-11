@@ -13,8 +13,8 @@ import reopp.common.{Connector, CBuilder, Solution, Constraints}
  * To change this template use File | Settings | File Templates.
  */
 
-abstract class Node[S<:Solution, C<:Constraints[S,C]]
-    (deployer: OutputChannel[Any]) {
+abstract class Node[S<:Solution, C<:Constraints[S,C]] {
+//    (deployer: OutputChannel[Any]) {
 
   val uid = hashCode()
 
@@ -132,12 +132,11 @@ object Node {
    * @param conn function that, given a unique ID (of the node), returns the connector of this node.
    */
   def apply[S<:Solution, C<:Constraints[S,C]]
-      (deployer: OutputChannel[Any],
-          deps: Iterable[(String,String)],
+      (   deps: Iterable[(String,String)],
           prior: Iterable[String],
           conn : Int => Connector[S,C])
       (implicit b:CBuilder[S,C]): Node[S,C] =
-    new Node[S,C](deployer) {
+    new Node[S,C] {
       //      val uid = this.hashCode()
       val connector = conn(uid)
 
@@ -157,14 +156,14 @@ object Node {
 
 
   def apply[S<:Solution, C<:Constraints[S,C]]
-  (deployer: OutputChannel[Any],conn : Int => Connector[S,C])
+  (conn : Int => Connector[S,C])
   (implicit b:CBuilder[S,C]): Node[S,C] =
-    apply[S,C](deployer, Set[(String,String)](),Set(), conn)
+    apply[S,C](Set[(String,String)](),Set(), conn)
 
   def apply[S<:Solution, C<:Constraints[S,C]]
-  (deployer: OutputChannel[Any],conn : Int => Connector[S,C], map: (String,String)*)
+  (conn : Int => Connector[S,C], map: (String,String)*)
   (implicit b:CBuilder[S,C]): Node[S,C] =
-    apply[S,C](deployer, map.toIterable, Set(), conn)
+    apply[S,C](map.toIterable, Set(), conn)
 
 }
 

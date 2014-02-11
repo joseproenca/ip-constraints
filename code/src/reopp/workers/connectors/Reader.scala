@@ -13,7 +13,7 @@ import reopp.common.guardedcommands.dataconnectors.GCReader
  * To change this template use File | Settings | File Templates.
  */
 
-class Reader (var n:Int,deployer: OutputChannel[Any]) extends Node[GCSolution, Formula](deployer) {
+class Reader (var n:Int) extends Node[GCSolution, Formula] {
 
 //  val uid = hashCode()
 
