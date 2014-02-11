@@ -82,6 +82,7 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
       conflictMng ! Updated(ns)
       exit
     case Claimed(n:Nd) =>
+      debug("informing about ignored claim "+n)
       conflictMng ! IgnoredClaim(n)
       quitting(sol)
     case x => {bug(x); quitting(sol)}

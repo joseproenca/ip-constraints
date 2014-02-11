@@ -78,16 +78,21 @@ class ConflictManager//[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
        //  confirm "Updated (and quited)".
       quitHigherWorkers(sender)
     case IgnoredClaim(nd:Nd) =>
+      debugMsg("Ignored claim - maybe forgetting owner.")
       // everything should be fine, BUT if it was from an old claim from a worker that was
       //  forgotten when the claim was received, then this worker needs to be re-forgotten.
-      if ((ownerOf(nd) == sender) && !(next contains sender)) { // sender is still the main owner!
-          debug("Fixing wrong claim of a forgotten worker.")
-    	  if (prev contains sender) {    	    
-    	    for (n <- collectNodes(prev(sender))) deployer ! n 
+      if ((ownerOf(nd) == sender) ) {
+    	  if (!(next contains sender)) { // sender is still the main owner!
+	          debug("Fixing wrong claim of a forgotten worker.")
+	    	  if (prev contains sender) {    	    
+	    	    for (n <- collectNodes(prev(sender))) deployer ! n 
+	    	  }
+	    	  forget(sender)
     	  }
-    	  forget(sender)        
-      }
-        
+    	  else { // bigger owner still needs the claimed node
+    	    max(sender) ! Claimed(nd)
+    	  }
+      }        
 
 
     case Exit =>

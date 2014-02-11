@@ -61,8 +61,8 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4"
 
   
 //  args(0)="pairwise"
-//  args(1)="50"
-//  args(2)="partial2"
+//  args(1)="40"
+//  args(2)="partial4"
 //  args(3)=""
   
   val n = Integer.parseInt(args(1))
@@ -75,13 +75,6 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4"
   val p4 = args(2) startsWith "partial4"
   val debug = (args.size > 3) && (args(3) startsWith "debug")
 
-//  val deployer =
-//	 if      (p1) GenDeployer.hybrid(1)
-//	 else if (p2) GenDeployer.hybrid(2)
-//	 else if (p4) GenDeployer.hybrid(4)
-//	 else         GenDeployer.all(1)
-//                 // up to 2 workers
-//  deployer.start()
   
   def show(time:Long,mode:String,res:OptionSol[Solution]) {
       if (debug) { 
@@ -416,48 +409,49 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4"
 	val deployer = if (all) GenDeployer.all(1)
 				   else     GenDeployer.hybrid(workers)
     
-	val counter = new Actor {
-	  var c = n
-	  var time: Long = 0
-	  def act() = react {
-	  	case _ =>
-	  	  c -= 1
-//	  	  print("-"+c+"\n")
-	  	  if (c == 0) {
-	  		val spent = System.currentTimeMillis() - time
-	  	    show(spent,if (all) "ALL" else "Partial"+workers,NoneSol())
-	  	  }
-	  	  else act()
-	}}
-	
+//	val counter = new Actor {
+//	  var c = n
+//	  var time: Long = 0
+//	  def act() = react {
+//	  	case _ =>
+//	  	  c -= 1
+////	  	  print("-"+c+"\n")
+//	  	  if (c == 0) {
+//	  		val spent = System.currentTimeMillis() - time
+//	  	    show(spent,if (all) "ALL" else "Partial"+workers,NoneSol())
+//	  	  }
+//	  	  else act()
+//	}}
+//	
+//	
+//	def genReader(i:Int) =
+//	  new GCReader("y"+i, 0, 1) {
+//		  val writerPort = reopp.common.Utils.flowVar("x"+i, uid)
+//		  val readerPort = reopp.common.Utils.flowVar("y"+i, uid)
+//		  override def update(s: OptionSol[GCSolution]) {
+//			  if (s.isDefined){
+//				  if (s.get hasFlowOn writerPort) {
+////					  println("Sent data! solution: "+s.get)
+//					 counter ! ()
+//				  }
+//				  if (s.get hasFlowOn readerPort) {
+////					 println("\nGot data - "+i+": "+s.get.getDataOn(reopp.common.Utils.dataVar("x"+i,uid)))
+//					 size -= 1
+//				  }
+//			  }
+//		  }
+//	  }
+
 	val isEven = Predicate("isEven") {
 	  case i:Int => i%2 == 0
 	}
-	
-	def genReader(i:Int) =
-	  new GCReader("y"+i, 0, 1) {
-		  val writerPort = reopp.common.Utils.flowVar("x"+i, uid)
-		  val readerPort = reopp.common.Utils.flowVar("y"+i, uid)
-		  override def update(s: OptionSol[GCSolution]) {
-			  if (s.isDefined){
-				  if (s.get hasFlowOn writerPort) {
-//					  println("Sent data! solution: "+s.get)
-					 counter ! ()
-				  }
-				  if (s.get hasFlowOn readerPort) {
-//					 println("\nGot data - "+i+": "+s.get.getDataOn(reopp.common.Utils.dataVar("x"+i,uid)))
-					 size -= 1
-				  }
-			  }
-		  }
-	  }
 	def genPair(i:Int) = deployer add (
       writer("x"+i,
           List(i)) ++ 
           //for (n<-(1 to 50).toList) yield i) ++ 
-      filter("x"+i,"y"+i,isEven) ++
+      filter("x"+i,"y"+i,isEven) //++
 //      reader("x"+i)
-      genReader(i) 
+//      genReader(i) 
     ,Set()
     ,Set("x"+i)
     )
