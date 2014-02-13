@@ -87,8 +87,8 @@ class TestWorkers {//extends FunSpec {
 	  deployer.init
 	  
 	  deployer.latch.await()
-
-	  assertEquals("data not fully sent",w1.canStart || w2.canStart,true) // still more data
+//
+//	  assertEquals("data not fully sent",w1.canStart || w2.canStart,true) // still more data
 
 //      Thread.sleep(5000)
 //      deployer ! Exit

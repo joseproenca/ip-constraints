@@ -80,9 +80,9 @@ object GCConnector {
   /** Needed to carry the sync and noflow operations for GCConnectors. */ 
   implicit object GCBuilder extends CBuilder[GCSolution,Formula] {
     def sync(e1: String, id1: Int, e2: String, id2: Int): Formula = {
-      val sr = Var(flowVar(e1,id1))
-      val sk = Var(flowVar(e2,id2))
-      st2GC((sr <-> sk) and (sr := sk))
+      val from = Var(flowVar(e1,id1))
+      val to = Var(flowVar(e2,id2))
+      st2GC((from <-> to) and (to := from))
     }
     def noflow(end: String, uid: Int): Formula =
       st2GC(!mkVar(end,uid))

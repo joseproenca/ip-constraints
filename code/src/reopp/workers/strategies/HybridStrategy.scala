@@ -85,7 +85,7 @@ class HybridStrategy[S <: Solution, C <: Constraints[S, C]] extends Strategy[S,C
 //        priorityQueue.dequeue()
         priorityQueue = priorityQueue.tail
 
-    for ((_,neighbs) <- nd.invConnections; neighb <- neighbs) {
+    for (neighb <- nd.getNeighbours) {
       if (owned contains neighb) {
         val deps = nd.guessRequirements(neighb)
         for (dep <- deps)

@@ -61,8 +61,8 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4"
 
   
 //  args(0)="pairwise"
-//  args(1)="40"
-//  args(2)="partial4"
+//  args(1)="20"
+//  args(2)="all"
 //  args(3)=""
   
   val n = Integer.parseInt(args(1))
@@ -407,7 +407,7 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4"
     }
     
 	val deployer = if (all) GenDeployer.all(1)
-				   else     GenDeployer.hybrid(workers)
+				   else     GenDeployer.oneStep(workers)
     
 //	val counter = new Actor {
 //	  var c = n
@@ -452,8 +452,7 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4"
       filter("x"+i,"y"+i,isEven) //++
 //      reader("x"+i)
 //      genReader(i) 
-    ,Set()
-    ,Set("x"+i)
+    ,priority = Set("x"+i)
     )
     def connectPair(i:Int,n1:Node[GCSolution,Formula],n2:Node[GCSolution,Formula]) = {
       val ad = deployer add (adrain("x"+i,"x"+(i+1)))

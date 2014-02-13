@@ -101,11 +101,14 @@ class TestMergersWorkers { //extends FunSpec {
     for (wr <- writers)
       deployer ! Task(wr) //wr.init()
 
-    Thread.sleep(9000)
+//    Thread.sleep(9000)
 //    it ("reader is free")
 //    { assert(rd.owner == None) }
-    assertEquals("No workers",deployer.currentWorkers,0)
-    assertEquals("No tasks",deployer.pendingTasks.size,0)
+//    assertEquals("No workers",deployer.currentWorkers,0)
+//    assertEquals("No tasks",deployer.pendingTasks.size,0)
+      
+      // it will halt forever unless there are no more workers and tasks.
+      deployer.latch.await() 
   }
 
 

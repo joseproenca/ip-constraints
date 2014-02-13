@@ -111,6 +111,7 @@ sealed abstract class ConstrBuilder {
       (m,Choco.not(v))
 
     case And(c1: ConstrBuilder, c2: ConstrBuilder) => {
+      // TODO: optimize to support massive nested And without StackOverflowError
       val (m1, v1) = c1.toChocoAux(vars,buf,pos,top)
       val (m2, v2) = c2.toChocoAux(m1,buf,pos,top)
       (m2, Choco.and(v1, v2))

@@ -6,6 +6,7 @@ import reopp.common.Connector
 import reopp.common.EmptySol
 import scala.actors.Actor._
 import java.util.concurrent.CountDownLatch
+import scala.actors.Actor
 
 
 /**
@@ -19,36 +20,43 @@ import java.util.concurrent.CountDownLatch
 class Deployer[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
   (maxWorkers: Int)
   (implicit builder: CBuilder[S,C], sb: StrategyBuilder[S,C,Str])
-  extends scala.actors.Actor {
+  extends Actor {
 
-  private val conflictManager = new ConflictManager(this) // self only used within actor behaviour.
-  conflictManager.start
+  private val conflictManager = new ConflictManager(this) // self only used within actor behaviour.  
+  
+  override def start(): Actor = {
+    conflictManager.start
+    super.start
+  }
 
+  /** Used to detect when the actor is finished and exits. (latch.await) */
   val latch = new CountDownLatch(1)
   
 //  val maxWorkers: Int
-  var currentWorkers: Int = 0
-  val pendingTasks = scala.collection.mutable.Queue[Node[S,C]]()
-  private var tmpWorkers = List[scala.actors.Actor]()
-//  private var counter = 0
+  private var currentWorkers: Int = 0
+  private val pendingTasks = scala.collection.mutable.Queue[Node[S,C]]()
+//  private var tmpWorkers = List[scala.actors.Actor]()
   
+  /** Only to facilitate the deploying of all nodes in one go. */
   private var nodes: List[Node[S,C]] = Nil
   
-  /** Creates a new worker (node), associated to this deployer.
-   *  Keeps track of created nodes just to allow starting all of them in one go. */
-  def add(con: => Connector[S,C]): Node[S,C] = {
-    val res = Node[S,C]((uid:Int) => con )(builder)
-    nodes ::= res
-    res
-  }
+//  /** Creates a new worker (node), associated to this deployer.
+//   *  Keeps track of created nodes just to allow starting all of them in one go. */
+//  def add(con: => Connector[S,C]): Node[S,C] = {
+//    val res = Node[S,C]((uid:Int) => con )(builder)
+//    nodes ::= res
+//    res
+//  }
 
   /** Creates a new worker (node), associated to this deployer.
    *  Keeps track of created nodes just to allow starting all of them in one go.
    *  @param deps pairs of dependent port names, Used for hybrid strategy ([[strategies.HybridStrategy]]).
    *         For each (a,b), if 'a' is not on the border of the region, 'b' cannot be either.
    */
-   def add(con: => Connector[S,C],deps: Iterable[(String,String)], prior:Iterable[String]): Node[S,C] = {
-    val res = Node[S,C](deps, prior, (uid:Int) => con)(builder)
+   def add(con: => Connector[S,C]
+		  ,deps: Iterable[(String,String)] = Set()
+          ,priority:Iterable[String] = Set()): Node[S,C] = {
+    val res = Node[S,C](deps, priority, (uid:Int) => con)(builder)
     nodes ::= res
     res
   }

@@ -24,7 +24,8 @@ class Lossy extends Node[GCSolution, Formula] {
   // "b" requires "a", but not vice-versa!
   def guessRequirements(nd: Node[GCSolution, Formula]): Set[Node[GCSolution,Formula]] =
     if (connections contains nd) { // if the node nd is actually connected to nd
-      for ((myend,_,_) <- connections(nd)) {// set of ends
+//      for ((myend,_,_) <- connections(nd)) {// set of ends
+      for ((myend,_) <- getConnectedEndsTo(nd)) {        
         if (myend == "a") return invConnections("b")
         else if (myend == "b") return invConnections("a")
       }
