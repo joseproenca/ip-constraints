@@ -36,12 +36,12 @@ class TestMergersHybrid extends FunSpec {
 
     // create reader
     var missing = math.pow(2,size).toInt
-    val rd = new connectors.Reader(missing.toInt,deployer)
+    val rd = new connectors.Reader(missing.toInt)
 
     val lock:scala.concurrent.Lock = new scala.concurrent.Lock()
     val thread = Thread.currentThread()
-//    println("reader: "+rd.behaviour.uid)
-    rd.behaviour.listen(() => {
+//    println("reader: "+rd.connector.uid)
+    rd.connector.listen(() => {
       lock.acquire()
       missing -=1
       lock.release()
@@ -51,27 +51,27 @@ class TestMergersHybrid extends FunSpec {
     //    println(" - "+rd.hashCode())
 
     // create and connect mergers
-    val ends = createBranches[St,D](size,Set((rd,rd.behaviour.ends.head)),deployer)
+    val ends = createBranches[St](size,Set((rd,rd.connector.ends.head)))
 
     // create and connect writers
     var writers = List[Nd]()
     for ((node,end) <- ends) {
-      val wr = new connectors.Writer(1,deployer)
+      val wr = new connectors.Writer(1)
       writers ::= wr
-//      println("writer: "+wr.behaviour.uid)
+//      println("writer: "+wr.connector.uid)
       //      println(" - "+wr.hashCode())
 
       // ORDER IMPORTANT: source then sink!
-      //node.connect(wr,end,wr.behaviour.ends.head)
-      node(end) <-- wr(wr.behaviour.ends.head)
+      //node.connect(wr,end,wr.connector.ends.head)
+      node(end) <-- wr(wr.connector.ends.head)
     }
 
     // start readers and writers
     val t1 = System.currentTimeMillis()
 
     for (wr <- writers)
-      wr.init()
-    rd.init()
+      deployer ! Task(wr) //wr.init()
+    deployer ! Task(rd) //rd.init()
 
     try {
       Thread.sleep(30000)
@@ -82,7 +82,7 @@ class TestMergersHybrid extends FunSpec {
         println("time: "+(t2 - t1))
 
         it ("reader is free")
-        { assert(rd.behaviour.size == 0) }
+        { assert(rd.connector.size == 0) }
     }
 
   }
@@ -90,9 +90,9 @@ class TestMergersHybrid extends FunSpec {
 
 
 
-  private def createBranch[Stt<:Strategy[S,C,Stt],DD<:Deployer[S,C,Stt]]
-  (from:Nd, end:String, deployer:DD): (Nd,String,String) = {
-    val merger: Nd = new Merger(deployer)
+  private def createBranch[Stt<:Strategy[S,C,Stt]]
+  (from:Nd, end:String): (Nd,String,String) = {
+    val merger: Nd = new Merger
     //    println(" - "+merger.hashCode())
 
 //    from.connect(merger,end,"c")
@@ -103,16 +103,16 @@ class TestMergersHybrid extends FunSpec {
     (merger,"a","b")
   }
 
-  private def createBranches[Stt<:Strategy[S,C,Stt],DD<:Deployer[S,C,Stt]]
-  (n:Int,sinks:Set[(Nd,String)],deployer:DD): Set[(Nd,String)] = {
+  private def createBranches[Stt<:Strategy[S,C,Stt]]
+  (n:Int,sinks:Set[(Nd,String)]): Set[(Nd,String)] = {
     if (n<=0) sinks
     else {
       var sources = Set[(Nd,String)]()
       for (sk <- sinks) {
-        val (n,e1,e2) = createBranch[Stt,DD](sk._1,sk._2,deployer)
+        val (n,e1,e2) = createBranch[Stt](sk._1,sk._2)
         sources = sources ++ Set((n,e1),(n,e2))
       }
-      createBranches[Stt,DD](n-1,sources,deployer)
+      createBranches[Stt](n-1,sources)
     }
   }
 }

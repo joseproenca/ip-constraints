@@ -19,7 +19,7 @@ object ChoUtils {
     for (gc <- gcs.commands)
       if (gc.g == f.True)
         optimChocoVars(gc.st,vars)
-    vars
+//    vars
   }
 
   private def optimChocoVars(s: f.Statement,vars: VarMap): Unit = s match {
@@ -46,7 +46,7 @@ object ChoUtils {
    * @param name of the variable (String)
    * @return Choco variable (IntegerVariable) for the given variable name
    */
-  def getVar(m: VarMap, name: String): IntegerVariable = {
+  def getVar(m: VarMap, name: String, nats:Boolean = false): IntegerVariable = {
     if (m contains name)
       m(name)
     else if (isFlowVar(name)) {
@@ -56,6 +56,11 @@ object ChoUtils {
     }
     else if (isPredVar(name)) {
       val v = Choco.makeBooleanVar(name)
+      m += (name -> v)
+      v
+    }
+    else if (nats) {
+      val v = Choco.makeIntVar(name,0,Integer.MAX_VALUE)
       m += (name -> v)
       v
     }

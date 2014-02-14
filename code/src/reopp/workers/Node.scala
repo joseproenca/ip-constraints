@@ -13,13 +13,13 @@ import reopp.common.{Connector, CBuilder, Solution, Constraints}
  * To change this template use File | Settings | File Templates.
  */
 
-abstract class Node[S<:Solution, C<:Constraints[S,C]]
-    (deployer: OutputChannel[Any]) {
+abstract class Node[S<:Solution, C<:Constraints[S,C]] {
+//    (deployer: OutputChannel[Any]) {
 
   val uid = hashCode()
 
   // abstract method:
-  val behaviour: Connector[S, C]
+  val connector: Connector[S, C]
 
   // neighbours to pairs of sync'd ends
   var connections    = Map[Node[S,C],Set[(String,String,Int)]]()
@@ -29,12 +29,6 @@ abstract class Node[S<:Solution, C<:Constraints[S,C]]
 
   def getNeighbours: Iterable[Node[S,C]] = invConnections.values.flatten
 
-  //  var neighbours = List[Node[S,C]]() // order MUST be the same as the order of ends in behaviour
-//  var neighbours = Set[OutputChannel[Any]]()
-
-  // shared lock
-  val lock:scala.concurrent.Lock = new scala.concurrent.Lock()
-  var owner: Option[OutputChannel[Any]] = None
 
 //  // what ends depend on "end" - just a guess to decide when to search for a solution
 //  def dependsOn(end: String): Set[String]
@@ -47,13 +41,17 @@ abstract class Node[S<:Solution, C<:Constraints[S,C]]
 
   // Auxiliar functions
 
-  def init() {
-    //    println("INIT? ["+hashCode()+"] "+behaviour.isProactive)
-    if (behaviour.isProactive) deployer ! this
+  def canStart(): Boolean = {
+//    println("INIT? nd@["+hashCode()+"] "+connector.isProactive)
+//    if (connector.isProactive) deployer ! this
+    connector.isProactive
   }
 
   def apply(e:String): End[S,C] = new End(this,e)
 
+  override def toString = 
+    //s"nd[${hashCode.toString.substring(5)}]"
+    s"{${connector.ends.mkString(".")}}"
 
 //  /**
 //   * Add to connections from this and the other node, so we know how
@@ -126,35 +124,46 @@ abstract class Node[S<:Solution, C<:Constraints[S,C]]
 }
 
 object Node {
+  /**
+   * Creates a new node, with a new connector, linked to a deployer (with a strategy).
+   * @param deployer the associated [[Deployer]] reference
+   * @param deps pairs of dependent port names, Used for hybrid strategy ([[strategies.HybridStrategy]]).
+   *    		For each (a,b), if 'a' is not on the border of the region, 'b' cannot be either.
+   * @param conn function that, given a unique ID (of the node), returns the connector of this node.
+   */
   def apply[S<:Solution, C<:Constraints[S,C]]
-      (deployer: OutputChannel[Any],map: Iterable[(String,String)],conn : Int => Connector[S,C])
-      (implicit noSol:EmptySol[S], b:CBuilder[S,C]): Node[S,C] =
-    new Node[S,C](deployer) {
+      (   deps: Iterable[(String,String)],
+          prior: Iterable[String],
+          conn : Int => Connector[S,C])
+      (implicit b:CBuilder[S,C]): Node[S,C] =
+    new Node[S,C] {
       //      val uid = this.hashCode()
-      val behaviour = conn(uid)
+      val connector = conn(uid)
 
       // suggests which ends must have dataflow if "end" has also dataflow
-      def guessRequirements(nd: Node[S, C]) =
-        if (map.isEmpty || !connections.contains(nd)) Set()
-        else {
-          var res: Set[Node[S,C]] = Set()
-          for ((a,b) <- map)
-            if (invConnections contains a)
-              res ++= invConnections(b)
-          res
+      def guessRequirements(nd: Node[S, C]) = {
+        var res: Set[Node[S,C]] = Set()
+        if (!deps.isEmpty && connections.contains(nd)) {
+          for ((a,b) <- deps)
+            if (invConnections contains a) // if 'a' is connected
+              res ++= invConnections(b)	   // then 'b's connections are required
         }
+        for (p <- prior)
+          res ++= invConnections(p)
+        res
+      }
     }
 
 
   def apply[S<:Solution, C<:Constraints[S,C]]
-  (deployer: OutputChannel[Any],conn : Int => Connector[S,C])
-  (implicit noSol:EmptySol[S], b:CBuilder[S,C]): Node[S,C] =
-    apply[S,C](deployer, Set[(String,String)](), conn)
+  (conn : Int => Connector[S,C])
+  (implicit b:CBuilder[S,C]): Node[S,C] =
+    apply[S,C](Set[(String,String)](),Set(), conn)
 
   def apply[S<:Solution, C<:Constraints[S,C]]
-  (deployer: OutputChannel[Any],conn : Int => Connector[S,C], map: (String,String)*)
-  (implicit noSol:EmptySol[S], b:CBuilder[S,C]): Node[S,C] =
-    apply[S,C](deployer, map.toIterable, conn)
+  (conn : Int => Connector[S,C], map: (String,String)*)
+  (implicit b:CBuilder[S,C]): Node[S,C] =
+    apply[S,C](map.toIterable, Set(), conn)
 
 }
 
@@ -182,9 +191,9 @@ class End[S<:Solution, C<:Constraints[S,C]](val n: Node[S,C], val e: String) {
 
     // better design: expose connections and flowconn only via an interface...
     me.connections +=
-      other -> Set((myend,otherend,other.behaviour.uid))
+      other -> Set((myend,otherend,other.connector.uid))
     other.connections +=
-      me -> Set((otherend,myend,me.behaviour.uid))
+      me -> Set((otherend,myend,me.connector.uid))
 
     //      val myendNodes: Set[Node[S,C]] = this.invConnections(myend)
     val newMyEndNodes:Set[Node[S,C]] = me.invConnections(myend) ++ Set(other)
@@ -193,6 +202,6 @@ class End[S<:Solution, C<:Constraints[S,C]](val n: Node[S,C], val e: String) {
     other.invConnections += otherend -> newOtherEndNodes
 
     // flow connections
-    me.flowconn += ((myend,me.behaviour.uid,otherend,other.behaviour.uid))
+    me.flowconn += ((myend,me.connector.uid,otherend,other.connector.uid))
   }
 }

@@ -3,6 +3,11 @@ package reopp.common.examples
 import reopp.common.Predicate
 import reopp.common.Function
 import reopp.common.guardedcommands.dataconnectors.ConnectorGen._
+import reopp.common.SomeSol
+import reopp.common.NoneSol
+import reopp.workers.Deployer
+import reopp.workers.Node
+import reopp.workers.strategies.GenDeployer
 
 /**
  * Created with IntelliJ IDEA.
@@ -78,12 +83,12 @@ object HotelReservation extends App {
     case r:Req => i match {
       case 1 => List("F1","Ibis","Mercury")
       case 2 => List("B&B","YHostel")
-      case _ => List("Aaa","Bbb")
+      case _ => List("Aaa","Ibis")
     }
   }
 
-  val approve = Predicate("approve"){
-    case l:List[String] =>
+  def approve = Predicate("approve"){
+    case l:List[_] =>
       println("approve: "+l.mkString(", ")+". [y,n]")
       readLine() == "y"
     case other =>
@@ -91,8 +96,8 @@ object HotelReservation extends App {
       false
   }
 
-  val book = Function("book"){
-    case l : List[String] =>
+  def book = Function("book"){
+    case l : List[_] =>
       println("Options: "+l.mkString(", ")+
         ". Which one? (1.."+l.length+")")
       val res = readInt()
@@ -101,15 +106,19 @@ object HotelReservation extends App {
       println("book: strange type - "+other+" : "+other.getClass)
   }
 
-  val cancelB = Function("cancelB"){
-    case (x,_) => println("canceling booking "+x+".") // returns Unit
-  }
+//  def cancelB = Function("cancelB"){
+//    case (x,_) => println("canceling booking "+x+".") // returns Unit
+//  }
 
-  val invoice = Function("invoice"){
+  def cancelB = (x: (List[_],_)) =>
+    println("canceling booking: "+x._1.mkString(", ")+".") // returns Unit
+ 
+
+  def invoice = Function("invoice"){
     case x => println("sending invoice for "+x+": "+x.getClass) // returns Unit
   }
 
-  val pay = Predicate("pay"){
+  def pay = Predicate("pay"){
     case x => if (x == "Ibis") {
       println("paying for Ibis")
       true
@@ -153,7 +162,7 @@ object HotelReservation extends App {
     filter("inv","paid",paid) ++
     reader("paid",5)
 
-  conn3.run()
+//  conn3.run()
 
 
 //  val approve2 = Predicate("approve2"){
@@ -193,4 +202,88 @@ object HotelReservation extends App {
 //    conn3.update(s)
 ////  }
 ////    conn3.step
+  
+
+  
+  //// Other experiments: CONCURRENT WORKERS! ////
+
+
+//  // create and run deployer
+//  val deployer = GenDeployer.hybrid(2) // up to 2 workers
+//  deployer.start()
+//
+//  val node_w = deployer.add {
+//    writer("req",List(Req("req1"),Req("req2"))) ++
+//    nexrouter("req",List("h1","h2","h3"))
+//  }
+////  val node_t = deployer.add {
+////      transf("h1","h1o",srchHotel(1)) ++ filter("h1o","ap",approve) ++ reader("ap",3)
+////  }
+//  val node_1 = deployer.add {
+//    transf("h1","h1o",srchHotel(1))
+//  }
+//  val node_2 = deployer.add {
+//    transf("h2","h2o",srchHotel(2))
+//  }
+//  val node_3 = deployer.add {
+//    transf("h3","h3o",srchHotel(3))
+//  }  
+//  val node_r = deployer.add {
+//    nmerger(List("h1o","h2o","h3o"),"hs") ++
+//    filter("hs","ap",approve) ++
+//    // sdrain("hs","ap") ++
+//    sdrain("hs","paid") ++
+//    transf("ap","bk",book,cancelB) ++
+//    monitor("bk","inv",invoice) ++
+//    filter("inv","paid",paid) ++
+//    reader("paid",5)
+//  }
+//  
+//  node_1("h1")  <-- node_w("h1")
+//  node_2("h2")  <-- node_w("h2")
+//  node_3("h3")  <-- node_w("h3")
+//  node_r("h1o") <-- node_1("h1o")
+//  node_r("h2o") <-- node_2("h2o")
+//  node_r("h3o") <-- node_3("h3o")
+//
+//  deployer.init
+
+
+    
+  val deployer = GenDeployer.oneStep(2)
+                 // up to 2 workers
+  deployer.start()
+
+  val node_w = deployer add (
+    writer("req",List(
+      Req("1"),Req("2"),Req("3"))) ++
+    nexrouter("req",List("s1","s2","s3")) ++
+    srchAppr(1) ++ srchAppr(2) ++ srchAppr(3)
+  )
+  val node_1 = row(1)
+  val node_2 = row(2)
+  val node_3 = row(3)
+
+  def srchAppr(i:Int) =
+    transf("s"+i,"so"+i,srchHotel(i)) ++
+    filter("so"+i,"ap"+i,approve) ++
+    sdrain("so"+i,"ap"+i)
+  def row(i:Int) = deployer.add {
+    transf("ap"+i,"bk"+i,book,cancelB) ++
+//    transf("ap"+i,"bk"+i,book,(x:Any) => println("canceling: "+x)) ++
+    monitor("bk"+i,"inv"+i,invoice) ++
+    filter("inv"+i,"paid"+i,paid) ++
+    sdrain("inv"+i,"paid"+i) ++
+    reader("paid"+i,5)
+  }
+  
+  // connecting ports from different nodes
+  node_1("ap1")  <-- node_w("ap1")
+  node_2("ap2")  <-- node_w("ap2")
+  node_3("ap3")  <-- node_w("ap3")
+
+  // starting the algorigthm
+  deployer.init
+
+
 }

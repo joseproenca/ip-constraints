@@ -85,7 +85,8 @@ abstract class Actor[S<:Solution, C<:Constraints[S,C]](implicit noSol:EmptySol[S
     case RequestBeh(rank:Int) => {
       val children: Set[ActorRef] = neighbours - sender
       if (children.isEmpty) {
-        sender ! ReplyBeh[C](sync(behaviour.getConstraints))
+    	throw new RuntimeException("Need to fix strange type error below...")
+//        sender ! ReplyBeh[C](sync(behaviour.getConstraints))
         stateCommitted
       }
       else {

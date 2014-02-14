@@ -64,7 +64,7 @@ object Warmup {
 
 
     def genScheds(uids: Iterable[Int], startVar: String, startUid: Int, on: Boolean): Formula = {
-      var res = new Formula()
+      var res = Formula()
       for (i <- uids) {
         res ++= genSched(i,on)
         // manual replicator from (startVar.startUid) to (x,i)
@@ -92,7 +92,7 @@ object Warmup {
       val spent = System.currentTimeMillis() - time
 
       val time2 = System.currentTimeMillis()
-      val res2 = problem.solve
+      val res2 = problem.solveChocoDyn
       val spent2 = System.currentTimeMillis() - time2
 
 //      if (res.isDefined) print(spent+" ")

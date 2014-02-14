@@ -4,6 +4,7 @@ import reopp.common.{OptionSol, Utils}
 import Utils._
 import reopp.common.guardedcommands._
 import scala.None
+import reopp.common.SomeSol
 
 /**
  * Created with IntelliJ IDEA.
@@ -19,8 +20,8 @@ class GCFifo(a: String, b: String, var data: Option[Any], uid: Int = 0) extends 
   def this(a: String, b: String, uid: Int) = this(a,b, scala.None:Option[Any],uid)
 
 
-  val av = mkVar(a,uid)
-  val bv = mkVar(b,uid)
+  val av = mkVar(a)
+  val bv = mkVar(b)
 
   val emptyFifo = Formula(!bv)
 
@@ -35,26 +36,16 @@ class GCFifo(a: String, b: String, var data: Option[Any], uid: Int = 0) extends 
 
   def getConstraints = if (data.isDefined) fullFifo else emptyFifo
 
-  override def update(s: OptionSol[GCSolution]) {
-    if (s.isDefined) {
-      if (s.get hasFlowOn flowVar(a,uid)) {
-        // update state
-        data = Some(s.get(dataVar(a,uid)))
-        // update constraints
-        //constraints = fullFifo  //---- constraints automatically updated with state.
+  override def update(s: OptionSol[GCSolution]) = s match  {
+    case SomeSol(sol) =>
+      if (sol hasFlowOn av) {
+        data = Some(sol(av.dataName))
         // println("FIFO: FLOW IN!")
-        // notifyflow()
       }
-      else if (s.get hasFlowOn flowVar(b,uid)) {
-        // update state
+      else if (sol hasFlowOn bv) {
         data = None
-        // update constraints
-        //constraints = emptyFifo //---- constraints automatically updated with state.
         // println("FIFO: FLOW OUT!")
-        // notifyflow()
       }
-    }
-  }
-
-  // update state not implemented
+    case _ => {}
+  }  	
 }

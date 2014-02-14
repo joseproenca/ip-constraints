@@ -1,1 +1,18 @@
 .idea
+*.iml
+*.xml
+.cache
+.classpath
+.project
+.settings/
+scripts/
+out/
+docs/
+docs2/
+code/Sandbox
+code/src/reopp/common/choco/ConstrBuilder.scala.failed
+code/src/reopp/common/examples/Experiment.scala
+code/src/reopp/common/guardedcommands/z3/Test.scala
+code/src/reopp/dreams/TestDreamsComp.scala
+code/src/reopp/dreams/TestKilling.scala
+code/tests/testing Approval with z3.txt

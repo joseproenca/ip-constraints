@@ -273,7 +273,7 @@ class PEval(
 //          println("     solving new domain constraints using preds "+preds.mkString(" /\\ "))
           val c = new ChoConstraints()
           c impose preds //(for (p <- preds) yield FlowPred(p.choPred,"x"))
-          val sol = c.solve
+          val sol = c.solve()
           if (sol.isDefined) {
 //            println("     solution for domain! giving "+sol.get.getVal("x")+" to the group.")
             for (v <- group) {

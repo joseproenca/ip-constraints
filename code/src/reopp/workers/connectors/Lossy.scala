@@ -13,9 +13,9 @@ import reopp.common.guardedcommands.dataconnectors.GCLossy
  * To change this template use File | Settings | File Templates.
  */
 
-class Lossy(deployer: OutputChannel[Any]) extends Node[GCSolution, Formula](deployer) {
+class Lossy extends Node[GCSolution, Formula] {
 //  val uid = hashCode
-  val behaviour = new GCLossy("a","b",uid)
+  val connector = new GCLossy("a","b",uid)
 
 //  // what ends depend on "end" - just a guess to decide when to search for a solution
 //  def dependsOn(end: String) = if (end == "a") Set("b") else Set()

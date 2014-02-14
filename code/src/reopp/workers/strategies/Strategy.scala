@@ -18,26 +18,39 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
   val owned = scala.collection.mutable.Set[Nd]()
   val fringe = scala.collection.mutable.Set[Nd]()
   var droppedFringe = Set[Nd]()
+  var triedSol: Option[NoneSol] = None // managed by the workers
+
 
   // abstract methods //
 
   // Find the next nodes (from the fringe) to expand to.
   def nextNodes: Iterable[Nd]
-  // Find the initial nodes based on a prefered node "n".
-  def initNodes(n:Nd): Iterable[Nd]
+//  // Find the initial nodes based on a prefered node "n".
+//  def initNodes(n:Nd): Iterable[Nd]
   // Checks if it makes sense to search now for a solution.
   def canSolve: Boolean
-  // merges the information from another traversal
-  def merge(s:St)
+  /** Merges the information from another traversal. Should be extended by subclasses.
+   *  Right now it only merges the previous buffer. */
+  def merge(s:St) {
+    (triedSol,s.triedSol) match {
+      case (None,Some(NoneSol(Some(_)))) => triedSol = s.triedSol
+      case (Some(NoneSol(None)),Some(NoneSol(Some(_)))) => triedSol = s.triedSol
+      case (Some(NoneSol(Some(b1))),Some(NoneSol(Some(b2)))) => b1.safeImport(b2)
+      case _ => {}
+    }
+  }
 
+  def solve(implicit builder:CBuilder[S,C]): OptionSol[S] = solve(triedSol)
+  
   // aux functions
-  def solve(implicit builder:CBuilder[S,C]): OptionSol[S] = {
+  private def solve(tried:Option[NoneSol])(implicit builder:CBuilder[S,C]): OptionSol[S] = {
+//    debug("solving - "+owned.mkString(","))
 //    var beh = new Behaviour[S,C](val ends: List[String],val uid: Int)
     if (owned.isEmpty) return NoneSol()
 
     // get first node and behaviour
     val init = owned.head
-    val behh = init.behaviour
+    val behh = init.connector
 
     // collect it's constraints + neighbour constraints
 //    var  (c,included)  = neighbourConstr(init,Set(),beh.constraints)
@@ -46,14 +59,17 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
     // collect the constraints + neighbour constraints of owned ports,
     // avoiding adding repeated neighbours (via "included") -- DROPPED (reopp.common neighbours of 2 nodes must be added 2x)
     for (n <- (owned - init)) {
-      c ++= n.behaviour.getConstraints
+      c ++= n.connector.getConstraints
       c = neighbourConstr(n,c)(builder)
 //      val pair = neighbourConstr(n,included,c)
 //      c = pair._1; included = pair._2
     }
 
 //    println("solving: "+c)
-    c.solve
+    val res = c.solve(tried)
+//    if (res.isDefined) debug("GOT SOL!!")
+//    else debug("failed")
+    res
   }
 
   // TODO: BROKEN!!! behaviour.sync connects local end "a" to neighbour ends "b" by "b:=a". Need the right order!
@@ -75,8 +91,8 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
 
 
   private def sync(n1:Nd,n2:Nd, basec: C)(implicit cbuilder: CBuilder[S,C]): C = {
-    val uid1 = n1.behaviour.uid
-    val uid2 = n2.behaviour.uid
+    val uid1 = n1.connector.uid
+    val uid2 = n2.connector.uid
     var res = basec
 
     for ((e1,u1,e2,u2) <- n1.flowconn)
@@ -88,7 +104,7 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
 
   // n1 owend, n2 not owned -> border n1.ends inters. n2.ends
   private def border(n1:Nd,n2:Nd, basec: C)(implicit cbuilder: CBuilder[S,C]): C = {
-    val uid1 = n1.behaviour.uid
+    val uid1 = n1.connector.uid
     var res = basec
 
     if (n1.connections contains n2)
@@ -131,6 +147,11 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
     fringe ++= droppedFringe
     droppedFringe = Set()
   }
+
+  protected def debug(s:String) {
+//    println(s"str[${hashCode.toString.substring(5)}] $s")
+  }
+  
 
 }
 

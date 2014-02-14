@@ -13,11 +13,11 @@ import reopp.common.guardedcommands.dataconnectors.GCReader
  * To change this template use File | Settings | File Templates.
  */
 
-class Reader (var n:Int,deployer: OutputChannel[Any]) extends Node[GCSolution, Formula](deployer) {
+class Reader (var n:Int) extends Node[GCSolution, Formula] {
 
 //  val uid = hashCode()
 
-  val behaviour = //new ChoReaderPassive("r",uid,n)
+  val connector = //new ChoReaderPassive("r",uid,n)
     new GCReader("r",uid,n) { override def isProactive = false }
 
   // suggests which ends must have dataflow if "end" has also dataflow

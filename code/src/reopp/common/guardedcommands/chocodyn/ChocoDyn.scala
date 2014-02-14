@@ -128,8 +128,11 @@ object ChocoDyn {
 
 
 
-  def solve(gcs: Formula): OptionSol[DynSolution] = {
-    val buf = new Buffer
+  def solve(gcs: Formula,tried:Option[NoneSol]): OptionSol[DynSolution] = {
+    val buf = tried match {
+      case Some(NoneSol(Some(buf:Buffer))) => buf
+      case _ => new Buffer
+    } 
 
     val DEBUG = false
     ChocoLogging.setVerbosity(Verbosity.OFF)

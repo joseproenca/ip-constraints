@@ -80,7 +80,7 @@ object AllSchedules extends App {
 
 
   def genScheds(uids: Iterable[Int], startVar: String, on: Boolean): Formula = {
-    var res = new Formula()
+    var res = Formula()
     for (i <- uids) {
       res ++= genSched(i,on)
       // manual replicator from (startVar.startUid) to (x,i)

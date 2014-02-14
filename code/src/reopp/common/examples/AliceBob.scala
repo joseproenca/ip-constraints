@@ -15,7 +15,7 @@ import reopp.common.guardedcommands.dataconnectors.ConnectorGen._
  * Time: 11:28
  */
 
-object RunInteractive extends App {
+object AliceBob extends App {
 
   /*
    alex --(hackUser)--> a1 --[checkPwd] --> a2 --(recallUser)--> a3 -\
@@ -60,12 +60,12 @@ object RunInteractive extends App {
   var lastUser = ""
 
   val hackUser = Function("hackUser") {
-    case x: String =>
-      println("overriding username "+x)
+    case usr: String =>
+      println("overriding username "+usr)
       println("new user? (enter keeps old one)")
-      lastUser = x.toString
+      lastUser = usr
       val p = readLine()
-      if (p == "") x else p
+      if (p == "") usr else p
   }
 
   val undoHack = Function("undo") {
@@ -93,7 +93,6 @@ object RunInteractive extends App {
     sdrain("m","out")
     // testing monitors
 //    monitor("out","nothing",Function(){case x => println("GOT VALUE "+x)})
-
 
   connector.run
 

@@ -65,9 +65,12 @@ public class DynPredicate extends AbstractTernIntSConstraint {
 
         if(v0.isInstantiated() && v1.isInstantiated())
             if(v0.getVal() == 1) {
+            	if (dm.get(v1.getVal())==null)
+            		// x^ has a value, but it is not a reference - hence predicate yields false!
+            		v2.removeVal(1, this, false);
 //                System.out.println("defining (P(x)) - "+v1.getName()+" = "+dm.get(v1.getVal())+" (idx "+v1.getVal()+")");
                         // NOTE: dm.get can return null, if v1.getVal() has randomly assigned trash.
-                if (buffer.check(predicate,new ArrayList(),dm.get(v1.getVal())) == 0)  {
+            	else if (buffer.check(predicate,new ArrayList(),dm.get(v1.getVal())) == 0)  {
 //                    System.out.println("cannot be TRUE");
                     v2.removeVal(1,this,false);
                 }
@@ -85,6 +88,8 @@ public class DynPredicate extends AbstractTernIntSConstraint {
     public boolean isSatisfied(int[] tuple) {
 //        System.out.println("# IsSatisfied? ("+v0.getName()+" - "+v1.getName()+") - called");
         if (tuple[0] == 0) return true;
+//      else if (tuple[1] < 0) /* trash value, not a reference */ return false;
+        else if (dm.get(tuple[1]) == null) /* trash value, not a reference */ return false;
         else return (tuple[2] ==  buffer.check(predicate,new ArrayList(),dm.get(tuple[1])));
     }
 

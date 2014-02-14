@@ -93,7 +93,12 @@ class ChoConstraints extends Constraints[ChoSolution,ChoConstraints] {
 
   }
 
-  def solve: OptionSol[ChoSolution] = solve(List(), new Buffer)
+//  def solve: OptionSol[ChoSolution] = solve(List(), new Buffer)
+  
+  def solve(tried:Option[NoneSol]): OptionSol[ChoSolution] = tried match {
+    case Some(NoneSol(Some(buf:Buffer))) => solve(buf)
+    case _ => solve(List(), new Buffer)
+  }
 
   def solve(buf: Buffer): OptionSol[ChoSolution] = solve(List(),buf)
 
@@ -108,6 +113,9 @@ class ChoConstraints extends Constraints[ChoSolution,ChoConstraints] {
     val varMap = pair._1
     for (constr <- pair._2)
       m.addConstraint(constr)
+//    val x = Choco.makeIntVar("x")
+//    val y = Choco.makeIntVar("y")
+//    m.addConstraint(Choco.eq(x,Choco.mod(y,60*24)),Choco.eq(y,30451))
 
 //    // Add flow constraints
 //    var flowvars = Set[IntegerVariable]()
@@ -129,7 +137,9 @@ class ChoConstraints extends Constraints[ChoSolution,ChoConstraints] {
     if (!(order isEmpty))
       s.addGoal(new AssignVar(new StaticVarOrder(s,buildOrder(order, s)),new IncreasingDomain))
 
+//    println("solving...")
     val solved = s.solve
+//    println("solved. - "+s.pretty())
 
     if (solved) SomeSol(new ChoSolution(s,varMap,Some(buf)))
     else  NoneSol()

@@ -32,7 +32,7 @@ object Utils {
 
   def ppFlowVar(x:String): String = { val y = x.split("€"); placeIndex(y) }
   def ppDataVar(x:String): String = { val y = x.split("€"); "^"+placeIndex(y) }
-  def ppPredVar(x:String): String = { val y = x.split("€"); "P"+placeIndex(y) }
+  def ppPredVar(x:String): String = { val y = x.split("€"); "P_"+placeIndex(y) }
   def ppVar(x:String) = if (x.startsWith("F€")) ppFlowVar(x) else ppDataVar(x)
   private def placeIndex(y:Array[String]) =
     if (y(2) == "0") y(1) else y(1)+"_"+y(2)
