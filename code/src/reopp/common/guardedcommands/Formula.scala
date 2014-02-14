@@ -51,8 +51,8 @@ class Formula extends Constraints[GCSolution,Formula] {
    */
 //  def solve = lazyDataSolve  // predicate abstraction + choco (using guesses)
 //  def solve = solveChocoX    // choco - 1st attempt (predicates that keep track of all functions)
-//  def solve = solveChocoDyn  // choco - 2nd attempt (dynamic mapping between ints (in choco) and the value they represent)
-  def solve = solveXZ3       // z3    - same as chocoDyn. Tricks used to be able to recover solution and to avoid incomplete theories (not possible to say "if A is instantiated...")
+  def solve = solveChocoDyn  // choco - 2nd attempt (dynamic mapping between ints (in choco) and the value they represent)
+//  def solve = solveXZ3       // z3    - same as chocoDyn. Tricks used to be able to recover solution and to avoid incomplete theories (not possible to say "if A is instantiated...")
 
   /**
    * Collect the domain of every guarded command in field 'da'.
@@ -403,15 +403,15 @@ class Formula extends Constraints[GCSolution,Formula] {
   // OPTMISING - NOT IN USE //
   ////////////////////////////
 
-  def optimiseEqVars: Map[String,String] = {
-    val vars = MutMap[String,String]()
-    for (gc <- commands)
-      gc.optimiseEqVars(vars)
-
-    vars
-    // TODO: under construction
-    throw new RuntimeException("Under construction")
-  }
+//  def optimiseEqVars: Map[String,String] = {
+//    val vars = MutMap[String,String]()
+//    for (gc <- commands)
+//      gc.optimiseEqVars(vars)
+//
+//    vars
+//    // TODO: under construction
+//    throw new RuntimeException("Under construction")
+//  }
 
   /////////////////////////////////
   // USING DETERMINED CONNECTORS //

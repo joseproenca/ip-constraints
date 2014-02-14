@@ -26,7 +26,7 @@ class GCReader(x: String, uid: Int, var size: Int) extends GCConnector(List(x), 
     if (s.isDefined)
     if (s.get hasFlowOn flowVar(x, uid)) {
       println("//////////////////")
-      println("// Got data - "+x+": "+s.get.getDataOn(dataVar(x,uid)).get)
+      println("// Got data - "+x+": "+s.get.getDataOn(dataVar(x,uid)))
 //      println("// new size: "+size)
       println("//////////////////")
       notifyflow()

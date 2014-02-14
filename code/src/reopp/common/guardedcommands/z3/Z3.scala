@@ -362,10 +362,10 @@ object Z3 {
     val s1, s2 = strings.variable
     z33.assertCnstr(
       z33.mkAnd(
-        z33.mkAnd( s1 === "hello",
-          z33.mkOr(s2 === "world",s2 === "moon")
+        z33.mkAnd( s1 === constant("hello"),
+          z33.mkOr(s2 === constant("world"),s2 === constant("moon"))
         ),
-        z33.mkAnd(oddLength(concat(s2, s1)), isSubstr("low", concat(s1,s2)))
+        z33.mkAnd(oddLength(concat(s2, s1)), isSubstr(constant("low"), concat(s1,s2)))
       )
     )
 
