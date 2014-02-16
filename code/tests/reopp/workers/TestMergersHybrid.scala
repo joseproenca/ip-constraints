@@ -1,7 +1,9 @@
 package reopp.workers
 
 import connectors.Merger
-import org.scalatest.FunSpec
+//import org.scalatest.FunSpec
+import org.junit.Test
+import org.junit.Assert._
 import reopp.common.choco.{ChoConstraints, ChoSolution}
 import strategies._
 import reopp.common.guardedcommands.{Formula, GCSolution}
@@ -15,7 +17,7 @@ import reopp.common.guardedcommands.GCConnector.GCBuilder
  * To change this template use File | Settings | File Templates.
  */
 
-class TestMergersHybrid extends FunSpec {
+class TestMergersHybrid { //extends FunSpec {
   type S = GCSolution
   type C = Formula
   type St = HybridStrategy[S,C]
@@ -27,10 +29,11 @@ class TestMergersHybrid extends FunSpec {
   var workers = 20
   var endtime = 0
 
-  describe ("Workers hybrid strategy - tree of merges.") {
+//  describe ("Workers hybrid strategy - tree of merges.") {
+  @Test def TestHybridTraversalTree() {
     // create and run deployer
-    val deployer = new Deployer[S,C,St](workers)
-    deployer.start()
+    val engine = new Engine[S,C,St](workers)
+//    deployer.start()
 
     println("height: "+size)
 
@@ -70,19 +73,21 @@ class TestMergersHybrid extends FunSpec {
     val t1 = System.currentTimeMillis()
 
     for (wr <- writers)
-      deployer ! Task(wr) //wr.init()
-    deployer ! Task(rd) //rd.init()
+      engine.deployer ! Task(wr) //wr.init()
+    engine.deployer ! Task(rd) //rd.init()
 
     try {
-      Thread.sleep(30000)
+      engine.awaitTermination
+//      Thread.sleep(30000)
     }
     catch {
       case e:java.lang.InterruptedException =>
         val t2 = System.currentTimeMillis()
         println("time: "+(t2 - t1))
 
-        it ("reader is free")
-        { assert(rd.connector.size == 0) }
+//        it ("reader is free")
+//        { assert(rd.connector.size == 0) }
+        assertEquals("reader is free",rd.connector.size, 0)
     }
 
   }

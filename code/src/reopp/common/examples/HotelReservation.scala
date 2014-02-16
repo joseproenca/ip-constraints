@@ -7,7 +7,7 @@ import reopp.common.SomeSol
 import reopp.common.NoneSol
 import reopp.workers.Deployer
 import reopp.workers.Node
-import reopp.workers.strategies.GenDeployer
+import reopp.workers.strategies.GenEngine
 
 /**
  * Created with IntelliJ IDEA.
@@ -250,11 +250,10 @@ object HotelReservation extends App {
 
 
     
-  val deployer = GenDeployer.oneStep(2)
+  val engine = GenEngine.oneStep(2)
                  // up to 2 workers
-  deployer.start()
 
-  val node_w = deployer add (
+  val node_w = engine add (
     writer("req",List(
       Req("1"),Req("2"),Req("3"))) ++
     nexrouter("req",List("s1","s2","s3")) ++
@@ -268,7 +267,7 @@ object HotelReservation extends App {
     transf("s"+i,"so"+i,srchHotel(i)) ++
     filter("so"+i,"ap"+i,approve) ++
     sdrain("so"+i,"ap"+i)
-  def row(i:Int) = deployer.add {
+  def row(i:Int) = engine.add {
     transf("ap"+i,"bk"+i,book,cancelB) ++
 //    transf("ap"+i,"bk"+i,book,(x:Any) => println("canceling: "+x)) ++
     monitor("bk"+i,"inv"+i,invoice) ++
@@ -283,7 +282,7 @@ object HotelReservation extends App {
   node_3("ap3")  <-- node_w("ap3")
 
   // starting the algorigthm
-  deployer.init
+  engine.init
 
 
 }

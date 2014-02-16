@@ -1,6 +1,5 @@
 package reopp.common.benchmarks
 
-import reopp.workers.strategies.GenDeployer
 import reopp.workers.Deployer
 import reopp.common.guardedcommands.dataconnectors.ConnectorGen._
 import reopp.common.guardedcommands.GCConnector
@@ -25,6 +24,7 @@ import scala.actors.Actor
 import reopp.common.NoneSol
 import reopp.common.guardedcommands.dataconnectors.GCReader
 import reopp.workers.Exit
+import reopp.workers.strategies.GenEngine
 
 /**
  * @author Jose Proenca
@@ -57,12 +57,12 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4"
     return
   }
   
-  Warmup.go
+//  Warmup.go
 
   
-//  args(0)="pairwise"
-//  args(1)="40"
-//  args(2)="partial4"
+  args(0)="pairwise"
+  args(1)="2"
+  args(2)="partial1"
 //  args(3)=""
   
   val n = Integer.parseInt(args(1))
@@ -406,8 +406,8 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4"
       return
     }
     
-	val deployer = if (all) GenDeployer.all(1)
-				   else     GenDeployer.hybrid(workers)
+	val engine = if (all) GenEngine.all(1)
+				   else     GenEngine.hybrid(workers)
     
 //	val counter = new Actor {
 //	  var c = n
@@ -445,7 +445,7 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4"
 	val isEven = Predicate("isEven") {
 	  case i:Int => i%2 == 0
 	}
-	def genPair(i:Int) = deployer add (
+	def genPair(i:Int) = engine add (
       writer("x"+i,
           List(i)) ++ 
           //for (n<-(1 to 50).toList) yield i) ++ 
@@ -456,7 +456,7 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4"
     ,Set("x"+i)
     )
     def connectPair(i:Int,n1:Node[GCSolution,Formula],n2:Node[GCSolution,Formula]) = {
-      val ad = deployer add (adrain("x"+i,"x"+(i+1)))
+      val ad = engine add (adrain("x"+i,"x"+(i+1)))
       ad("x"+i)  <-- n1("x"+i)
       ad("x"+(i+1))  <-- n2("x"+(i+1))
       ad
@@ -475,12 +475,10 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4"
 //    counter.start
     
     val time = System.currentTimeMillis()
-    deployer.init
-    deployer.latch.await()
+    engine.init
+    engine.awaitTermination
     val spent = System.currentTimeMillis() - time
     show(spent,if (all) "ALL" else "Partial"+workers,NoneSol())
-//    Thread.sleep(2000)
-//    deployer ! Exit
     
   }
 }}

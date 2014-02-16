@@ -30,8 +30,8 @@ class TestWorkers {//extends FunSpec {
 	    //    val x = scala.actors.Actor.self
 	
 	    // create and run deployer
-	    val deployer = new Deployer[S,C,St](2)
-	    deployer.start()
+	    val engine = new Engine[S,C,St](2)
+//	    engine.start()
 	
 	    // create nodes
 	    val wr = new connectors.Writer(2)
@@ -55,12 +55,10 @@ class TestWorkers {//extends FunSpec {
 	    lossy(lossy.connector.ends.head) <-- wr(wr.connector.ends.head)
 	
 	    // trigger all primitives (only proactive ones will start)
-	    deployer ! Task(wr)
-	    deployer ! Task(lossy)
-	
-//	    Thread.sleep(5000)
-//	    deployer ! Exit
-	    deployer.latch.await()
+	    engine.deployer ! Task(wr)
+	    engine.deployer ! Task(lossy)
+		    
+	    engine.awaitTermination
 	    // if it terminates, then there are no more workers.
 
 	    assertEquals("data sent",wr.canStart,false) // no more data
@@ -69,29 +67,26 @@ class TestWorkers {//extends FunSpec {
 	
 	
 	@Test def TestSimpleMerger {
-	  val deployer = GenDeployer.oneStep(2)
+	  val engine = GenEngine.oneStep(2)
 	  
-	  val w1 = deployer add
+	  val w1 = engine add
 	    writer("w1",List(1,2))	  
-	  val w2 = deployer add
+	  val w2 = engine add
 	    writer("w2",List(3,4))
-	  val mrg = deployer add
+	  val mrg = engine add
 	    merger("in1","in2","out")
-	  val rd = deployer add
+	  val rd = engine add
 	    reader("rd",3)
 	  
 	  mrg("in1") <-- w1("w1")
 	  mrg("in2") <-- w2("w2")
 	  rd("rd") <-- mrg("out")
 	  
-	  deployer.init
+	  engine.init
 	  
-	  deployer.latch.await()
-
 	  assertEquals("data not fully sent",w1.canStart || w2.canStart,true) // still more data
-
-//      Thread.sleep(5000)
-//      deployer ! Exit
+	  
+	  engine.awaitTermination
 
 	}
 	

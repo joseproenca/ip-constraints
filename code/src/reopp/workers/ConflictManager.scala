@@ -3,19 +3,20 @@ package reopp.workers
 import reopp.common.Solution
 import reopp.common.Constraints
 import reopp.workers.strategies.Strategy
-import scala.actors.OutputChannel
 import scala.collection.mutable.{Map => MMap,Set => MSet}
-import scala.actors.Actor._
-import sun.org.mozilla.javascript.internal.regexp.SubString
+import akka.actor.Actor
+import akka.actor.ActorRef
 
 class ConflictManager//[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
-      (deployer: OutputChannel[Any])
-      extends scala.actors.Actor {
+//      (deployer: ActorRef)
+      extends Actor {
 
   // type alias
   type Nd = AnyRef //Node[S,C]
 //  type Wk = Worker[S,C,Str]
-  type Worker = OutputChannel[Any]
+  type Worker = ActorRef
+  
+  private val deployer = context.parent
   
   // State
   private val nodesOf : MMap[Worker,MSet[Nd]] = MMap() // INV: sync with below
@@ -31,7 +32,8 @@ class ConflictManager//[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
    *  - Done -> clear references, and send "Quit" 
    *  - Fail -> clear references, and send "Quit" 
    */
-  def act: Unit = loop ({debug("waiting"); self.react {
+//  def act: Unit = loop ({debug("waiting"); self.react {
+  def receive = {
     case Claim(nd:AnyRef) =>
       debugMsg("Claim")
       if (ownerOf contains nd) {
@@ -39,7 +41,7 @@ class ConflictManager//[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
       }
       else {
         addOwner(sender,nd)
-        debug("sending node to sender "+sender.hashCode().toString.substring(5))
+        debug("sending node to sender "+pp(sender))
         sender ! Claimed(nd)
       }
     case StratNd(st:AnyRef,nd:Nd) =>
@@ -47,7 +49,8 @@ class ConflictManager//[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
        // strategy sent to the new owner of nd IF it has not finished without this strategy.
       // (otherwise the nodes has been updated with this other solution)
       if ((ownerOf contains nd) && smaller(sender,ownerOf(nd))) {
-        debug("sending partial strat to the boss of "+ownerOf(nd)+" - "+max(ownerOf(nd)))
+        debug("sending partial strat to the boss of "+pp(ownerOf(nd))+
+        		" - "+pp(max(ownerOf(nd))))
         max(ownerOf(nd)) ! Strat(st)
       }
       else debug("Discarding received strategy. "+ownerOf.mkString(","))
@@ -95,10 +98,10 @@ class ConflictManager//[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
       }        
 
 
-    case Exit =>
-      debug(s"exiting.\n + ownerOf: ${ownerOf.mkString(",")}\n | next: ${next.mkString(",")}")
-      exit
-  }})
+    case Status =>
+      debug(s"Status:\n + ownerOf: ${ownerOf.mkString(",")}\n | next: ${next.mkString(",")}")
+//      exit
+  }
   
   private def conflict(nd:Nd,wk1:Worker,wk2:Worker): Unit = {
     if      (smaller(wk1,wk2)) {} // do nothing - wk1 has been asked to give up.
@@ -145,7 +148,7 @@ class ConflictManager//[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
   } 
   /** Adds a pair to the partial order, ASSUMING the elements were not comparable. */
   private def addPair(wk1:Worker,wk2:Worker,nd:Nd) {
-    debug(s"extended order: $wk1 < $wk2")
+    debug(s"extended order: ${pp(wk1)} < ${pp(wk2)}")
     val small = max(wk1)
     val big   = min(wk2)
     if (small != wk1) small ! GiveUp(nd)
@@ -169,7 +172,7 @@ class ConflictManager//[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
   }
   /** Drops references to a worker and its descendants. */
   private def forget(wk:Worker) {
-	debug(s"forgetting: $wk")
+	debug(s"forgetting: [${pp(wk)}]")
     if (nodesOf contains wk) {
       for (nd <- nodesOf(wk)) {
         ownerOf -= nd
@@ -208,7 +211,8 @@ class ConflictManager//[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
 //    println("[CM] "+msg)
   }
   private def debugMsg(msg:String) {
-//    debug(s" <- [${sender.hashCode().toString.substring(5)}] $msg")
+//    debug(s" <- ${pp(sender)} $msg")
   }
+  private def pp(a:AnyRef): String = "["+a.hashCode.toString.substring(5)+"]"
   
 }

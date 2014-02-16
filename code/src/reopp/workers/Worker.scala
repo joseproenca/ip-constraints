@@ -5,7 +5,11 @@ import strategies.Strategy
 import reopp.common.{OptionSol, Solution, CBuilder, Constraints}
 import reopp.common.NoneSol
 import reopp.common.SomeSol
-import scala.actors.Actor._
+import akka.actor.Actor
+import akka.actor.ActorRef
+import akka.actor.Props
+//import scala.actors.Actor._
+
 
 /**
  * Created by IntelliJ IDEA.
@@ -16,26 +20,17 @@ import scala.actors.Actor._
  */
 
 class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
-      (conflictMng: ConflictManager, strat: Str)
-      (implicit builder: CBuilder[S,C]) extends scala.actors.Actor {
+      (conflictMng: ActorRef, strat: Str)
+      (implicit builder: CBuilder[S,C]) extends Actor {
 
   // type alias
   type Nd = Node[S,C]
   type Wk = Worker[S,C,Str]
   type ActorRef = OutputChannel[Any]
 
-  // NO state (all state in the strategy).
-  
+  // NO state (all state in the strategy).  
   
 
-  /** Starting up the node with possible given node (not claimed yet) */
-  def work(node: Node[S,C]) {
-    debug("starting node - "+node.hashCode())
-        //+(if (!node.connections.values.isEmpty) node.connections.values.head.head._1 else ""))
-    // ...
-    start()
-    this ! Claim(node)
-  }
   
 //  /** Request the ConflictManager to use a node. */
 //  private def claim(node: Nd) {
@@ -43,11 +38,11 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
 //  }
   
   /** Receives requests and process them. */
-  def act(): Nothing = {debug("waiting"); self.react {
+//  def act(): Nothing = {debug("waiting"); self.react {
+  def receive = {
     case Claim(n:Nd) =>
-      debug("initial Claim (from self)")
+      debug("initial Claim (from deployer)")
       conflictMng ! Claim(n)
-      act()
     case Claimed(n:Nd) =>
       debugMsg("gotNode "+n)
       strat.register(n)
@@ -55,7 +50,7 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
     case GiveUp(n:Nd) =>
       debugMsg("giveUp")
       conflictMng ! StratNd(strat,n)
-      quitting(NoneSol())
+      context.become(quitting(NoneSol()))
     case Strat(otherStrat:Str) =>
       debugMsg("gotStrat")
       strat merge otherStrat
@@ -63,15 +58,16 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
     case QuitAndUpdate(ns:Iterable[Nd]) =>
       debugMsg("Forced to quit in advance!")
       self ! QuitAndUpdate(ns)
-      quitting(NoneSol())
-    case x => {bug(x); act}
-  }}
+      context.become(quitting(NoneSol()))
+    case x => bug(x)
+  }
   
   /** ignore every message until quitting. */
-  private def quitting(sol: OptionSol[S]): Nothing = {debug("quitting"); self.react {
+//  private def quitting(sol: OptionSol[S]): Nothing = {debug("quitting"); self.react {
+  private def quitting(sol: OptionSol[S]): Receive = {
     case Quit =>
       debug("got Quit. Bye!")
-      exit
+      context.stop(self)
     case QuitAndUpdate(ns:Iterable[Nd]) =>
       debug("updating and quitting. Bye!\n"+sol)
       for (n:Nd <- ns) {
@@ -80,21 +76,21 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
       }
 //      sender ! Updated
       conflictMng ! Updated(ns)
-      exit
+      context.stop(self)
     case Claimed(n:Nd) =>
       debug("informing about ignored claim "+n)
       conflictMng ! IgnoredClaim(n)
-      quitting(sol)
+      context.become(quitting(sol))
     case x => {bug(x); quitting(sol)}
-  }}
+  }
   
   /** Search for a solution (if possible), and expand later if necessary. */
-  private def checkSolution: Nothing = {
+  private def checkSolution {
     if (strat.canSolve) {
       val sol = strat.solve
       if (sol.isDefined) {
         conflictMng ! Success
-        quitting(sol)
+        context.become(quitting(sol))
       }
       else expand(sol)
     }
@@ -103,16 +99,15 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
   }
   
   /** Get next nodes, and claim them. Quit if fail to expand. */
-  private def expand(sol:OptionSol[S]): Nothing = {
+  private def expand(sol:OptionSol[S]) {
     val next = strat.nextNodes
     if (next.isEmpty){
       conflictMng ! Fail
-      quitting(sol)
+      context.become(quitting(sol))
     }
     else {
       for (nd <- next)
         conflictMng ! Claim(nd)
-      act()
     }
   }
   
@@ -148,11 +143,16 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
 }
 
 object Worker {
-  def apply[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
-      (node:Node[S,C],deployer: OutputChannel[Any],conflictMng: ConflictManager, strat:Str)
-      (implicit builder: CBuilder[S,C]) : Worker[S,C,Str] = {
-    val w = new Worker[S,C,Str](conflictMng,strat)
-    w.work(node)
-    w
-  }
+//  def apply[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
+//      (node:Node[S,C],deployer: OutputChannel[Any],conflictMng: ActorRef, strat:Str)
+//      (implicit builder: CBuilder[S,C]) : Worker[S,C,Str] = {
+//    val w = new Worker[S,C,Str](conflictMng,strat)
+//    w.work(node) // w ! Claim(node)
+//    w
+//  }
+  def props[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
+      (conflictMng: ActorRef, strat:Str)
+      (implicit builder: CBuilder[S,C]): Props =
+      	Props(new Worker[S,C,Str](conflictMng,strat))
+
 }

@@ -6,7 +6,7 @@ import reopp.workers.strategies.Strategy
 
 sealed abstract class Message
 
-// From Worker to Conflict manager
+// From Worker to Conflict manager (Claim also from Deployer to Worker)
 case class Claim(nd:AnyRef) extends Message
 case class IgnoredClaim(nd:AnyRef) extends Message
 case class StratNd(str:AnyRef,nd:AnyRef) extends Message
@@ -26,4 +26,4 @@ case object WorkerDone extends Message
 case class Task(nd:AnyRef) extends Message
 
 // From Deployer to Conflict manager, and from the outside to Deployer.
-case object Exit extends Message
+case object Status extends Message

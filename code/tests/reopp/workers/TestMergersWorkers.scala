@@ -72,8 +72,8 @@ class TestMergersWorkers { //extends FunSpec {
   //describe ("Workers one step traversal - tree of merges.") {
   @Test def TestOneStepTraversalTree() {
     // create and run deployer
-    val deployer = new Deployer[S,C,St2](workers)
-    deployer.start()
+    val engine = new Engine[S,C,St2](workers)
+//        deployer.start()
 
     // create reader
     val rd = new connectors.Reader(math.pow(workers,size).toInt)
@@ -97,15 +97,14 @@ class TestMergersWorkers { //extends FunSpec {
     }
 
     // start readers and writers
-    deployer ! Task(rd) //rd.init()
+    engine.deployer ! Task(rd) //rd.init()
     for (wr <- writers)
-      deployer ! Task(wr) //wr.init()
+      engine.deployer ! Task(wr) //wr.init()
 
-    Thread.sleep(9000)
-//    it ("reader is free")
-//    { assert(rd.owner == None) }
-    assertEquals("No workers",deployer.currentWorkers,0)
-    assertEquals("No tasks",deployer.pendingTasks.size,0)
+//    Thread.sleep(9000)
+    engine.awaitTermination
+    // if it terminates, there are no workers nor tasks
+    assertEquals("Reader is finished.",rd.canStart, false)
   }
 
 

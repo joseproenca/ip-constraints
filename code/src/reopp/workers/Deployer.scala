@@ -4,8 +4,12 @@ import strategies.{Strategy, StrategyBuilder}
 import reopp.common.{Constraints, Solution, CBuilder}
 import reopp.common.Connector
 import reopp.common.EmptySol
-import scala.actors.Actor._
+import akka.actor.Actor
 import java.util.concurrent.CountDownLatch
+import akka.actor.ActorSystem
+import akka.actor.Props
+import akka.actor.ActorRef
+import akka.event.Logging
 
 
 /**
@@ -17,12 +21,16 @@ import java.util.concurrent.CountDownLatch
  */
 
 class Deployer[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
-  (maxWorkers: Int)
+  (maxWorkers: Int) //, conflictManager: ActorRef)
   (implicit builder: CBuilder[S,C], sb: StrategyBuilder[S,C,Str])
-  extends scala.actors.Actor {
+  extends Actor {
 
-  private val conflictManager = new ConflictManager(this) // self only used within actor behaviour.
-  conflictManager.start
+//  debug("before creating conflict manager")
+  private val conflictManager: ActorRef =
+  	context.actorOf(Props[ConflictManager], name = "conflictMng")
+////new ConflictManager(this) // self only used within actor behaviour.
+////  conflictManager.start
+//  debug("after creating conflict manager")
 
   val latch = new CountDownLatch(1)
   
@@ -32,47 +40,21 @@ class Deployer[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
   private var tmpWorkers = List[scala.actors.Actor]()
 //  private var counter = 0
   
-  private var nodes: List[Node[S,C]] = Nil
-  
-  /** Creates a new worker (node), associated to this deployer.
-   *  Keeps track of created nodes just to allow starting all of them in one go. */
-  def add(con: => Connector[S,C]): Node[S,C] = {
-    val res = Node[S,C]((uid:Int) => con )(builder)
-    nodes ::= res
-    res
-  }
 
-  /** Creates a new worker (node), associated to this deployer.
-   *  Keeps track of created nodes just to allow starting all of them in one go.
-   *  @param deps pairs of dependent port names, Used for hybrid strategy ([[strategies.HybridStrategy]]).
-   *         For each (a,b), if 'a' is not on the border of the region, 'b' cannot be either.
-   */
-   def add(con: => Connector[S,C],deps: Iterable[(String,String)], prior:Iterable[String]): Node[S,C] = {
-    val res = Node[S,C](deps, prior, (uid:Int) => con)(builder)
-    nodes ::= res
-    res
-  }
-
-  /** Starts all nodes created with "add" in one go. */
-//  def init() = for (n <- nodes) n.init
-   def init() {
-     debug("sending nodes to self.")
-     for (n <- nodes) this ! Task(n) 
-   }
   
   /** Checks if there are allowed workers and nodes ready to start, and create workers if needed.*/
   private def requestTasks() {
     debug(s"new worker? ($currentWorkers/$maxWorkers)"+(currentWorkers < maxWorkers)+"/"+ (!pendingTasks.isEmpty))
-    if (currentWorkers < maxWorkers && !pendingTasks.isEmpty) {
+    while (currentWorkers < maxWorkers && !pendingTasks.isEmpty) {
       val nextTask = pendingTasks.dequeue
       if (nextTask.canStart) {
-	      val w = new Worker[S,C,Str](conflictManager, sb.apply)
+//	      val w = new Worker[S,C,Str](conflictManager, sb.apply)
+      	val w = context.actorOf(Worker.props[S,C,Str](conflictManager,sb.apply))
 //	      tmpWorkers ::= w
-	      w.work(nextTask)
+	      w ! Claim(nextTask)
 	      currentWorkers += 1
-	      debug(s"added worker. Now: $currentWorkers (with ${pendingTasks.size} pending tasks)")
+	      debug(s"added worker [${w.hashCode.toString.substring(5)}]. Now: $currentWorkers (with ${pendingTasks.size} pending tasks)")
       }
-      requestTasks()
     }
   }
   
@@ -82,7 +64,7 @@ class Deployer[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
     requestTasks()
   }
   
-  def act(): Nothing = {debug("waiting");self.react {
+  def receive = { //debug("waiting");self.react {
     // Sent by ConflictManager when a worker quits.
     case WorkerDone =>
       debugMsg("Worker done")
@@ -95,31 +77,32 @@ class Deployer[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
       pendingTasks enqueue node
 //      debug(s"new node. pending tasks: ${pendingTasks.size}")
       requestTasks()
-      act()
+//      act()
     }
-    case Exit =>
+    case Status =>
       debug(s"exiting. workers: $currentWorkers, tasks: $pendingTasks")
-      conflictManager ! Exit
+      conflictManager ! Status
 //      debug(tmpWorkers.mkString(","))
 //      for (w <- tmpWorkers) w ! 'STATUS // those alive will print their status...
-      exit()
-  }}
+  }
   
   private def nextMessage() {
 //	  requestTasks()
       if (currentWorkers > 0) {
-    	debug(s"still has workers: $currentWorkers (with ${pendingTasks.size} pending tasks)")
-        act()
+        debug(s"still has workers: $currentWorkers (with ${pendingTasks.size} pending tasks)")
       }
       else {
         debug("No more active workers")
-        conflictManager ! Exit
-        latch.countDown()
-        exit()        
+        // conflictManager ! Status
+        // context.stop(self)
+        context.system.shutdown
       }
   }
   
+//  val log = Logging(context.system, this)
+
   private def debug(msg: String) {
+//  	log.debug("[DDEEPPLL]"+msg)
 //    println("[DEPL] "+msg)
   }
   private def debugMsg(msg:String) {
