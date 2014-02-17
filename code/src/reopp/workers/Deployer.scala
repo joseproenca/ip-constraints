@@ -5,7 +5,6 @@ import reopp.common.{Constraints, Solution, CBuilder}
 import reopp.common.Connector
 import reopp.common.EmptySol
 import akka.actor.Actor
-import java.util.concurrent.CountDownLatch
 import akka.actor.ActorSystem
 import akka.actor.Props
 import akka.actor.ActorRef
@@ -25,17 +24,11 @@ class Deployer[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
   (implicit builder: CBuilder[S,C], sb: StrategyBuilder[S,C,Str])
   extends Actor {
 
-//  debug("before creating conflict manager")
+  // CREATING CONFLICT MANAGER under Deployer.
   private val conflictManager: ActorRef =
   	context.actorOf(Props[ConflictManager], name = "conflictMng")
-////new ConflictManager(this) // self only used within actor behaviour.
-////  conflictManager.start
-//  debug("after creating conflict manager")
 
-  /** Used to detect when the actor is finished and exits. (latch.await) */
-  val latch = new CountDownLatch(1)
   
-//  val maxWorkers: Int
   private var currentWorkers: Int = 0
   private val pendingTasks = scala.collection.mutable.Queue[Node[S,C]]()
 //  private var tmpWorkers = List[scala.actors.Actor]()
@@ -46,13 +39,13 @@ class Deployer[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
     debug(s"new worker? ($currentWorkers/$maxWorkers)"+(currentWorkers < maxWorkers)+"/"+ (!pendingTasks.isEmpty))
     while (currentWorkers < maxWorkers && !pendingTasks.isEmpty) {
       val nextTask = pendingTasks.dequeue
-      if (nextTask.canStart) {
-//	      val w = new Worker[S,C,Str](conflictManager, sb.apply)
+      if (nextTask.canStart) {        
+        // CREATING WORKER under Deployer.
       	val w = context.actorOf(Worker.props[S,C,Str](conflictManager,sb.apply))
 //	      tmpWorkers ::= w
-	      w ! Claim(nextTask)
-	      currentWorkers += 1
-	      debug(s"added worker [${w.hashCode.toString.substring(5)}]. Now: $currentWorkers (with ${pendingTasks.size} pending tasks)")
+      	w ! Claim(nextTask)
+	    currentWorkers += 1
+	    debug(s"added worker [${w.hashCode.toString.substring(5)}]. Now: $currentWorkers (with ${pendingTasks.size} pending tasks)")
       }
     }
   }
@@ -76,7 +69,6 @@ class Deployer[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
       pendingTasks enqueue node
 //      debug(s"new node. pending tasks: ${pendingTasks.size}")
       requestTasks()
-//      act()
     }
     case Status =>
       debug(s"exiting. workers: $currentWorkers, tasks: $pendingTasks")
@@ -92,8 +84,6 @@ class Deployer[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
       }
       else {
         debug("No more active workers")
-        // conflictManager ! Status
-        // context.stop(self)
         context.system.shutdown
       }
   }
