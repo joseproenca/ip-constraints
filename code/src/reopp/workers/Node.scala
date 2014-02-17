@@ -35,9 +35,6 @@ abstract class Node[S<:Solution, C<:Constraints[S,C]] {
       other -> Set((myend,otherend))
 //	val newMyEndNodes:Set[Node[S,C]] = invConnections(myend) ++ Set(other)
     invConnections  += myend -> (invConnections(myend) ++ Set(other))
-    if (myend == "w1") {
-      println(s"ADDED w1! now conns = ${connections.mkString(",")} and iCons = ${invConnections.mkString(",")}")
-    }
   }
   
   /** Marks a port as being an input port.

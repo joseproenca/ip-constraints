@@ -1,6 +1,6 @@
 package reopp.workers
 
-import org.scalatest.FunSpec
+//import org.scalatest.FunSpec
 import reopp.common.choco.{ChoConstraints, ChoSolution}
 import strategies._
 import reopp.common.guardedcommands.{GCSolution, Formula}
@@ -67,6 +67,10 @@ class TestWorkers {//extends FunSpec {
 	    
 	}
 	
+	@Test def TestVoid {
+	  println("Done ;)")
+	  assertEquals("all is good",0,0)
+	}
 	
 	@Test def TestSimpleMerger {
 	  val deployer = GenDeployer.oneStep(2)
@@ -86,13 +90,28 @@ class TestWorkers {//extends FunSpec {
 	  
 	  deployer.init
 	  
-	  deployer.latch.await()
+//	  deployer.latch.await()
 //
 //	  assertEquals("data not fully sent",w1.canStart || w2.canStart,true) // still more data
 
-//      Thread.sleep(5000)
-//      deployer ! Exit
+      Thread.sleep(5000)
+      deployer ! Exit
 
+//	  	  val w1 = deployer addId
+//	    {writer("w1",List(1,2),_)}	  
+//	  val w2 = deployer addId
+//	    (writer("w2",List(3,4),_))
+//	  val mrg = deployer addId
+//	    (merger("w1","in2","out",_))
+//	  val rd = deployer addId
+//	    (reader("rd",3,_))
+//	  
+//	  mrg("w1") <-- w1("w1")
+//	  mrg("in2") <-- w2("w2")
+//	  rd("rd") <-- mrg("out")
+
+	  
+	  
 	}
 	
 }

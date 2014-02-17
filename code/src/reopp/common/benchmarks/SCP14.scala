@@ -407,7 +407,7 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4"
     }
     
 	val deployer = if (all) GenDeployer.all(1)
-				   else     GenDeployer.oneStep(workers)
+				   else     GenDeployer.hybrid(workers)
     
 //	val counter = new Actor {
 //	  var c = n
