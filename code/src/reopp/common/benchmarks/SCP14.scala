@@ -23,7 +23,6 @@ import scala.actors.Actor._
 import scala.actors.Actor
 import reopp.common.NoneSol
 import reopp.common.guardedcommands.dataconnectors.GCReader
-import reopp.workers.Exit
 import reopp.workers.strategies.GenEngine
 
 /**
@@ -57,12 +56,12 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4"
     return
   }
   
-//  Warmup.go
+  Warmup.go
 
   
-  args(0)="pairwise"
-  args(1)="2"
-  args(2)="partial1"
+//  args(0)="pairwise"
+//  args(1)="5"
+//  args(2)="all"
 //  args(3)=""
   
   val n = Integer.parseInt(args(1))
@@ -409,38 +408,6 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4"
 	val engine = if (all) GenEngine.all(1)
 				   else     GenEngine.hybrid(workers)
     
-//	val counter = new Actor {
-//	  var c = n
-//	  var time: Long = 0
-//	  def act() = react {
-//	  	case _ =>
-//	  	  c -= 1
-////	  	  print("-"+c+"\n")
-//	  	  if (c == 0) {
-//	  		val spent = System.currentTimeMillis() - time
-//	  	    show(spent,if (all) "ALL" else "Partial"+workers,NoneSol())
-//	  	  }
-//	  	  else act()
-//	}}
-//	
-//	
-//	def genReader(i:Int) =
-//	  new GCReader("y"+i, 0, 1) {
-//		  val writerPort = reopp.common.Utils.flowVar("x"+i, uid)
-//		  val readerPort = reopp.common.Utils.flowVar("y"+i, uid)
-//		  override def update(s: OptionSol[GCSolution]) {
-//			  if (s.isDefined){
-//				  if (s.get hasFlowOn writerPort) {
-////					  println("Sent data! solution: "+s.get)
-//					 counter ! ()
-//				  }
-//				  if (s.get hasFlowOn readerPort) {
-////					 println("\nGot data - "+i+": "+s.get.getDataOn(reopp.common.Utils.dataVar("x"+i,uid)))
-//					 size -= 1
-//				  }
-//			  }
-//		  }
-//	  }
 
 	val isEven = Predicate("isEven") {
 	  case i:Int => i%2 == 0
@@ -450,7 +417,7 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4"
           List(i)) ++ 
           //for (n<-(1 to 50).toList) yield i) ++ 
       filter("x"+i,"y"+i,isEven) //++
-//      reader("x"+i)
+//      reader("y"+i)
 //      genReader(i) 
     ,Set()
     ,Set("x"+i)

@@ -48,7 +48,7 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
       strat.register(n)
       checkSolution
     case GiveUp(n:Nd) =>
-      debugMsg("giveUp")
+      debugMsg("giveUp. quitting.")
       conflictMng ! StratNd(strat,n)
       context.become(quitting(NoneSol()))
     case Strat(otherStrat:Str) =>
@@ -59,7 +59,7 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
       debugMsg("Forced to quit in advance!")
       self ! QuitAndUpdate(ns)
       context.become(quitting(NoneSol()))
-    case x => bug(x)
+    case x => bug("main - "+x)
   }
   
   /** ignore every message until quitting. */
@@ -80,8 +80,9 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
     case Claimed(n:Nd) =>
       debug("informing about ignored claim "+n)
       conflictMng ! IgnoredClaim(n)
-      context.become(quitting(sol))
-    case x => {bug(x); quitting(sol)}
+//      context.become(quitting(sol))
+    case Strat(_) => debug("ignored strategy while quitting.")
+    case x => bug("quitting - "+x) //; quitting(sol)}
   }
   
   /** Search for a solution (if possible), and expand later if necessary. */
@@ -89,8 +90,10 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
     if (strat.canSolve) {
       val sol = strat.solve
       if (sol.isDefined) {
+        debug("got solution! quitting.")
         conflictMng ! Success
         context.become(quitting(sol))
+        return
       }
       else expand(sol)
     }
@@ -102,6 +105,7 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
   private def expand(sol:OptionSol[S]) {
     val next = strat.nextNodes
     if (next.isEmpty){
+      debug("failed to expand. quitting.")
       conflictMng ! Fail
       context.become(quitting(sol))
     }
