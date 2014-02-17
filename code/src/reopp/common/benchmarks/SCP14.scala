@@ -12,19 +12,14 @@ import reopp.common.OptionSol
 import reopp.common.IntFunction
 import choco.kernel.model.variables.integer.IntegerExpressionVariable
 import choco.Choco
-import z3.scala.Z3Context
-import z3.scala.Z3AST
 import reopp.common.IntPredicate
 import reopp.common.choco.ChoConnector
 import reopp.common.choco.dataconnectors._
 import reopp.workers.Node
 import reopp.common.guardedcommands.Formula
 import reopp.common.guardedcommands.GCSolution
-import scala.actors.Actor._
-import scala.actors.Actor
 import reopp.common.NoneSol
 import reopp.common.guardedcommands.dataconnectors.GCReader
-import reopp.workers.Exit
 
 /**
  * @author Jose Proenca
