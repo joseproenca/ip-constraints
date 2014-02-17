@@ -32,15 +32,14 @@ class Deployer[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
 ////  conflictManager.start
 //  debug("after creating conflict manager")
 
+  /** Used to detect when the actor is finished and exits. (latch.await) */
   val latch = new CountDownLatch(1)
   
 //  val maxWorkers: Int
-  var currentWorkers: Int = 0
-  val pendingTasks = scala.collection.mutable.Queue[Node[S,C]]()
-  private var tmpWorkers = List[scala.actors.Actor]()
-//  private var counter = 0
+  private var currentWorkers: Int = 0
+  private val pendingTasks = scala.collection.mutable.Queue[Node[S,C]]()
+//  private var tmpWorkers = List[scala.actors.Actor]()
   
-
   
   /** Checks if there are allowed workers and nodes ready to start, and create workers if needed.*/
   private def requestTasks() {

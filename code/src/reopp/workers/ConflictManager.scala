@@ -108,8 +108,10 @@ class ConflictManager//[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
     else if (larger(wk1,wk2)) {} // do nothing - wk2 has been asked to give up.
     else if (wk1 == wk2) {} // do nothing - merging of strategies causes some nodes to be reclaimed.
     else {
-      addPair(wk1,wk2,nd)
-      wk1 ! GiveUp(nd)      
+      val repr1 = max(wk1)
+      val repr2 = min(wk2)
+      repr1 ! GiveUp(nd)
+      extendOrder(repr1,repr2)
     }
   }
   
@@ -147,13 +149,10 @@ class ConflictManager//[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
     case _ => false
   } 
   /** Adds a pair to the partial order, ASSUMING the elements were not comparable. */
-  private def addPair(wk1:Worker,wk2:Worker,nd:Nd) {
-    debug(s"extended order: ${pp(wk1)} < ${pp(wk2)}")
-    val small = max(wk1)
-    val big   = min(wk2)
-    if (small != wk1) small ! GiveUp(nd)
-    next(small) = big
-    prev(big) = small
+  private def extendOrder(wk1:Worker,wk2:Worker) {
+    debug(s"extended order: $wk1 < $wk2")
+    next(wk1) = wk2
+    prev(wk2) = wk1
 //    checkCycles(wk1,wk2) // DEBUGGING line
   }
   private def checkCycles(wk1:Worker,wk2:Worker) {

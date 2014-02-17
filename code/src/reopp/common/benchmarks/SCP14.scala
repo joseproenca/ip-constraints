@@ -60,7 +60,7 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4"
 
   
 //  args(0)="pairwise"
-//  args(1)="5"
+//  args(1)="20"
 //  args(2)="all"
 //  args(3)=""
   
@@ -419,8 +419,7 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4"
       filter("x"+i,"y"+i,isEven) //++
 //      reader("y"+i)
 //      genReader(i) 
-    ,Set()
-    ,Set("x"+i)
+    ,priority = Set("x"+i)
     )
     def connectPair(i:Int,n1:Node[GCSolution,Formula],n2:Node[GCSolution,Formula]) = {
       val ad = engine add (adrain("x"+i,"x"+(i+1)))

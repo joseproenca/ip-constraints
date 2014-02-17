@@ -22,7 +22,8 @@ class Merger extends Node[GCSolution, Formula] {
   // suggests which ends must have dataflow if "end" has also dataflow
   def guessRequirements(nd: Node[GCSolution, Formula]): Set[Node[GCSolution,Formula]] =
     if (connections contains nd) { // if the node nd is actually connected to nd
-      for ((myend,_,_) <- connections(nd)) {// set of ends
+//      for ((myend,_,_) <- connections(nd)) {// set of ends
+      for ((myend,_) <- getConnectedEndsTo(nd)) {
         if (myend == "a" || myend == "b") return invConnections("c")
         else if (myend == "c") return invConnections("a")
       }

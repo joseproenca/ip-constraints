@@ -16,7 +16,13 @@ import akka.actor.Props
  * User: jose
  * Date: 04/05/12
  * Time: 13:36
- * To change this template use File | Settings | File Templates.
+ * 
+ * A worker is responsible for claiming nodes and search for solutions
+ * within the claimed nodes, according to some given strategy.
+ * A centralised conflict manager controls whether each node can be claimed,
+ * and is the only source of communication with the worker.
+ * The implicit builder is required to describe the behaviour of connecting
+ * ends from different nodes.  
  */
 
 class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]

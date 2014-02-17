@@ -72,11 +72,10 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
     res
   }
 
-  // TODO: BROKEN!!! behaviour.sync connects local end "a" to neighbour ends "b" by "b:=a". Need the right order!
   private def neighbourConstr(node:Nd, basec:C)(builder:CBuilder[S,C]): C = {
     var c = basec
 //    var i = included
-    for ((end,ns) <- node.invConnections; n <- ns) {
+    for (n <- node.getNeighbours) {
 //      i += n
       // node connected to n!
       if (owned contains n) c = //node.behaviour.sync(n,c)
@@ -95,10 +94,18 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
     val uid2 = n2.connector.uid
     var res = basec
 
-    for ((e1,u1,e2,u2) <- n1.flowconn)
-      if (u2 == uid2) res ++= cbuilder.sync(e1,u1,e2,u2)
-    for ((e2,u2,e1,u1) <- n2.flowconn)
-      if (u1 == uid1) res ++= cbuilder.sync(e2,u2,e1,u1)
+    for (ends <- n1.getConnectedEndsTo(n2))
+      if (n1 hasSourceEnd ends._1) {
+    	  res ++= cbuilder.sync(ends._2,uid2,ends._1,uid1)
+      }
+    for (ends <- n2.getConnectedEndsTo(n1))
+      if (n2 hasSourceEnd ends._1) {
+    	  res ++= cbuilder.sync(ends._2,uid1,ends._1,uid2)
+      }    	  
+//    for ((e1,u1,e2,u2) <- n1.flowconn)
+//      if (u2 == uid2) res ++= cbuilder.sync(e1,u1,e2,u2)
+//    for ((e2,u2,e1,u1) <- n2.flowconn)
+//      if (u1 == uid1) res ++= cbuilder.sync(e2,u2,e1,u1)
     res
   }
 
@@ -107,9 +114,9 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
     val uid1 = n1.connector.uid
     var res = basec
 
-    if (n1.connections contains n2)
-      for ((end,_,_) <- n1.connections(n2))
-        res ++= cbuilder.noflow(end,uid1)
+    if (n1 connectedTo n2)
+      for (end <- n1.getConnectedEndsTo(n2))
+        res ++= cbuilder.noflow(end._1,uid1)
 
     //    println("added borded. New constraints: "+c.commands.mkString(","))
     res
@@ -118,14 +125,15 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
   def register(nds:Iterable[Nd]) {
     owned ++= nds
     fringe --= nds
-    for (nd <- nds; (_,nbs) <- nd.invConnections; nb <- nbs)
+    for (nd <- nds; nb <- nd.getNeighbours)
       extendFringe(nb)
   }
 
   def register(nd:Nd) {
     owned += nd
     fringe -= nd
-    for ((_,ns) <- nd.invConnections; n <- ns) extendFringe(n)
+    for (n <- nd.getNeighbours)
+      extendFringe(n)
   }
 
   private def extendFringe(n:Nd) {
