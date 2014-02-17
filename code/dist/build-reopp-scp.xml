@@ -12,12 +12,12 @@
     <!--this file was created by Eclipse Runnable JAR Export Wizard-->
     <!--ANT 1.7 is required                                        -->
     <target name="create_run_jar">
-        <jar destfile="reopp_scp.jar">
+        <jar destfile="reopp_scp_akka.jar">
             <manifest>
                 <attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
                 <attribute name="Rsrc-Main-Class" value="reopp.common.benchmarks.ScalaRunner"/>
                 <attribute name="Class-Path" value="."/>
-                <attribute name="Rsrc-Class-Path" value="./ com.microsoft.z3.jar choco-solver-2.1.5.jar org.sat4j.core.jar scalatest_2.10-1.9.1.jar scalaz3_2.10-2.0-J1.7.jar junit.jar org.hamcrest.core_1.3.0.v201303031735.jar scala-library.jar scala-actors.jar scala-reflect.jar"/>
+                <attribute name="Rsrc-Class-Path" value="./ com.microsoft.z3.jar choco-solver-2.1.5.jar org.sat4j.core.jar scalatest_2.10-1.9.1.jar scalaz3_2.10-2.0-J1.7.jar junit.jar org.hamcrest.core_1.3.0.v201303031735.jar scala-library.jar scala-actors.jar scala-reflect.jar akka-actors.jar typesafe-config.jar"/>
             </manifest>
             <zipfileset src="jar-in-jar-loader.zip"/>
             <fileset dir="../out/production/reopp"/>
@@ -26,6 +26,8 @@
             <zipfileset dir="../lib" includes="org.sat4j.core.jar"/>
             <zipfileset dir="../lib" includes="scalatest_2.10-1.9.1.jar"/>
             <zipfileset dir="../lib" includes="scalaz3_2.10-2.0-J1.7.jar"/>
+            <zipfileset dir="../lib" includes="typesafe-config.jar"/>
+            <zipfileset dir="../lib" includes="akka-actors.jar"/>
             <zipfileset dir="${eclipse.junit}" includes="junit.jar"/>
             <zipfileset dir="${eclipse.plugins}" 
               includes="org.hamcrest.core_1.3.0.v201303031735.jar"/>
