@@ -1,6 +1,5 @@
 package reopp.workers
 
-import actors.OutputChannel
 import strategies.Strategy
 import reopp.common.{OptionSol, Solution, CBuilder, Constraints}
 import reopp.common.NoneSol
@@ -8,22 +7,6 @@ import reopp.common.SomeSol
 import akka.actor.Actor
 import akka.actor.ActorRef
 import akka.actor.Props
-//import scala.actors.Actor._
-
-
-/**
- * Created by IntelliJ IDEA.
- * User: jose
- * Date: 04/05/12
- * Time: 13:36
- * 
- * A worker is responsible for claiming nodes and search for solutions
- * within the claimed nodes, according to some given strategy.
- * A centralised conflict manager controls whether each node can be claimed,
- * and is the only source of communication with the worker.
- * The implicit builder is required to describe the behaviour of connecting
- * ends from different nodes.  
- */
 
 class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
       (conflictMng: ActorRef, strat: Str)
@@ -32,7 +15,6 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
   // type alias
   type Nd = Node[S,C]
   type Wk = Worker[S,C,Str]
-  type ActorRef = OutputChannel[Any]
 
   // NO state (all state in the strategy).  
   
@@ -94,6 +76,7 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
   /** Search for a solution (if possible), and expand later if necessary. */
   private def checkSolution {
     if (strat.canSolve) {
+//      println("can solve... "+strat.owned.mkString(","))
       val sol = strat.solve
       if (sol.isDefined) {
         debug("got solution! quitting.")

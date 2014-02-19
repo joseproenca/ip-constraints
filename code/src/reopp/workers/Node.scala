@@ -1,7 +1,6 @@
 package reopp.workers
 
 import reopp.common._
-import actors.OutputChannel
 import reopp.common.{Connector, CBuilder, Solution, Constraints}
 
 

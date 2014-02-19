@@ -29,9 +29,10 @@ class GCNMerger(srcs: List[String], snk: String, uid: Int) extends GCConnector(s
   val c3 = True --> Neg(genSrcAnd(srcs))
 
   def genSrcAnd(lst:List[String]): Guard = lst match {
-    case x::Nil => v(x)
-    case x::xs  => v(x) and genSrcAnd(xs)
     case Nil    => True
+    case x::Nil => Neg(True) // because of the negation before the or - no restrictions if there is 1 end.
+    case x1::x2::Nil => v(x1) and v(x2)
+    case x::xs  => v(x) and genSrcAnd(xs)
   }
 
   def genData(lst:List[String]): List[GuardedCom] =

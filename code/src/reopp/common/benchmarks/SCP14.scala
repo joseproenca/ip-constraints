@@ -18,6 +18,8 @@ import reopp.common.guardedcommands.GCSolution
 import reopp.common.NoneSol
 import reopp.common.guardedcommands.dataconnectors.GCReader
 import reopp.workers.strategies.GenEngine
+import reopp.common.guardedcommands.dataconnectors.GCWriter
+import reopp.common.Connector
 
 /**
  * @author Jose Proenca
@@ -36,10 +38,11 @@ object SCP14 {
   def printHelp {
       System.err.println(
 """Wrong usage. It should be: SCP14 <connector> <size> <method>
-Possible connectors: "sensors", "transactions-spar", "transactions-sseq1",
-  "transactions-sseqn", "transactions-bpar", "transactions-bseq1",
-  "transactions-bseqn", "pairwise"
-Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4" 
+Possible connectors: "sensors", "sensortree", "transactions-spar",
+  "transactions-sseq1", "transactions-sseqn", "transactions-bpar",
+  "transactions-bseq1", "transactions-bseqn", "pairwise"
+Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4",
+  "onebyone1", "onebyone2", "onebyone4", "all0", "partial0", "onebyone0"
 """)
   }
   
@@ -50,12 +53,12 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4"
     return
   }
   
-  Warmup.go
+//  Warmup.go
 
   
-//  args(0)="pairwise"
-//  args(1)="20"
-//  args(2)="all"
+  args(0)="transactions-sseqn"
+  args(1)="3"
+  args(2)="partial1"
 //  args(3)=""
   
   val n = Integer.parseInt(args(1))
@@ -63,11 +66,29 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4"
   val smt = args(2) startsWith "smt"
   val ahc = args(2) startsWith "ahc"
   val all = args(2) startsWith "all"
-  val p1 = args(2) startsWith "partial1"
-  val p2 = args(2) startsWith "partial2"
-  val p4 = args(2) startsWith "partial4"
+  val part=args(2) startsWith "partial"
+  val obo =args(2) startsWith "onebyone"
+  val pvt = args(2) endsWith "0"
+  val t1  = args(2) endsWith "1"
+  val t2  = args(2) endsWith "2"
+  val t4  = args(2) endsWith "4"
+
   val debug = (args.size > 3) && (args(3) startsWith "debug")
 
+  val workers: Int = if (t1) 1 else if (t2) 2 else if (t4) 4 else 1 
+  if ((part||obo)&&(!(t1||t2||t4||pvt))) {
+      System.err.println("Only 1, 2, or 4 workers, or \"all\".")
+      printHelp
+      return
+  }
+    
+  val engine = if (all) GenEngine.all(1)
+               else if (part) GenEngine.hybrid(workers)
+               else if (obo)  GenEngine.oneStep(workers)
+               else GenEngine.all(1) // declared, but only constraints are used.
+
+  type S = GCSolution
+  type C = Formula
   
   def show(time:Long,mode:String,res:OptionSol[Solution]) {
       if (debug) { 
@@ -83,6 +104,7 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4"
 
   if (args(0) startsWith "sensors") {
     if (debug) println("Sensors")
+    engine.kill
     
     case class TimedTemp(temp:Int,unit:String
                     ,hour:Int,min:Int)    
@@ -126,7 +148,7 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4"
       genWriters(n) ++
       nmerger((for(i<-1 to n) yield "w"+i).toList, "w") ++
       transf("w","gTime",getTime)++
-      transf("w","gTemp",getTemp)++
+      transf("w","gTemp",getTemp) ++
       negfilter("gTime","night",night) ++
       filter("gTemp","isF",isF)++
       transf("isF","f2c",f2c) ++
@@ -135,21 +157,33 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4"
       sdrain("night","ctemp")++
       reader("ctemp")
 
+//      genWriters(n) ++
+//      nmerger((for(i<-1 to n) yield "w"+i).toList, "w") ++
+//      transf("w","gTime",getTime)++
+//      transf("w","gTemp",getTemp)++
+//      negfilter("gTime","night",night) ++
+//      filter("gTemp","isF",isF)++
+//      transf("isF","f2c",f2c) ++
+//      filter("gTemp","isC",isC)++
+//      merger("isC","f2c","ctemp") ++
+//      sdrain("night","ctemp")++
+//      reader("ctemp")
       
     // Running the experiments //
           
     if (sat) {
-      val cons = conn.getConstraints
-      cons.close
+      val cons = conn.getConstraints.close
+//      cons.close
       val time = System.currentTimeMillis()
       val res = cons.solveChocoSat
       val spent = System.currentTimeMillis() - time
       show(spent,"SAT",res)
     }
     else if (smt) {
-      val cons = conn.getConstraints
+      val cons = conn.getConstraints.close
+//      println(cons)
       val time = System.currentTimeMillis()
-      val res = cons.solveChocoX
+      val res = cons.solveChocoDyn
       val spent = System.currentTimeMillis() - time
       show(spent,"SMT",res)
     }
@@ -219,8 +253,145 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4"
         show(spent,"AHC",res)
     }
     */
+  }
+  
+  
+  //////////////////////////
+  /// Sensor Tree experiment ///
+  //////////////////////////
+
+  if (args(0) startsWith "sensortree") {
+    if (debug) println("Tree of Sensors")
     
     
+    case class TimedTemp(temp:Int,unit:String
+                    ,hour:Int,min:Int)    
+                    
+    val rand = new Random(0); // seed makes it deterministic.                    
+
+    def genTimedTemp =
+      TimedTemp((25*rand.nextFloat).toInt
+    		   ,if(rand.nextBoolean) "C" else "F"
+    		   ,(24*rand.nextFloat).toInt
+    		   ,(60*rand.nextFloat).toInt) 
+    
+    def getTime = Function("getTime"){
+    	case TimedTemp(_,_,h,m) => (h,m)
+    }
+    def getTemp = Function("getTemp"){
+    	case TimedTemp(t,u,_,_) => (t,u)
+    }
+	def f2c = Function("F2C"){
+	  case (t:Int,_) => ((t-32) * 5/9,"C")
+	}
+	def night = Predicate("night"){
+	  case (h:Int,m:Int) =>
+//	    println(s"is $h:$m night? - "+(h+60*m > 1200 || h+60*m < 420))
+	    h+60*m > 1200 ||
+	    h+60*m < 420
+	}
+	def isF = Predicate("isF"){
+	  case (_,u) => u == "F"
+	}
+	def isC = Predicate("isC"){
+	  case (_,u) => u == "C"
+	}
+	
+    
+	// build the core node of the connector
+    val mainNode = engine add(
+//      genWriters(n) ++
+//      nmerger((for(i<-1 to n) yield "w"+i).toList, "w") ++
+      transf("x","gTime",getTime)++
+      transf("x","gTemp",getTemp)++
+      negfilter("gTime","night",night) ++
+      filter("gTemp","isF",isF)++
+      transf("isF","f2c",f2c) ++
+      filter("gTemp","isC",isC)++
+      merger("isC","f2c","ctemp") ++
+      sdrain("night","ctemp")//++
+//      new GCReader("ctemp",0,n) {
+//        override def isProactive = false // passive reader
+//      }
+      //reader("ctemp")
+    )
+    // keep track of the constraints for SAT vs SMT
+    var const = mainNode.connector.getConstraints
+    
+    // make the generators of the mergers and writers
+	val height = (Math.log(n)/Math.log(2)).toInt - 1
+	
+	def addMrgLevel(sks:Iterable[(Node[S,C],String)]): Iterable[(Node[S,C],String)] = {
+      val res = scala.collection.mutable.Set[(Node[S,C],String)]()
+      for ((nd,sk) <- sks) {
+	    val newc = engine add (
+	        merger(sk+"0",sk+"1",sk),
+	        deps = Set(sk+"0"->sk,sk+"1"->sk))
+	    const ++= newc.connector.getConstraints
+	    nd(sk) <-- newc(sk)
+	    res += ((newc,sk+"0"))
+	    res += ((newc,sk+"1"))
+      }
+      res
+    } 
+    def addWriters(sks:Iterable[(Node[S,C],String)]) {
+      for ((nd,sk) <- sks) {
+        val wr = engine.add(
+            new GCWriter(sk,0,List(genTimedTemp)) {
+              override def update(s:OptionSol[S]) {
+                if (pvt) {
+//                  println("killing engine!")
+                  engine.kill
+                }
+                else super.update(s)
+              }
+            },
+//            writer(sk,List(genTimedTemp)),
+            priority = Set(sk))
+        const ++= wr.connector.getConstraints
+        nd(sk) <-- wr(sk)
+      }
+    }
+	
+    // use the generators to produce all the nodes
+    var mrg = Set[(Node[S,C],String)]((mainNode -> "x")).toIterable
+	for (h <- 0 to height) {
+	  mrg = addMrgLevel(mrg)
+	}
+    addWriters(mrg)
+
+      
+    // Running the experiments //    
+    
+    if (sat) {
+      engine.kill
+      val cons = const.close
+      val time = System.currentTimeMillis()
+      val res = cons.solveChocoSat
+      val spent = System.currentTimeMillis() - time
+      show(spent,"SAT",res)
+    }
+    else if (smt) {
+      engine.kill
+      val cons = const.close
+      val time = System.currentTimeMillis()
+      val res = cons.solveChocoDyn
+      val spent = System.currentTimeMillis() - time
+      show(spent,"SMT",res)
+    }
+    else if (all||part||obo) {
+      val time = System.currentTimeMillis()
+	  engine.init
+	  engine.awaitTermination
+	  val spent = System.currentTimeMillis() - time
+	  show(spent,
+	      (if (all) "ALL" else if (part) "Partial"+workers else "OneByOne"+workers)+
+	      (if (pvt) "-0" else ""),NoneSol())
+    }
+    else {
+      printHelp
+      return
+    }
   }
   
   ///////////////////////////
@@ -240,75 +411,132 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4"
       case x => x
     }
     val fail = Predicate("fail") {
-      case _ => false // { print("fail-"); false}
+      case _ => //false
+        { print("fail-"); false}
     }
     val success = Predicate("success") {
-      case _ => true // { print("succ-"); true }
+      case _ => //true
+        { print("succ-"); true }
     }
-    def genS(i:Int,si:Int,o:Int,f:Function,ok:Predicate,fi:Function) = {
+
+    // defining the nodes and constraints
+    val starting = engine add (
+    	writer("out1",List(1))
+    )
+    var const = starting.connector.getConstraints
+
+    def genS(i:Int,si:Int,o:Int,f:Function,ok:Predicate,fi:Function)
+    		: (Node[S,C],String,String,String,String) = {
 //      println(s"generating S from $i to $o")
-      transf("out"+i,"a"+o,f) ++
-      filter("a"+o,"out"+o,ok) ++
-      negfilter("a"+o,"b"+o,ok) ++
-      merger("b"+o,"sto"+o,"c"+o) ++
-      transf("c"+o,"sto"+si,fi)      
+      val nd = engine add (
+	      transf("out"+i,"a"+o,f) ++
+	      filter("a"+o,"out"+o,ok) ++
+	      negfilter("a"+o,"b"+o,ok) ++
+	      merger("b"+o,"sto"+o,"c"+o) ++
+	      transf("c"+o,"sto"+si,fi)
+	  )
+      const = const ++ nd.connector.getConstraints
+      (nd,"out"+i,"out"+o,"sto"+o,"sto"+si)
     }
-    def genSSeqs(from:Int,to:Int): GCConnector = to match {
-      case 0 => empty()
-      case `from` => genS(to,to,to+1,id,success,id)
-      case _ if to>0 => genS(to,to,to+1,id,success,id) ++ genSSeqs(from,to-1)
+    def genSSeqs(from:Int,to:Int): (Node[S,C],String,String,Node[S,C],String,String) = to match {
+      case 0 => throw new Exception("zero sequence not allowed")
+      case `from` =>
+        val (n,a,b,c,d) = genS(to,to,to+1,id,success,id)
+        (n,a,d,n,b,c)
+      case _ if to>0 =>
+        val (n2,e,f,n3,g,h) = genSSeqs(from,to-1)
+        val (n,a,b,c,d) = genS(to,to,to+1,id,success,id)
+        n(a) <-- n3(g)
+        n3(h) <-- n(d)
+        (n2,e,f,n,b,c)
+//        genS(to,to,to+1,id,success,id) ++ genSSeqs(from,to-1)
     }
-    def genSPars(i:Int): GCConnector = i match {
-      case 0 => empty()
-      case 1 => genS(1,-2,2,id,success,id)
-      case _ if i>0 => genS(i,-i-1,i+1,id,success,id) ++ genSPars(i-1)
+//    def genSPars(i:Int): Connector[S,C] = i match {
+//      case 0 => empty()
+//      case 1 => genS(1,-2,2,id,success,id)
+//      case _ if i>0 => genS(i,-i-1,i+1,id,success,id) ++ genSPars(i-1)
+//    }
+//    def genNoflow(i:Int): Connector[S,C] = i match {
+//      case 0 => empty()
+//      case 1 => noflow("sto2")
+//      case _ if i>0 => noflow("sto"+(i+1)) ++ genNoflow(i-1)
+//    }
+        
+    if (fst) {
+      val (nd,a,b,c,d) = genS(1,1,2,id,fail,id)
+      val (n2,e,f,n3,g,h) = genSSeqs(2,n)
+      val nf = engine add (noflow("sto"+(n+1)))
+      nd(a) <-- starting("out1")
+      n2(e) <-- nd(b)
+      nd(c) <-- n2(f)
+      n3(h) <-- nf("sto"+(n+1))
+      const = const ++ nf.connector.getConstraints
     }
-    def genNoflow(i:Int): GCConnector = i match {
-      case 0 => empty()
-      case 1 => noflow("sto2")
-      case _ if i>0 => noflow("sto"+(i+1)) ++ genNoflow(i-1)
+    else if (seq) {
+      val (n2,e,f,n3,g,h) = genSSeqs(1,n-1)
+      val (nd,a,b,c,d) = genS(n,n,n+1,id,fail,id)
+      val nf = engine add (noflow("sto"+(n+1)))
+      n2(e) <-- starting("out1")
+      nd(a) <-- n3(g)
+      n3(h) <-- nd(d)
+      nd(c) <-- nf("sto"+(n+1))
+      const = const ++ nf.connector.getConstraints
     }
-    
-	val conn = if (fst)
-	  writer("out1",List(1)) ++
-      reader("sto1",1) ++
-      genS(1,1,2,id,fail,id) ++
-      genSSeqs(2,n) ++
-      noflow("sto"+(n+1))
-    else if (seq)        
-	  writer("out1",List(1)) ++
-      reader("sto1",1) ++
-      genSSeqs(1,n-1) ++
-      genS(n,n,n+1,id,fail,id) ++
-      noflow("sto"+(n+1))
-	else
-      writer("out1",List(1)) ++
-      reader("sto1",1) ++
-      genSPars(n) ++
-      genNoflow(n)
-      
-      
-    // Running the experiments //
-          
-    if (sat) {
-      val cons = conn.getConstraints
-      cons.close
+    else if (all||part||obo) {
       val time = System.currentTimeMillis()
-      val res = cons.solveChocoSat
-      val spent = System.currentTimeMillis() - time
-      show(spent,"SAT",res)
+	  engine.init
+	  engine.awaitTermination
+	  val spent = System.currentTimeMillis() - time
+	  show(spent,
+	      (if (all) "ALL" else if (part) "Partial"+workers else "OneByOne"+workers)+
+	      (if (pvt) "-0" else ""),NoneSol())
     }
-    else if (smt) {
-      val cons = conn.getConstraints
-      val time = System.currentTimeMillis()
-      val res = cons.solveChocoDyn
-      val spent = System.currentTimeMillis() - time
-      show(spent,"SMT",res)
-    } 
-    else {
-      printHelp
-      return
-    }
+    else
+      throw new Exception("Parallel transactions not done yet.")
+        
+//	val conn = if (fst)
+//	  writer("out1",List(1)) ++
+//      reader("sto1",1) ++
+//      genS(1,1,2,id,fail,id) ++
+//      genSSeqs(2,n) ++
+//      noflow("sto"+(n+1))
+//    else if (seq)        
+//	  writer("out1",List(1)) ++
+//      reader("sto1",1) ++
+//      genSSeqs(1,n-1) ++
+//      genS(n,n,n+1,id,fail,id) ++
+//      noflow("sto"+(n+1))
+//	else
+//      writer("out1",List(1)) ++
+//      reader("sto1",1) ++
+//      genSPars(n) ++
+//      genNoflow(n)
+//      
+//      
+//    // Running the experiments //
+//          
+//    if (sat) {
+////      val cons = conn.getConstraints.close
+//      val cons = const.close
+//      val time = System.currentTimeMillis()
+//      val res = cons.solveChocoSat
+//      val spent = System.currentTimeMillis() - time
+//      engine.kill
+//      show(spent,"SAT",res)
+//    }
+//    else if (smt) {
+////      val cons = conn.getConstraints.close
+//      val cons = const.close
+//      val time = System.currentTimeMillis()
+//      val res = cons.solveChocoDyn
+//      val spent = System.currentTimeMillis() - time
+//      engine.kill
+//      show(spent,"SMT",res)
+//    } 
+//    else {
+//      printHelp
+//      return
+//    }
   }
 
   ///////////////////////////////
@@ -391,16 +619,16 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4"
   else if (args(0) startsWith "pairwise") {
     if (debug) println("Pairwise asynchronous")
 	
-    val workers: Int = if (p1) 1 else if (p2) 2 else if (p4) 4 else 0 
-//    				   else throw new RuntimeException("Only 1, 2, or 4 workers.")
-    if (!(p1||p2||p4||all)) {
-      System.err.println("Only 1, 2, or 4 workers, or \"all\".")
-      printHelp
-      return
-    }
-    
-	val engine = if (all) GenEngine.all(1)
-				   else     GenEngine.hybrid(workers)
+//    val workers: Int = if (p1) 1 else if (p2) 2 else if (p4) 4 else 0 
+////    				   else throw new RuntimeException("Only 1, 2, or 4 workers.")
+//    if (!(p1||p2||p4||all)) {
+//      System.err.println("Only 1, 2, or 4 workers, or \"all\".")
+//      printHelp
+//      return
+//    }
+//    
+//	val engine = if (all) GenEngine.all(1)
+//				   else     GenEngine.hybrid(workers)
     
 
 	val isEven = Predicate("isEven") {
@@ -438,7 +666,7 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4"
     engine.init
     engine.awaitTermination
     val spent = System.currentTimeMillis() - time
-    show(spent,if (all) "ALL" else "Partial"+workers,NoneSol())
+    show(spent,if (all) "ALL" else if (part) "Partial"+workers else "OneByOne"+workers,NoneSol())
     
   }
 }}
