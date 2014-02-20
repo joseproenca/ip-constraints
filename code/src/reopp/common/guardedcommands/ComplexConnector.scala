@@ -37,6 +37,7 @@ class ComplexConnector(val sub: List[Connector[GCSolution,Formula]], ends: List[
   }
 
   def +++(other: Connector[GCSolution,Formula]): ComplexConnector = other match {
+    // Note: could drop repeated names, if needed.
     case c: ComplexConnector => new ComplexConnector(sub ++ c.sub,ends ++ c.ends, uid)
     case _ => new ComplexConnector(other :: sub, ends ++ other.ends, uid)
   }

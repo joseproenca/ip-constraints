@@ -20,6 +20,7 @@ import reopp.common.guardedcommands.dataconnectors.GCReader
 import reopp.workers.strategies.GenEngine
 import reopp.common.guardedcommands.dataconnectors.GCWriter
 import reopp.common.Connector
+import reopp.common.guardedcommands.True
 
 /**
  * @author Jose Proenca
@@ -53,12 +54,12 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4",
     return
   }
   
-//  Warmup.go
+  Warmup.go
 
   
-  args(0)="transactions-sseqn"
-  args(1)="3"
-  args(2)="partial1"
+//  args(0)="pairwise"
+//  args(1)="40"
+//  args(2)="onebyone0"
 //  args(3)=""
   
   val n = Integer.parseInt(args(1))
@@ -86,6 +87,17 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4",
                else if (part) GenEngine.hybrid(workers)
                else if (obo)  GenEngine.oneStep(workers)
                else GenEngine.all(1) // declared, but only constraints are used.
+               
+  def wiredWriter(sk:String,dt:Any) =
+    new GCWriter(sk,0,List(dt)) {
+              override def update(s:OptionSol[S]) {
+                if (pvt) {
+//                  println("killing engine earlier! - sol:\n"+s)
+                  engine.kill
+                }
+                else super.update(s)
+              }
+            }
 
   type S = GCSolution
   type C = Formula
@@ -256,9 +268,9 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4",
   }
   
   
-  //////////////////////////
+  //////////////////////////////
   /// Sensor Tree experiment ///
-  //////////////////////////
+  //////////////////////////////
 
   if (args(0) startsWith "sensortree") {
     if (debug) println("Tree of Sensors")
@@ -337,16 +349,8 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4",
     def addWriters(sks:Iterable[(Node[S,C],String)]) {
       for ((nd,sk) <- sks) {
         val wr = engine.add(
-            new GCWriter(sk,0,List(genTimedTemp)) {
-              override def update(s:OptionSol[S]) {
-                if (pvt) {
-//                  println("killing engine!")
-                  engine.kill
-                }
-                else super.update(s)
-              }
-            },
-//            writer(sk,List(genTimedTemp)),
+            wiredWriter(sk,genTimedTemp)
+            ,
             priority = Set(sk))
         const ++= wr.connector.getConstraints
         nd(sk) <-- wr(sk)
@@ -410,18 +414,20 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4",
     val id = Function("id") {
       case x => x
     }
-    val fail = Predicate("fail") {
-      case _ => //false
-        { print("fail-"); false}
+    def fail = Predicate("fail") {
+      case _ =>
+        false
+//        { print("fail-"); false}
     }
-    val success = Predicate("success") {
-      case _ => //true
-        { print("succ-"); true }
+    def success = Predicate("success") {
+      case _ => 
+        true
+//        { print("succ-"); true }
     }
 
     // defining the nodes and constraints
     val starting = engine add (
-    	writer("out1",List(1))
+    	wiredWriter("out1",1)
     )
     var const = starting.connector.getConstraints
 
@@ -462,7 +468,15 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4",
 //      case _ if i>0 => noflow("sto"+(i+1)) ++ genNoflow(i-1)
 //    }
         
-    if (fst) {
+    if (n==1) {
+      val (nd,a,b,c,d) = genS(1,1,2,id,fail,id)
+      val nf = engine add (noflow("sto2"))
+      nd(a) <-- starting("out1")
+      nd(c) <-- nf("sto"+(n+1))
+      const = const ++ nf.connector.getConstraints
+
+    }
+    else if (fst) {
       val (nd,a,b,c,d) = genS(1,1,2,id,fail,id)
       val (n2,e,f,n3,g,h) = genSSeqs(2,n)
       val nf = engine add (noflow("sto"+(n+1)))
@@ -482,18 +496,14 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4",
       nd(c) <-- nf("sto"+(n+1))
       const = const ++ nf.connector.getConstraints
     }
-    else if (all||part||obo) {
-      val time = System.currentTimeMillis()
-	  engine.init
-	  engine.awaitTermination
-	  val spent = System.currentTimeMillis() - time
-	  show(spent,
-	      (if (all) "ALL" else if (part) "Partial"+workers else "OneByOne"+workers)+
-	      (if (pvt) "-0" else ""),NoneSol())
-    }
     else
       throw new Exception("Parallel transactions not done yet.")
-        
+
+    
+//    println("+----\n"+engine.pretty+"\n+----")
+
+    
+    
 //	val conn = if (fst)
 //	  writer("out1",List(1)) ++
 //      reader("sto1",1) ++
@@ -511,37 +521,47 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4",
 //      reader("sto1",1) ++
 //      genSPars(n) ++
 //      genNoflow(n)
-//      
-//      
-//    // Running the experiments //
-//          
-//    if (sat) {
-////      val cons = conn.getConstraints.close
-//      val cons = const.close
-//      val time = System.currentTimeMillis()
-//      val res = cons.solveChocoSat
-//      val spent = System.currentTimeMillis() - time
-//      engine.kill
-//      show(spent,"SAT",res)
-//    }
-//    else if (smt) {
-////      val cons = conn.getConstraints.close
-//      val cons = const.close
-//      val time = System.currentTimeMillis()
-//      val res = cons.solveChocoDyn
-//      val spent = System.currentTimeMillis() - time
-//      engine.kill
-//      show(spent,"SMT",res)
-//    } 
-//    else {
-//      printHelp
-//      return
-//    }
+      
+      
+    // Running the experiments //
+          
+    if (sat) {
+//      val cons = conn.getConstraints.close
+      val cons = const.close
+      val time = System.currentTimeMillis()
+      val res = cons.solveChocoSat
+      val spent = System.currentTimeMillis() - time
+      engine.kill
+      show(spent,"SAT",res)
+    }
+    else if (smt) {
+//      val cons = conn.getConstraints.close
+      val cons = const.close
+//      println(const)
+      val time = System.currentTimeMillis()
+      val res = cons.solveChocoDyn
+      val spent = System.currentTimeMillis() - time
+      engine.kill
+      show(spent,"SMT",res)
+    } 
+    else if (all||part||obo) {
+      val time = System.currentTimeMillis()
+	  engine.init
+	  engine.awaitTermination
+	  val spent = System.currentTimeMillis() - time
+	  show(spent,
+	      (if (all) "ALL" else if (part) "Partial"+workers else "OneByOne"+workers)+
+	      (if (pvt) "-0" else ""),NoneSol())
+    }
+    else {
+      printHelp
+      return
+    }
   }
 
   ///////////////////////////////
   /// Transactions - Built-in ///
-  ///////////////////////////////
+  ///////////////////////////////  
 
   else if (args(0) startsWith "transactions-b") {
     val seq = args(0) startsWith "transactions-bseq" 
@@ -551,66 +571,179 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4",
       else if (seq) println("transactions-bseq-failLast")
       else	      println("transactions-bpar")
     }
- 
+    
     val id = Function("id") {
       case x => x
     }
-    val fail = Predicate("fail") {
-      case _ => false //{ print("fail-"); false}
+    def fail = Predicate("fail") {
+      case _ =>
+//        false
+        { print("fail-"); false}
     }
-    val success = Predicate("success") {
-      case _ => true //{ print("succ-"); true }
+    def success = Predicate("success") {
+      case _ => 
+//        true
+        { print("succ-"); true }
     }
-    def genB(i:Int,o:Int,f:Function,ok:Predicate,fi:Function) = {
-      transf("out"+i,"a"+o,f,fi) ++
-      filter("a"+o,"out"+o,ok) ++
-      sdrain("a"+o,"out"+o)
+
+    // defining the nodes and constraints
+    val starting = engine add (
+    	wiredWriter("out1",1)
+    )
+    var const = starting.connector.getConstraints
+
+    def genB(i:Int,o:Int,f:Function,ok:Predicate,fi:Function)
+    		: (Node[S,C],String,String) = {
+//      println(s"generating S from $i to $o")
+      val nd = engine add (
+          transf("out"+i,"a"+o,f,fi) ++
+          filter("a"+o,"out"+o,ok) ++
+          sdrain("a"+o,"out"+o)
+	  )
+      const = const ++ nd.connector.getConstraints
+      (nd,"out"+i,"out"+o)
     }
-    def genBSeqs(from:Int,to:Int): GCConnector = to match {
-      case 0 => empty()
-      case `from` => genB(to,to+1,id,success,id)
-      case _ if to>0 => genB(to,to+1,id,success,id) ++ genBSeqs(from,to-1)
+    def genBSeqs(from:Int,to:Int): (Node[S,C],String,Node[S,C],String) = to match {
+      case 0 => throw new Exception("zero sequence not allowed")
+      case `from` =>
+        val (n,a,b) = genB(to,to+1,id,success,id)
+        (n,a,n,b)
+      case _ if to>0 =>
+        val (n2,e,n3,g) = genBSeqs(from,to-1)
+        val (n,a,b) = genB(to,to+1,id,success,id)
+        n(a) <-- n3(g)
+        (n2,e,n,b)
     }
-    def genBPars(i:Int): GCConnector = i match {
-      case 0 => empty()
-      case 1 => genB(1,2,id,success,id)
-      case _ if i>0 => genB(i,i+1,id,success,id) ++ genBPars(i-1)
+        
+    if (n==1) {
+      val (nd,a,b) = genB(1,2,id,fail,id)
+      nd(a) <-- starting("out1")
     }
-    
-    val conn = if (fst)
-      writer("out1",List(1)) ++
-      genB(1,2,id,fail,id) ++
-      genBSeqs(2,n)
-    else if (seq)        
-	  writer("out1",List(1)) ++
-      genBSeqs(1,n-1) ++
-      genB(n,n+1,id,fail,id)
+    else if (fst) {
+      val (nd,a,b) = genB(1,2,id,fail,id)
+      val (n2,e,n3,g) = genBSeqs(2,n)
+      nd(a) <-- starting("out1")
+      n2(e) <-- nd(b)
+    }
+    else if (seq) {
+      val (n2,e,n3,g) = genBSeqs(1,n-1)
+      val (nd,a,b) = genB(n,n+1,id,fail,id)
+      n2(e) <-- starting("out1")
+      nd(a) <-- n3(g)
+    }
     else
-      writer("out1",List(1)) ++
-      genBPars(n)
-      
+      throw new Exception("Parallel transactions not done yet.")
+
+    
+//    println("+----\n"+engine.pretty+"\n+----")
+
     // Running the experiments //
           
     if (sat) {
-      val cons = conn.getConstraints
-      cons.close
+//      val cons = conn.getConstraints.close
+      val cons = const.close
       val time = System.currentTimeMillis()
       val res = cons.solveChocoSat
       val spent = System.currentTimeMillis() - time
+      engine.kill
       show(spent,"SAT",res)
     }
     else if (smt) {
-      val cons = conn.getConstraints
+//      val cons = conn.getConstraints.close
+      val cons = const.close
       val time = System.currentTimeMillis()
       val res = cons.solveChocoDyn
       val spent = System.currentTimeMillis() - time
+      engine.kill
       show(spent,"SMT",res)
     } 
+    else if (all||part||obo) {
+      val time = System.currentTimeMillis()
+	  engine.init
+	  engine.awaitTermination
+	  val spent = System.currentTimeMillis() - time
+	  show(spent,
+	      (if (all) "ALL" else if (part) "Partial"+workers else "OneByOne"+workers)+
+	      (if (pvt) "-0" else ""),NoneSol())
+    }
     else {
       printHelp
       return
     }
   }
+  
+//  //////////////////////////////////////////
+//  /// Transactions - Built-in - no nodes ///
+//  //////////////////////////////////////////
+//
+//  else if (args(0) startsWith "transactions-b") {
+//    val seq = args(0) startsWith "transactions-bseq" 
+//    val fst = args(0) startsWith "transactions-bseq1" 
+//    if (debug) {
+//      if (fst)      println("transactions-bseq-failFst")
+//      else if (seq) println("transactions-bseq-failLast")
+//      else	      println("transactions-bpar")
+//    }
+// 
+//    val id = Function("id") {
+//      case x => x
+//    }
+//    val fail = Predicate("fail") {
+//      case _ => false //{ print("fail-"); false}
+//    }
+//    val success = Predicate("success") {
+//      case _ => true //{ print("succ-"); true }
+//    }
+//    def genB(i:Int,o:Int,f:Function,ok:Predicate,fi:Function) = {
+//      transf("out"+i,"a"+o,f,fi) ++
+//      filter("a"+o,"out"+o,ok) ++
+//      sdrain("a"+o,"out"+o)
+//    }
+//    def genBSeqs(from:Int,to:Int): GCConnector = to match {
+//      case 0 => empty()
+//      case `from` => genB(to,to+1,id,success,id)
+//      case _ if to>0 => genB(to,to+1,id,success,id) ++ genBSeqs(from,to-1)
+//    }
+//    def genBPars(i:Int): GCConnector = i match {
+//      case 0 => empty()
+//      case 1 => genB(1,2,id,success,id)
+//      case _ if i>0 => genB(i,i+1,id,success,id) ++ genBPars(i-1)
+//    }
+//    
+//    val conn = if (fst)
+//      writer("out1",List(1)) ++
+//      genB(1,2,id,fail,id) ++
+//      genBSeqs(2,n)
+//    else if (seq)        
+//	  writer("out1",List(1)) ++
+//      genBSeqs(1,n-1) ++
+//      genB(n,n+1,id,fail,id)
+//    else
+//      writer("out1",List(1)) ++
+//      genBPars(n)
+//      
+//    // Running the experiments //
+//          
+//    if (sat) {
+//      val cons = conn.getConstraints
+//      cons.close
+//      val time = System.currentTimeMillis()
+//      val res = cons.solveChocoSat
+//      val spent = System.currentTimeMillis() - time
+//      show(spent,"SAT",res)
+//    }
+//    else if (smt) {
+//      val cons = conn.getConstraints
+//      val time = System.currentTimeMillis()
+//      val res = cons.solveChocoDyn
+//      val spent = System.currentTimeMillis() - time
+//      show(spent,"SMT",res)
+//    } 
+//    else {
+//      printHelp
+//      return
+//    }
+//  }
   
   /////////////////////////////
   /// Parallel asyncrhonous ///
@@ -619,24 +752,14 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4",
   else if (args(0) startsWith "pairwise") {
     if (debug) println("Pairwise asynchronous")
 	
-//    val workers: Int = if (p1) 1 else if (p2) 2 else if (p4) 4 else 0 
-////    				   else throw new RuntimeException("Only 1, 2, or 4 workers.")
-//    if (!(p1||p2||p4||all)) {
-//      System.err.println("Only 1, 2, or 4 workers, or \"all\".")
-//      printHelp
-//      return
-//    }
-//    
-//	val engine = if (all) GenEngine.all(1)
-//				   else     GenEngine.hybrid(workers)
-    
+    var const = Formula(True-->True)
 
 	val isEven = Predicate("isEven") {
 	  case i:Int => i%2 == 0
 	}
 	def genPair(i:Int) = engine add (
-      writer("x"+i,
-          List(i)) ++ 
+      wiredWriter("x"+i,
+          i) ++ 
           //for (n<-(1 to 50).toList) yield i) ++ 
       filter("x"+i,"y"+i,isEven) //++
 //      reader("y"+i)
@@ -647,12 +770,14 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4",
       val ad = engine add (adrain("x"+i,"x"+(i+1)))
       ad("x"+i)  <-- n1("x"+i)
       ad("x"+(i+1))  <-- n2("x"+(i+1))
+      const = const ++ ad.connector.getConstraints
       ad
     } 
     
     var prev = genPair(1) // n >= 1
     for (i <- 2 to n) {
       val next = genPair(i)
+      const = const ++ next.connector.getConstraints
       connectPair(i-1,prev,next)
       prev = next
     }
@@ -662,11 +787,44 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4",
 //    counter.time = System.currentTimeMillis()
 //    counter.start
     
-    val time = System.currentTimeMillis()
-    engine.init
-    engine.awaitTermination
-    val spent = System.currentTimeMillis() - time
-    show(spent,if (all) "ALL" else if (part) "Partial"+workers else "OneByOne"+workers,NoneSol())
+//    val time = System.currentTimeMillis()
+//    engine.init
+//    engine.awaitTermination
+//    val spent = System.currentTimeMillis() - time
+//    show(spent,if (all) "ALL" else if (part) "Partial"+workers else "OneByOne"+workers,NoneSol())
+    
+    
+    if (sat) {
+//      val cons = conn.getConstraints.close
+      val cons = const.close
+      val time = System.currentTimeMillis()
+      val res = cons.solveChocoSat
+      val spent = System.currentTimeMillis() - time
+      engine.kill
+      show(spent,"SAT",res)
+    }
+    else if (smt) {
+//      val cons = conn.getConstraints.close
+      val cons = const.close
+      val time = System.currentTimeMillis()
+      val res = cons.solveChocoDyn
+      val spent = System.currentTimeMillis() - time
+      engine.kill
+      show(spent,"SMT",res)
+    } 
+    else if (all||part||obo) {
+      val time = System.currentTimeMillis()
+	  engine.init
+	  engine.awaitTermination
+	  val spent = System.currentTimeMillis() - time
+	  show(spent,
+	      (if (all) "ALL" else if (part) "Partial"+workers else "OneByOne"+workers)+
+	      (if (pvt) "-0" else ""),NoneSol())
+    }
+    else {
+      printHelp
+      return
+    }    
     
   }
 }}

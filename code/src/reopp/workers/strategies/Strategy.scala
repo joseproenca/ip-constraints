@@ -49,26 +49,23 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
     if (owned.isEmpty) return NoneSol()
 
     // get first node and behaviour
-    val init = owned.head
-    val behh = init.connector
+    val fstNode = owned.head
+    val fstConn = fstNode.connector
 
-    // collect it's constraints + neighbour constraints
-//    var  (c,included)  = neighbourConstr(init,Set(),beh.constraints)
-    var c = neighbourConstr(init,behh.getConstraints)(builder)
+    //println("building neighbour constraints = border + sync")
+    var c = neighbourConstr(fstNode,fstConn.getConstraints)(builder)
 
     // collect the constraints + neighbour constraints of owned ports,
     // avoiding adding repeated neighbours (via "included") -- DROPPED (reopp.common neighbours of 2 nodes must be added 2x)
-    for (n <- (owned - init)) {
+    for (n <- (owned - fstNode)) {
       c ++= n.connector.getConstraints
       c = neighbourConstr(n,c)(builder)
-//      val pair = neighbourConstr(n,included,c)
-//      c = pair._1; included = pair._2
     }
 
-//    println("solving: "+c)
+    //println("solving: "+c)
     val res = c.solve(tried)
-//    if (res.isDefined) debug("GOT SOL!!")
-//    else debug("failed")
+    //if (res.isDefined) println("-------------\nSolved:\n"+res.get)
+    //else println("failed")
     res
   }
 
@@ -78,12 +75,14 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
     for (n <- node.getNeighbours) {
 //      i += n
       // node connected to n!
-      if (owned contains n) c = //node.behaviour.sync(n,c)
-        sync(node,n,c)(builder)
-
+      if (owned contains n) {
+        c = sync(node,n,c)(builder)
+      }
       // node makes border with possible sync region
-      else c = //node.behaviour.border(n,c)
-        border(node,n,c)(builder)
+      else {
+        c = border(node,n,c)(builder)
+      }
+        
     }
     c
   }
@@ -114,9 +113,13 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
     val uid1 = n1.connector.uid
     var res = basec
 
-    if (n1 connectedTo n2)
-      for (end <- n1.getConnectedEndsTo(n2))
+    if (n1 connectedTo n2) {
+      //println(s"connected: $n1 -- $n2")
+      for (end <- n1.getConnectedEndsTo(n2)) {
+        //println("noflow at "+end._1)
         res ++= cbuilder.noflow(end._1,uid1)
+      }
+    }
 
     //    println("added borded. New constraints: "+c.commands.mkString(","))
     res

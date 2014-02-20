@@ -83,7 +83,7 @@ class Deployer[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
         debug(s"still has workers: $currentWorkers (with ${pendingTasks.size} pending tasks)")
       }
       else {
-        debug("No more active workers")
+        println("No more active workers")
         context.system.shutdown
       }
   }

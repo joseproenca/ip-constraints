@@ -20,7 +20,7 @@ class Engine[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
 //  (maxWorkers: Int)
 //  (implicit builder: CBuilder[S,C], sb: StrategyBuilder[S,C,Str])
 	
-  private val system = ActorSystem("System")
+  private val system = ActorSystem("Workers")
 //  private val conflictManager =
 //    system.actorOf(Props[ConflictManager], name = "conflictMng")
 
@@ -61,12 +61,16 @@ class Engine[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
      for (n <- nodes) deployer ! Task(n) 
   }
   
+  /** Shutdown the actor system. */
   def kill =
   	system.shutdown
   
-  
+  /** suspend until the actor system is shutdown. */
   def awaitTermination =
   	system.awaitTermination
+  	
+  def pretty =
+    (for (n<-nodes) yield (n.pretty)).mkString("\n")
    
   private def debug(msg: String) {
 //    println("[DEPL] "+msg)
