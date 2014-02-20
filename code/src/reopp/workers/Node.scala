@@ -30,8 +30,10 @@ abstract class Node[S<:Solution, C<:Constraints[S,C]] {
 
   /** Adds a new connection between a local end and a remote end. */
   def addConnection(myend:String,otherend:String,other:Node[S,C]) {
-    connections +=
-      other -> Set((myend,otherend))
+    if (connections contains other)
+      connections += other -> (connections(other)+((myend,otherend)))
+    else
+        connections += other -> Set((myend,otherend))
 //	val newMyEndNodes:Set[Node[S,C]] = invConnections(myend) ++ Set(other)
     invConnections  += myend -> (invConnections(myend) ++ Set(other))
   }
@@ -64,18 +66,26 @@ abstract class Node[S<:Solution, C<:Constraints[S,C]] {
 
   // Auxiliar functions
 
+  /** checks if it can start, i.e., if it has a proactive connector. */
   def canStart(): Boolean = {
 //    println("INIT? nd@["+hashCode()+"] "+connector.isProactive)
 //    if (connector.isProactive) deployer ! this
     connector.isProactive
   }
 
+  /** returns its end with a given local name. */
   def apply(e:String): End[S,C] = new End(this,e)
 
   override def toString = 
     //s"nd[${hashCode.toString.substring(5)}]"
     s"{${connector.ends.mkString(".")}}"
 
+  /** show connections of the node as a string. */
+  def pretty =
+    toString + " -- "+invConnections.map(x=>s"${x._1}->${x._2.mkString("-")}").mkString("{"," ,", "}")
+//    toString + " \\- "+connections.map(x=>s"${x._1}->${x._2.mkString("-")}").mkString("{"," ,", "}")
+
+    
 //  /**
 //   * Add to connections from this and the other node, so we know how
 //   * to traverse the graph of nodes.
