@@ -39,11 +39,10 @@ object SCP14 {
   def printHelp {
       System.err.println(
 """Wrong usage. It should be: SCP14 <connector> <size> <method>
-Possible connectors: "sensors", "sensortree", "transactions-spar",
+Possible connectors: "sensors", "sensortree", "sensortreetriv",  "transactions-spar",
   "transactions-sseq1", "transactions-sseqn", "transactions-bpar",
   "transactions-bseq1", "transactions-bseqn", "pairwise"
-Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4",
-  "onebyone1", "onebyone2", "onebyone4", "all0", "partial0", "onebyone0"
+Possible methods: "sat", "smt", "all", "partial"<n>, "onebyone"<n>, "all0"
 """)
   }
   
@@ -57,9 +56,9 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4",
   Warmup.go
 
   
-//  args(0)="pairwise"
-//  args(1)="40"
-//  args(2)="onebyone0"
+//  args(0)="sensortree"
+//  args(1)="1"
+//  args(2)="all1"
 //  args(3)=""
   
   val n = Integer.parseInt(args(1))
@@ -69,19 +68,20 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4",
   val all = args(2) startsWith "all"
   val part=args(2) startsWith "partial"
   val obo =args(2) startsWith "onebyone"
-  val pvt = args(2) endsWith "0"
-  val t1  = args(2) endsWith "1"
-  val t2  = args(2) endsWith "2"
-  val t4  = args(2) endsWith "4"
+//  val pvt = args(2) endsWith "0"
+
+  val nat = "[a-zA-Z]".r.replaceAllIn(args(2),"")
+  val pvt = nat == "0"    
+  val workers = if (nat matches "[0-9]+") nat.toInt else 1
 
   val debug = (args.size > 3) && (args(3) startsWith "debug")
 
-  val workers: Int = if (t1) 1 else if (t2) 2 else if (t4) 4 else 1 
-  if ((part||obo)&&(!(t1||t2||t4||pvt))) {
-      System.err.println("Only 1, 2, or 4 workers, or \"all\".")
-      printHelp
-      return
-  }
+//  val workers: Int = if (t1) 1 else if (t2) 2 else if (t4) 4 else 1 
+//  if ((part||obo)&&(!(t1||t2||t4||pvt))) {
+//      System.err.println("Only 1, 2, or 4 workers, or \"all\".")
+//      printHelp
+//      return
+//  }
     
   val engine = if (all) GenEngine.all(1)
                else if (part) GenEngine.hybrid(workers)
@@ -275,6 +275,10 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4",
   if (args(0) startsWith "sensortree") {
     if (debug) println("Tree of Sensors")
     
+    // if "triv" is part of the name, then night predicate always fails,
+    // to make sure there is always dataflow.
+    val forceNight = args(0) startsWith "sensortreetriv"
+    
     
     case class TimedTemp(temp:Int,unit:String
                     ,hour:Int,min:Int)    
@@ -299,8 +303,10 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4",
 	def night = Predicate("night"){
 	  case (h:Int,m:Int) =>
 //	    println(s"is $h:$m night? - "+(h+60*m > 1200 || h+60*m < 420))
-	    h+60*m > 1200 ||
-	    h+60*m < 420
+	    // night means between 20h and 7h.
+	    !forceNight &&
+	    (h+60*m > 1200 ||
+	     h+60*m < 420)
 	}
 	def isF = Predicate("isF"){
 	  case (_,u) => u == "F"
@@ -331,7 +337,8 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4",
     var const = mainNode.connector.getConstraints
     
     // make the generators of the mergers and writers
-	val height = (Math.log(n)/Math.log(2)).toInt - 1
+//	val height = (Math.log(n)/Math.log(2)).toInt - 1
+    val height = n
 	
 	def addMrgLevel(sks:Iterable[(Node[S,C],String)]): Iterable[(Node[S,C],String)] = {
       val res = scala.collection.mutable.Set[(Node[S,C],String)]()
@@ -393,6 +400,7 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4",
 	      (if (pvt) "-0" else ""),NoneSol())
     }
     else {
+      engine.kill
       printHelp
       return
     }
@@ -414,12 +422,12 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4",
     val id = Function("id") {
       case x => x
     }
-    def fail = Predicate("fail") {
+    val fail = Predicate("fail") {
       case _ =>
         false
 //        { print("fail-"); false}
     }
-    def success = Predicate("success") {
+    val success = Predicate("success") {
       case _ => 
         true
 //        { print("succ-"); true }
@@ -554,6 +562,7 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4",
 	      (if (pvt) "-0" else ""),NoneSol())
     }
     else {
+      engine.kill
       printHelp
       return
     }
@@ -575,15 +584,15 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4",
     val id = Function("id") {
       case x => x
     }
-    def fail = Predicate("fail") {
+    val fail = Predicate("fail") {
       case _ =>
-//        false
-        { print("fail-"); false}
+        false
+//        { print("fail-"); false}
     }
-    def success = Predicate("success") {
+    val success = Predicate("success") {
       case _ => 
-//        true
-        { print("succ-"); true }
+        true
+//        { print("succ-"); true }
     }
 
     // defining the nodes and constraints
@@ -667,6 +676,7 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4",
 	      (if (pvt) "-0" else ""),NoneSol())
     }
     else {
+      engine.kill
       printHelp
       return
     }
@@ -822,6 +832,7 @@ Possible methods: "sat", "smt", "all", "partial1", "partial2", "partial4",
 	      (if (pvt) "-0" else ""),NoneSol())
     }
     else {
+      engine.kill
       printHelp
       return
     }    
