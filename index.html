@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="PICC : Patial and Interactive Coordination Constraints for Reo" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>PICC</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/joseproenca/ip-constraints">View on GitHub</a>
+
+          <h1 id="project_title">PICC</h1>
+          <h2 id="project_tagline">Patial and Interactive Coordination Constraints for Reo</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/joseproenca/ip-constraints/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/joseproenca/ip-constraints/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <p>This project encodes in <a href="http://www.scala-lang.org">Scala</a> a constraint-based engine for running connectors based on <a href="http://reo.project.cwi.nl">Reo</a>.</p>
+
+<p>The coordination engine operates in rounds, each of which proceeds by collecting constraints from components and the connector that coordinates them, and then solving the constraints. Components perform blocking reads and writes on ports, which are converted into constraints stating that they want to output or input data. A solution to the constraints describes how data flows between the components, after which some reads and writes may succeed. Each round is considered to be an atomic (or synchronous) step. Between rounds the states of the components and connectors may change.</p>
+
+<p>In practice, connectors are specified as the composition of simpler primitive connectors, and each of these primitive connectors specifies:</p>
+
+<ul>
+<li><p>its coordination constraints; and</p></li>
+<li><p>how to update its state based on the solution for the last round.</p></li>
+</ul><p>To give a flavour of how to define primitive connectors, a few examples of primitive connectors can be found in <a href="code/src/reopp/common/guardedcommands/dataconnectors">Connectors</a>.</p>
+
+<p>Examples of some more complex connectors built using these primitive ones can be found in <a href="code/src/reopp/common/examples">Examples</a>.</p>
+
+
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">PICC maintained by <a href="https://github.com/joseproenca">joseproenca</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
