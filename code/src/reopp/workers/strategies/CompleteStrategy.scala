@@ -29,7 +29,10 @@ class CompleteStrategy[S <: Solution, C <: Constraints[S, C]] extends Strategy[S
   override def canSolve = fringe.isEmpty
   
   // Find the next nodes (from the fringe) to expand to.
-  def nextNodes = if (!fringe.isEmpty) Set(fringe.head) else Set()
+  def nextNodes =
+    if (!fringe.isEmpty) //Set(fringe.head)
+      fringe.toSet
+    else Set()
 
 }
 

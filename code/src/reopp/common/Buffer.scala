@@ -114,15 +114,15 @@ class Buffer {
    * (We could modify the 'calculatedF' map to be a nested map to avoid iteration.)
    * @param f function to be reverted
    * @param undo reverting function
-   * @param data possible successful data, that must not be reverted
+   * @param arg possible successful data used as argument, that must not be reverted
    */
-  def rollback(f: Function, undo: Function, data: Option[Any]) {
+  def rollback(f: Function, undo: Function, arg: Option[Any]) {
 //    print("rollbacking "+f+"("+data+") with "+undo)
 //    println(" @"+hashCode+calculatedF.keys.mkString("[",",","]"))
     for (((f2,d),dres) <- calculatedF) {
 //      print(" - "+f2+"("+d+")")
       if (f2 == f) {
-        if (!data.isDefined || (data.get != d)) {
+        if (!arg.isDefined || (arg.get != d)) {
 //          println(" *** succeeded - rollingback ***" +f+"("+d+") = "+ dres+" - except "+data)
           undo.calculate(d,dres)
         }
@@ -133,7 +133,6 @@ class Buffer {
 //    println(" done.")
   }
 
-//  def rollbackAll()
   
   /**
    * Imports another buffer in a conservative approach:

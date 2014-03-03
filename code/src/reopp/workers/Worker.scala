@@ -75,6 +75,7 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
   
   /** Search for a solution (if possible), and expand later if necessary. */
   private def checkSolution {
+    debug("can solve? "+strat.canSolve)
     if (strat.canSolve) {
 //      println("can solve... "+strat.owned.mkString(","))
       val sol = strat.solve
@@ -87,7 +88,7 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
       else expand(sol)
     }
     // else (cannot solve or failed to solve)
-    expand(NoneSol())
+    else expand(NoneSol())
   }
   
   /** Get next nodes, and claim them. Quit if fail to expand. */

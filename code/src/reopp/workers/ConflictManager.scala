@@ -84,7 +84,7 @@ class ConflictManager//[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
       debugMsg("Ignored claim - maybe forgetting owner.")
       // everything should be fine, BUT if it was from an old claim from a worker that was
       //  forgotten when the claim was received, then this worker needs to be re-forgotten.
-      if ((ownerOf(nd) == sender) ) {
+      if ( ownerOf.contains(nd) && (ownerOf(nd) == sender) ) {
     	  if (!(next contains sender)) { // sender is still the main owner!
 	          debug("Fixing wrong claim of a forgotten worker.")
 	    	  if (prev contains sender) {    	    
