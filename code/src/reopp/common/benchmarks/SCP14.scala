@@ -19,7 +19,6 @@ import reopp.common.NoneSol
 import reopp.common.guardedcommands.dataconnectors.GCReader
 import reopp.workers.strategies.GenEngine
 import reopp.common.guardedcommands.dataconnectors.GCWriter
-import reopp.common.Connector
 import reopp.common.guardedcommands.True
 
 /**
