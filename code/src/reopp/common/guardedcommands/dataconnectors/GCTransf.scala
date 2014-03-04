@@ -14,19 +14,17 @@ import reopp.common.guardedcommands.Var
  */
 
 class GCTransf(a: String, b: String, uid: Int, f: Function) extends GCConnector(List(a,b), uid) {
-  private val av = Var(flowVar(a,uid))
-  private val bv = Var(flowVar(b,uid))
 
-  var constraints = Formula(
-    av <-> bv
+  private def constraints = Formula(
+    a <-> b
   )
 
-  if (useData) constraints ++=
-    av --> (bv := (f,av))  // FunAssgn(dataVar(b,uid), dataVar(a,uid), f)
+  private def dataConstraints = constraints ++
+    (a --> (b := (f,a)))  // FunAssgn(dataVar(b,uid), dataVar(a,uid), f)
 
   if (useCC3) throw new Exception("CC3 not implemented")
 
-  def getConstraints = constraints
+  def getConstraints = if (useData) dataConstraints else constraints
 }
 
 class GCTTransf[A](a: String, b: String, uid: Int, f: (A) => Any)

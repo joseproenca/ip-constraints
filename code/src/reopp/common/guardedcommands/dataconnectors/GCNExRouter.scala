@@ -13,40 +13,40 @@ import reopp.common.guardedcommands._
  */
 
 class GCNExRouter(src: String, snks: List[String], uid: Int) extends GCConnector(src::snks, uid) {
-  def v(x:String) = Var(flowVar(x, uid))
+//  def v(x:String) = Var(flowVar(x, uid))
 
 
-  val orSnks = genSnkOr(snks)
-  def genSnkOr(lst:List[String]): Guard = lst match {
-    case x::Nil => v(x)
-    case x::xs  => v(x) or genSnkOr(xs)
+  private def orSnks = genSnkOr(snks)
+  private def genSnkOr(lst:List[String]): Guard = lst match {
+    case x::Nil => x
+    case x::xs  => x or genSnkOr(xs)
     case Nil    => Neg(True)
   }
 
-  def genSnkAnd(lst:List[String]): Guard = lst match {
-    case x::Nil => v(x)
-    case x::xs  => v(x) and genSnkAnd(xs)
+  private def genSnkAnd(lst:List[String]): Guard = lst match {
+    case x::Nil => x
+    case x::xs  => x and genSnkAnd(xs)
     case Nil    => True
   }
 
-  def genData(lst:List[String]): List[GuardedCom] =
-    for (snk <- snks) yield v(snk) --> VarAssgn(dataVar(snk,uid),dataVar(src,uid))
+  private def genData(lst:List[String]): List[GuardedCom] =
+    for (snk <- snks) yield snk --> VarAssgn(dataVar(snk,uid),dataVar(src,uid))
 
-  val c1 = v(src) --> orSnks
-  val c2 = orSnks --> v(src)
-  val c3 = if (snks.tail.isEmpty) True else Neg(genSnkAnd(snks))
+  private def c1 = src --> orSnks
+  private def c2 = orSnks --> src
+  private def c3 = if (snks.tail.isEmpty) True else Neg(genSnkAnd(snks))
 
-  var constraints = Formula(
+  private def constraints = Formula(
     c1,
     c2,
     c3
   )
 
-  if (useData) constraints ++= genData(snks)
+  private def dataConstraints = constraints ++ genData(snks)
 
   if (useCC3) throw new Exception("CC3 not implemented")
 
-  def getConstraints = constraints
+  def getConstraints = if (useData) dataConstraints else constraints
 
   //  var constraints = Formula(Set(
 //    av --> SGuard(bv or cv),

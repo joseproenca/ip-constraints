@@ -14,19 +14,14 @@ import reopp.common.guardedcommands.Var
  */
 
 class GCADrain (a: String, b: String, uid: Int) extends GCConnector(List(a,b), uid) {
-  val av = Var(flowVar(a,uid))
-  val bv = Var(flowVar(b,uid))
-  val asr = Var(srcVar(a,uid))
-  val bsk = Var(snkVar(b,uid))
 
-  private var constraints: Formula = !(av and bv)
 
-  if (useCC3)
-    constraints ++= Set(
-      av --> bsk,
-      bv --> asr,
-      (!av /\ !bv) --> (!asr /\ !bsk)
+  def getConstraints = if (!useCC3)
+	  !(a and b)
+    else Formula(
+      !(a and b),
+      a --> sk(b),
+      b --> sr(a),
+      (!a /\ !b) --> (!sr(a) /\ !sk(b))
     )
-
-  def getConstraints = constraints
 }

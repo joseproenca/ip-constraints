@@ -35,24 +35,24 @@ class Engine[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
    *  @param deps pairs of dependent port names, Used for hybrid strategy ([[strategies.HybridStrategy]]).
    *         For each (a,b), if 'a' is not on the border of the region, 'b' cannot be either.
    */
-   def add(con: => Connector[S,C]
-		  ,deps: Iterable[(String,String)] = Set()
-          ,priority:Iterable[String] = Set()): Node[S,C] = {
-    val res = Node[S,C](deps, priority, (uid:Int) => con)(builder)
-    nodes ::= res
-    res
-  }
-
-  /** Same as method add, but receiving a function that builds the connector from the UID.
-   *  Guarantees that variables from differnet nodes are disjoint. 
-   */
-  def addId(con: Int => Connector[S,C]
+   def add(con: Connector[S,C]
 		  ,deps: Iterable[(String,String)] = Set()
           ,priority:Iterable[String] = Set()): Node[S,C] = {
     val res = Node[S,C](deps, priority, con)(builder)
     nodes ::= res
     res
   }
+
+//  /** Same as method add, but receiving a function that builds the connector from the UID.
+//   *  Guarantees that variables from differnet nodes are disjoint. 
+//   */
+//  def addId(con: Int => Connector[S,C]
+//		  ,deps: Iterable[(String,String)] = Set()
+//          ,priority:Iterable[String] = Set()): Node[S,C] = {
+//    val res = Node[S,C](deps, priority, con)(builder)
+//    nodes ::= res
+//    res
+//  }
 
   /** Starts all nodes created with "add" in one go. */
 //  def init() = for (n <- nodes) n.init

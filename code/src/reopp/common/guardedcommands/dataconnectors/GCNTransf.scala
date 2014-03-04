@@ -10,19 +10,19 @@ import reopp.common.guardedcommands.GuardedCom
  *
  * Created by jose on 10/04/13.
  */
-class GCNTransf (ans: List[String], bn: String, uid: Int, f: Function) extends GCConnector(ans ++ List(bn), uid) {
+class GCNTransf (ans: List[String], b: String, uid: Int, f: Function) extends GCConnector(ans ++ List(b), uid) {
   private val as = ans.map(mkVar(_))
-  private val b:Var = "b" // mkVar(bn, uid) // Var(flowVar(bn,uid)) // implicit conversion
+//  private val b:Var = "b" // mkVar(bn, uid) // Var(flowVar(bn,uid)) // implicit conversion
 
-  var constraints = Formula(
+  private def constraints = Formula(
     for (a<-as) yield (a <-> b):GuardedCom
   )
 
-  if (useData) constraints ++=
-    b --> (b := (f,as))
+  private def dataConstraints = constraints ++
+    (b --> (b := (f,as)))
 
   if (useCC3) throw new Exception("CC3 not implemented")
 
 
-  def getConstraints = constraints
+  def getConstraints = if (useData) dataConstraints else constraints
 }

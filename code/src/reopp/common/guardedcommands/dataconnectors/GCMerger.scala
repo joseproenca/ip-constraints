@@ -13,22 +13,21 @@ import reopp.common.guardedcommands._
  */
 
 class GCMerger(a: String, b: String, c: String, uid: Int) extends GCConnector(List(a,b,c), uid) {
-  val av = Var(flowVar(a,uid))
-  val bv = Var(flowVar(b,uid))
-  val cv = Var(flowVar(c,uid))
+//  val a = Var(flowVar(a,uid))
+//  val b = Var(flowVar(b,uid))
+//  val c = Var(flowVar(c,uid))
 
-  private var constraints = Formula(
-    cv --> (av \/ bv),
-    (av \/ bv) --> cv,
-    !(av and bv))
+  private def constraints = Formula(
+    c --> (a \/ b),
+    (a \/ b) --> c,
+    !(a and b))
 
-  if (useData) constraints ++= Set(
-    av --> (cv := av),
-    bv --> (cv := bv))
-  //    av --> VarAssgn(dataVar(c,uid),dataVar(a,uid)),
-  //    bv --> VarAssgn(dataVar(c,uid),dataVar(b,uid))
+  private def dataConstraints = 
+   constraints ++ Set(
+    a --> (c := a),
+    b --> (c := b))
 
-  def getConstraints = constraints
+  def getConstraints = if (useData) dataConstraints else constraints
 
   if (useCC3) throw new Exception("CC3 not implemented")
 

@@ -14,29 +14,27 @@ import reopp.common.guardedcommands.Var
  */
 
 class GCWriter (val x: String, uid: Int, var data: List[Any]) extends GCConnector(List(x), uid) {
-  val xv = Var(flowVar(x,uid))
 
 //  def this(x: String, uid: Int, dt: List[Int]) = this(x, uid, dt.map(Int.box(_)))
   def this(x: String, uid: Int) = this(x, uid, Nil: List[Any])
 
-  private val nfConstr: Formula = !xv
 
   //var constraints = loadConstraints
 
   def getConstraints = {
     if (!data.isEmpty) {
       if(useData)
-        xv --> (xv := data.head)//(Var(flowVar(x,uid)) --> DataAssgn(dataVar(x,uid),data.head))
+        x --> (x := data.head)//(Var(flowVar(x,uid)) --> DataAssgn(dataVar(x,uid),data.head))
 
       else if (useCC3) throw new Exception("CC3 not implemented")
       else Formula()
     }
-    else nfConstr
+    else !x
   }
 
   override def update(s: OptionSol[GCSolution]) {
     if (s.isDefined)
-    if (s.get.hasFlowOn(flowVar(x, uid))) {
+    if (s.get.hasFlowOn(mkVar(x))) {
       //      println("Writer: FLOW! new size: "+size)
       notifyflow()
       // update state

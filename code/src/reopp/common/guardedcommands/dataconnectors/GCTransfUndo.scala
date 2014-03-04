@@ -30,7 +30,7 @@ class GCTransfUndo (a: String, b: String, uid: Int, f: common.Function, undo: co
       if (s.getBuffer.isDefined) {
 //        println("trying to rollback")
         if (s.isDefined)
-          s.getBuffer.get.rollback(newF,undo,s.get getDataOn dataVar(a,uid))
+          s.getBuffer.get.rollback(newF,undo,s.get getDataOn dataVar(a,getID))
         else
           s.getBuffer.get.rollback(newF,undo,None)
       }

@@ -16,22 +16,20 @@ import reopp.common.guardedcommands.Var
  */
 
 class GCIMerger(a: String, b: String, c: String, uid: Int) extends GCConnector(List(a,b,c), uid) {
-  val av = Var(flowVar(a,uid))
-  val bv = Var(flowVar(b,uid))
-  val cv = Var(flowVar(c,uid))
-  val abv = Var(flowVar(a+b,uid))
+  private val ab = a+b
 
-  private var constraints = Formula(Set(
-    cv --> (av or bv),
-    (av or bv) --> cv
+  private def constraints = Formula(Set(
+    c --> (a or b),
+    (a or b) --> c
   ))
 
-  if (useData) constraints ++= Set(
-    (av and bv and abv)      --> VarAssgn(dataVar(c,uid),dataVar(a,uid)),
-    (av and bv and Neg(abv)) --> VarAssgn(dataVar(c,uid),dataVar(b,uid)),
-    (av and Neg(bv)) --> VarAssgn(dataVar(c,uid),dataVar(a,uid)),
-    (bv and Neg(av)) --> VarAssgn(dataVar(c,uid),dataVar(b,uid))
-  )
+  private def dataConstraints =
+	  constraints ++ Set(
+	    (a and b and ab)      --> VarAssgn(dataVar(c,uid),dataVar(a,uid)),
+	    (a and b and Neg(ab)) --> VarAssgn(dataVar(c,uid),dataVar(b,uid)),
+	    (a and Neg(b)) --> VarAssgn(dataVar(c,uid),dataVar(a,uid)),
+	    (b and Neg(a)) --> VarAssgn(dataVar(c,uid),dataVar(b,uid))
+	  )
 
-  def getConstraints = constraints
+  def getConstraints = if (useData) dataConstraints else constraints
 }

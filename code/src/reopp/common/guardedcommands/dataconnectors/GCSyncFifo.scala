@@ -13,25 +13,17 @@ import reopp.common.guardedcommands._
  */
 
 class GCSyncFifo(a: String, b: String, var data: Option[Any], uid: Int) extends GCConnector(List(a,b), uid) {
-  val av = Var(flowVar(a,uid))
-  val bv = Var(flowVar(b,uid))
 
-  val emptyFifo = Formula(!bv)
-//  def fullFifo = Formula(Set(
-//    av --> SGuard(bv),
-//    bv --> DataAssgn(dataVar(b,uid),data.get)
-//  ))
+  if (useCC3) throw new Exception("CC3 not implemented")
 
   def fullFifo =
     if (useData) Formula(
-      av --> bv,
-      bv --> (bv := data.get)  // DataAssgn(dataVar(b,uid),data.get)
+      a --> b,
+      b --> (b := data.get)  // DataAssgn(dataVar(b,uid),data.get)
     )
-    else if (useCC3) throw new Exception("CC3 not implemented")
-    else Formula(av --> bv)
+    else Formula(a --> b)
 
-
-  def getConstraints = if (data.isDefined) fullFifo else emptyFifo
+  def getConstraints = if (data.isDefined) fullFifo else !b
 
   // update state not implemented
 }

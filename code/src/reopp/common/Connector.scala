@@ -8,7 +8,7 @@ package reopp.common
  * Created by jose on 02/05/12.
  */
 
-abstract class Connector[S<: Solution, C <: Constraints[S,C]](val ends: List[String],val uid: Int = 0) {
+abstract class Connector[S<: Solution, C <: Constraints[S,C]](val ends: List[String]) {
 
   /**
    * Collect the constraints and returns them, ready to be solved.
@@ -21,6 +21,21 @@ abstract class Connector[S<: Solution, C <: Constraints[S,C]](val ends: List[Str
    */
   def update(s: OptionSol[S]) {} // default: do nothing
 
+
+  /**
+   * Updates the ID of the connector, e.g., to match the ID of its node or location.
+   * IDs are used to make variable names unique.
+   * 
+   * @param newID the new ID of the connector.
+   */
+  def updateID(newId:Int)
+  
+  
+  /**
+   * Returns the current ID of the connector.
+   */
+  def getID: Int
+  
 
   /**
    * Returns yes if, when updated, it should start a new round of constraint solving.

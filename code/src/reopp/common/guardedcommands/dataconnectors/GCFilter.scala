@@ -11,8 +11,6 @@ import reopp.common.guardedcommands._
  */
 
 class GCFilter(a: String, b: String, uid: Int,g: Guard) extends GCConnector(List(a,b), uid) {
-  protected val av = Var(flowVar(a,uid))
-  protected val bv = Var(flowVar(b,uid))
 
   /**
    * Build guard (formula) from a Predicate
@@ -38,16 +36,14 @@ class GCFilter(a: String, b: String, uid: Int,g: Guard) extends GCConnector(List
                     else      Neg(Pred(dataVar(a,uid),p)))
 }
 
-  val constraints = Formula(
-    bv --> av,
-    bv -->  (bv := av), //VarAssgn(dataVar(b,uid),dataVar(a,uid)),
+  def getConstraints = Formula(
+    b --> a,
+    b -->  (b := a), //VarAssgn(dataVar(b,uid),dataVar(a,uid)),
 //    bv := av ,
-    bv --> g,
-    (av /\ g) --> bv
+    b --> g,
+    (a /\ g) --> b
   )
-
-  def getConstraints = constraints
-
+  
   if (!useData) throw new Exception("Filter requires 'useData' option")
 
   if (useCC3) throw new Exception("CC3 not implemented")

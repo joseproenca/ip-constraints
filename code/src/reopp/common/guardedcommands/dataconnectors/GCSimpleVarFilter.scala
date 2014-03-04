@@ -12,11 +12,8 @@ import Utils._
  * Time: 16:52
  * To change this template use File | Settings | File Templates.
  */
-class GCSimpleVarFilter(an : String, bn : String, pred: Predicate, uid: Int)
-  extends GCConnector(List(an,bn),uid) {
-
-  val a = mkVar(an)
-  val b = mkVar(bn)
+class GCSimpleVarFilter(a : String, b : String, pred: Predicate, id: Int)
+  extends GCConnector(List(a,b),id) {
 
   var data: Option[AnyRef] = None
 
@@ -32,7 +29,7 @@ class GCSimpleVarFilter(an : String, bn : String, pred: Predicate, uid: Int)
 
   override def update(sol: OptionSol[GCSolution]) {
     if (sol.isDefined)
-      if (sol.get hasFlowOn a)
-        data = Some(sol.get getDataOn a)
+      if (sol.get hasFlowOn mkVar(a))
+        data = Some(sol.get getDataOn dataVar(a,getID))
   }
 }

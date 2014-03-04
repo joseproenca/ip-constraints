@@ -169,11 +169,12 @@ object Node {
   def apply[S<:Solution, C<:Constraints[S,C]]
       (   deps: Iterable[(String,String)],
           priority: Iterable[String],
-          conn : Int => Connector[S,C])
+          conn : Connector[S,C])
       (implicit b:CBuilder[S,C]): Node[S,C] =
     new Node[S,C] {
       //      val uid = this.hashCode()
-      val connector = conn(uid)
+      val connector = conn //conn(uid)
+      connector.updateID(uid)
 
       // suggests which ends must have dataflow if "end" has also dataflow
       def guessRequirements(nd: Node[S, C]) = {

@@ -14,16 +14,14 @@ import reopp.common.guardedcommands._
  */
 
 class GCLossy(a: String, b: String, uid: Int) extends GCConnector(List(a,b), uid) {
-  val av = Var(flowVar(a,uid))
-  val bv = Var(flowVar(b,uid))
 
-  private var constraints : Formula = bv --> av
+  private def constraints : Formula = b --> a
 
 
-  if (useData) constraints ++=
-      bv --> (bv := av)  //VarAssgn(dataVar(y,uid),dataVar(x,uid))
+  private def dataConstraints = constraints ++
+      (b --> (b := a)) //VarAssgn(dataVar(y,uid),dataVar(x,uid))
 
   if (useCC3) throw new Exception("CC3 not implemented")
 
-  def getConstraints = constraints
+  def getConstraints = if (useData) dataConstraints else constraints
 }

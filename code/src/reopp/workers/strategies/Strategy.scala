@@ -89,8 +89,8 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
 
 
   private def sync(n1:Nd,n2:Nd, basec: C)(implicit cbuilder: CBuilder[S,C]): C = {
-    val uid1 = n1.connector.uid
-    val uid2 = n2.connector.uid
+    val uid1 = n1.connector.getID
+    val uid2 = n2.connector.getID
     var res = basec
 
     for (ends <- n1.getConnectedEndsTo(n2))
@@ -110,7 +110,7 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
 
   // n1 owend, n2 not owned -> border n1.ends inters. n2.ends
   private def border(n1:Nd,n2:Nd, basec: C)(implicit cbuilder: CBuilder[S,C]): C = {
-    val uid1 = n1.connector.uid
+    val uid1 = n1.connector.getID
     var res = basec
 
     if (n1 connectedTo n2) {

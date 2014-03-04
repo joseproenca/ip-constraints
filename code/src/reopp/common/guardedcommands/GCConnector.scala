@@ -9,9 +9,16 @@ import Utils._
  *
  * Created by jose on 06/06/12.
  */
-abstract class GCConnector(ends: List[String], uid: Int = 0) extends Connector[GCSolution,Formula](ends,uid) {
+abstract class GCConnector(ends: List[String], initID: Int = 0) extends Connector[GCSolution,Formula](ends) {
   useData = true // data by default
+  
+  protected var id = initID
 
+  def updateID(newID:Int) {
+    id = newID
+  }
+  def getID = id
+    
 
   /**
    * Combine two connectors, resulting in a composed connector.
@@ -25,10 +32,12 @@ abstract class GCConnector(ends: List[String], uid: Int = 0) extends Connector[G
     (this,other) match {
       case (x:ComplexConnector,_) => x +++ other
       case (_,x:ComplexConnector) => x +++ this
-      case _ => new ComplexConnector(List(this,other),ends ++ other.ends, uid)
+      case _ => new ComplexConnector(List(this,other),ends ++ other.ends, id)
     }
 
-  implicit def mkVar(s:String): Var = Utils.mkVar(s,uid)
+  implicit protected def mkVar(s:String): Var = Utils.mkVar(s,id)
+  protected def sr(s:String): Var = Var(srcVar(s,id))
+  protected def sk(s:String): Var = Var(snkVar(s,id))
 
 
   /////////////////////////////////////////////////////////////////////////

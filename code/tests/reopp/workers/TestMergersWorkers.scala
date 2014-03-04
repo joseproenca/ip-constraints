@@ -77,7 +77,7 @@ class TestMergersWorkers { //extends FunSpec {
 
     // create reader
     val rd = new connectors.Reader(math.pow(workers,size).toInt)
-    println("reader: "+rd.connector.uid)
+    println("reader: "+rd.connector.getID)
 //    println(" - "+rd.hashCode())
 
     // create and connect mergers
@@ -88,7 +88,7 @@ class TestMergersWorkers { //extends FunSpec {
     for ((node,end) <- ends) {
       val wr = new connectors.Writer(1)
       writers ::= wr
-      println("writer: "+wr.connector.uid)
+      println("writer: "+wr.connector.getID)
 //      println(" - "+wr.hashCode())
 
 //      node.connect(wr,end,wr.connector.ends.head)

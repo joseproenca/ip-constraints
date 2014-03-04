@@ -291,12 +291,12 @@ class End[S<:Solution, C<:Constraints[S,C]](val a: Actor[S,C], val e: String) {
 
     // better design: expose connections and flowconn only via an interface...
     me.connections +=
-      other -> Set((myend,otherend,other.behaviour.uid))
+      other -> Set((myend,otherend,other.behaviour.getID))
     other.connections +=
-      me -> Set((otherend,myend,me.behaviour.uid))
+      me -> Set((otherend,myend,me.behaviour.getID))
 
     // flow connections
-    me.flowconn += ((myend,me.behaviour.uid,otherend,other.behaviour.uid))
+    me.flowconn += ((myend,me.behaviour.getID,otherend,other.behaviour.getID))
     //    println("new flowconn: "+flowconn)
   }
 }

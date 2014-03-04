@@ -13,18 +13,16 @@ import reopp.common.guardedcommands._
  */
 
 class GCSync(a: String, b: String, uid: Int) extends GCConnector(List(a,b), uid) {
-  protected val av = Var(flowVar(a,uid))
-  protected val bv = Var(flowVar(b,uid))
 
-  var constraints = Formula(
-    av <-> bv
+  private def constraints = Formula(
+    a <-> b
   )
 
-  if (useData) constraints ++=
+  private def dataConstraints = constraints ++
     //    av --> (bv := av) //VarAssgn(dataVar(b,uid), dataVar(a,uid))
-    (bv := av)
+    (b := a)
 
   if (useCC3) throw new Exception("CC3 not implemented")
 
-  def getConstraints = constraints
+  def getConstraints = if (useData) dataConstraints else constraints
 }

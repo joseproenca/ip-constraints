@@ -316,8 +316,8 @@ Possible methods: "sat", "smt", "all", "partial"<n>, "onebyone"<n>, "all0"
 	
     
 	// build the core node of the connector
-    val mainNode = engine add(
-//      genWriters(n) ++
+	val mainCon = 
+	//      genWriters(n) ++
 //      nmerger((for(i<-1 to n) yield "w"+i).toList, "w") ++
       transf("x","gTime",getTime)++
       transf("x","gTemp",getTemp)++
@@ -331,9 +331,14 @@ Possible methods: "sat", "smt", "all", "partial"<n>, "onebyone"<n>, "all0"
 //        override def isProactive = false // passive reader
 //      }
       //reader("ctemp")
-    )
-    // keep track of the constraints for SAT vs SMT
-    var const = mainNode.connector.getConstraints
+
+    // keep track of the constraints for SAT vs SMT.
+    // ALWAYS add here before adding to the engine - will change variable names to be unique.
+    var const = mainCon.getConstraints
+    
+    val mainNode = engine add mainCon
+
+
     
     // make the generators of the mergers and writers
 //	val height = (Math.log(n)/Math.log(2)).toInt - 1
@@ -342,24 +347,26 @@ Possible methods: "sat", "smt", "all", "partial"<n>, "onebyone"<n>, "all0"
 	def addMrgLevel(sks:Iterable[(Node[S,C],String)]): Iterable[(Node[S,C],String)] = {
       val res = scala.collection.mutable.Set[(Node[S,C],String)]()
       for ((nd,sk) <- sks) {
-	    val newc = engine add (
-	        merger(sk+"0",sk+"1",sk),
-	        deps = Set(sk+"0"->sk,sk+"1"->sk))
-	    const ++= newc.connector.getConstraints
-	    nd(sk) <-- newc(sk)
-	    res += ((newc,sk+"0"))
-	    res += ((newc,sk+"1"))
+	    val newc = merger(sk+"0",sk+"1",sk)
+	    const ++= newc.getConstraints
+	    val newNd = engine add (
+	        newc,
+	        deps = Set(sk+"0"->sk,sk+"1"->sk)
+	    )
+	    nd(sk) <-- newNd(sk)
+	    res += ((newNd,sk+"0"))
+	    res += ((newNd,sk+"1"))
       }
       res
     } 
     def addWriters(sks:Iterable[(Node[S,C],String)]) {
       for ((nd,sk) <- sks) {
-        val wr = engine.add(
-            wiredWriter(sk,genTimedTemp)
-            ,
+        val wrC = wiredWriter(sk,genTimedTemp)
+        const ++= wrC.getConstraints
+        val wrNd = engine.add(
+            wrC,
             priority = Set(sk))
-        const ++= wr.connector.getConstraints
-        nd(sk) <-- wr(sk)
+        nd(sk) <-- wrNd(sk)
       }
     }
 	
@@ -433,22 +440,21 @@ Possible methods: "sat", "smt", "all", "partial"<n>, "onebyone"<n>, "all0"
     }
 
     // defining the nodes and constraints
-    val starting = engine add (
-    	wiredWriter("out1",1)
-    )
-    var const = starting.connector.getConstraints
+    val wrCon = wiredWriter("out1",1)
+    var const = wrCon.getConstraints
+    val starting = engine add wrCon    	   
 
     def genS(i:Int,si:Int,o:Int,f:Function,ok:Predicate,fi:Function)
     		: (Node[S,C],String,String,String,String) = {
 //      println(s"generating S from $i to $o")
-      val nd = engine add (
+      val newS =
 	      transf("out"+i,"a"+o,f) ++
 	      filter("a"+o,"out"+o,ok) ++
 	      negfilter("a"+o,"b"+o,ok) ++
 	      merger("b"+o,"sto"+o,"c"+o) ++
 	      transf("c"+o,"sto"+si,fi)
-	  )
-      const = const ++ nd.connector.getConstraints
+      const ++= newS.getConstraints
+      val nd = engine add newS
       (nd,"out"+i,"out"+o,"sto"+o,"sto"+si)
     }
     def genSSeqs(from:Int,to:Int): (Node[S,C],String,String,Node[S,C],String,String) = to match {
@@ -477,31 +483,34 @@ Possible methods: "sat", "smt", "all", "partial"<n>, "onebyone"<n>, "all0"
         
     if (n==1) {
       val (nd,a,b,c,d) = genS(1,1,2,id,fail,id)
-      val nf = engine add (noflow("sto2"))
+      val nfCon = noflow("sto2")
+      const ++= nfCon.getConstraints
+      val nf = engine add nfCon
       nd(a) <-- starting("out1")
       nd(c) <-- nf("sto"+(n+1))
-      const = const ++ nf.connector.getConstraints
 
     }
     else if (fst) {
       val (nd,a,b,c,d) = genS(1,1,2,id,fail,id)
       val (n2,e,f,n3,g,h) = genSSeqs(2,n)
-      val nf = engine add (noflow("sto"+(n+1)))
+      val nfCon = noflow("sto"+(n+1))
+      const ++= nfCon.getConstraints
+      val nf = engine add nfCon
       nd(a) <-- starting("out1")
       n2(e) <-- nd(b)
       nd(c) <-- n2(f)
       n3(h) <-- nf("sto"+(n+1))
-      const = const ++ nf.connector.getConstraints
     }
     else if (seq) {
       val (n2,e,f,n3,g,h) = genSSeqs(1,n-1)
       val (nd,a,b,c,d) = genS(n,n,n+1,id,fail,id)
-      val nf = engine add (noflow("sto"+(n+1)))
+      val nfCon = noflow("sto"+(n+1))
+      const ++= nfCon.getConstraints
+      val nf = engine add nfCon
       n2(e) <-- starting("out1")
       nd(a) <-- n3(g)
       n3(h) <-- nd(d)
       nd(c) <-- nf("sto"+(n+1))
-      const = const ++ nf.connector.getConstraints
     }
     else
       throw new Exception("Parallel transactions not done yet.")
@@ -595,20 +604,19 @@ Possible methods: "sat", "smt", "all", "partial"<n>, "onebyone"<n>, "all0"
     }
 
     // defining the nodes and constraints
-    val starting = engine add (
-    	wiredWriter("out1",1)
-    )
-    var const = starting.connector.getConstraints
+    val wrCon = wiredWriter("out1",1)
+    var const = wrCon.getConstraints
+    val starting = engine add wrCon    	   
 
     def genB(i:Int,o:Int,f:Function,ok:Predicate,fi:Function)
     		: (Node[S,C],String,String) = {
 //      println(s"generating S from $i to $o")
-      val nd = engine add (
+      val conn =
           transf("out"+i,"a"+o,f,fi) ++
           filter("a"+o,"out"+o,ok) ++
           sdrain("a"+o,"out"+o)
-	  )
-      const = const ++ nd.connector.getConstraints
+      const ++= conn.getConstraints
+	  val  nd = engine add conn
       (nd,"out"+i,"out"+o)
     }
     def genBSeqs(from:Int,to:Int): (Node[S,C],String,Node[S,C],String) = to match {
@@ -766,27 +774,29 @@ Possible methods: "sat", "smt", "all", "partial"<n>, "onebyone"<n>, "all0"
 	val isEven = Predicate("isEven") {
 	  case i:Int => i%2 == 0
 	}
-	def genPair(i:Int) = engine add (
-      wiredWriter("x"+i,
+	def genPair(i:Int): Node[GCSolution,Formula] = {
+	  val conn =
+       wiredWriter("x"+i,
           i) ++ 
           //for (n<-(1 to 50).toList) yield i) ++ 
-      filter("x"+i,"y"+i,isEven) //++
+       filter("x"+i,"y"+i,isEven) //++
 //      reader("y"+i)
-//      genReader(i) 
-    ,priority = Set("x"+i)
-    )
+//      genReader(i)
+      const ++= conn.getConstraints
+      engine add (conn,priority = Set("x"+i) )
+	}
     def connectPair(i:Int,n1:Node[GCSolution,Formula],n2:Node[GCSolution,Formula]) = {
-      val ad = engine add (adrain("x"+i,"x"+(i+1)))
+      val conn = adrain("x"+i,"x"+(i+1))
+      const ++= conn.getConstraints
+      val ad = engine add conn
       ad("x"+i)  <-- n1("x"+i)
       ad("x"+(i+1))  <-- n2("x"+(i+1))
-      const = const ++ ad.connector.getConstraints
       ad
     } 
     
     var prev = genPair(1) // n >= 1
     for (i <- 2 to n) {
       val next = genPair(i)
-      const = const ++ next.connector.getConstraints
       connectPair(i-1,prev,next)
       prev = next
     }

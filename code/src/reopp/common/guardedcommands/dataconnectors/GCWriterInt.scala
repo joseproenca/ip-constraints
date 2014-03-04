@@ -15,22 +15,20 @@ import reopp.common.guardedcommands._
 
 @deprecated
 class GCWriterInt(val x: String, uid: Int, var data: List[Int]) extends GCConnector(List(x), uid) {
-  val xv = Var(flowVar(x,uid))
 
-  val nfConstr = Formula(!xv)
-
+  if (useCC3) throw new Exception("CC3 not implemented")
+  
   def getConstraints: Formula = {
     if (!data.isEmpty) {
-      if(useData) xv := data.head  //Formula(xv --> IntAssgn(dataVar(x,uid),data.head)) //(xv := data.head))
-      else if (useCC3) throw new Exception("CC3 not implemented")
+      if(useData) x := data.head  //Formula(xv --> IntAssgn(dataVar(x,uid),data.head)) //(xv := data.head))
       else Formula()
     }
-    else nfConstr
+    else !x
   }
 
   override def update(s: OptionSol[GCSolution]) {
     if (s.isDefined)
-    if (s.get hasFlowOn flowVar(x, uid)) {
+    if (s.get hasFlowOn mkVar(x)) {
       //      println("Writer: FLOW! new size: "+size)
       notifyflow()
 //      constraints = loadConstraints

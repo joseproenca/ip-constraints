@@ -11,8 +11,8 @@ import collection.mutable
  * Time: 16:31
  * To change this template use File | Settings | File Templates.
  */
-class ComplexConnector(val sub: List[Connector[GCSolution,Formula]], ends: List[String], uid: Int = 0)
-    extends GCConnector(ends, uid) {
+class ComplexConnector(val sub: List[Connector[GCSolution,Formula]], ends: List[String], initID: Int = 0)
+    extends GCConnector(ends, initID) {
 
   /**
    * Collect the constraints and returns them, ready to be solved.
@@ -25,11 +25,16 @@ class ComplexConnector(val sub: List[Connector[GCSolution,Formula]], ends: List[
     if (useCC3) {
       val subends = mutable.Set[(String,Int)]()
       for (c <- sub; e <- c.ends)
-        subends add (e,c.uid)
+        subends add (e,c.getID)
       for ((e,id) <- subends)
         res ++= Formula( Var(srcVar(e,id)) \/ Var(snkVar(e,id)) )
     }
     res
+  }
+
+  override def updateID(newID:Int) {
+    super.updateID(newID)
+    sub.map(_.updateID(newID))
   }
 
   override def update(s: OptionSol[GCSolution]) {
@@ -38,8 +43,8 @@ class ComplexConnector(val sub: List[Connector[GCSolution,Formula]], ends: List[
 
   def +++(other: Connector[GCSolution,Formula]): ComplexConnector = other match {
     // Note: could drop repeated names, if needed.
-    case c: ComplexConnector => new ComplexConnector(sub ++ c.sub,ends ++ c.ends, uid)
-    case _ => new ComplexConnector(other :: sub, ends ++ other.ends, uid)
+    case c: ComplexConnector => new ComplexConnector(sub ++ c.sub,ends ++ c.ends, id)
+    case _ => new ComplexConnector(other :: sub, ends ++ other.ends, id)
   }
 
   override def isProactive: Boolean = {

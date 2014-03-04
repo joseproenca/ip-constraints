@@ -12,7 +12,7 @@ import reopp.common.Utils._
  * To change this template use File | Settings | File Templates.
  */
 
-abstract class ChoConnector(ends: List[String], uid: Int) extends Connector[ChoSolution,ChoConstraints](ends, uid) {
+abstract class ChoConnector(ends: List[String], uid: Int) extends Connector[ChoSolution,ChoConstraints](ends) {
 
 
   /**
@@ -29,6 +29,12 @@ abstract class ChoConnector(ends: List[String], uid: Int) extends Connector[ChoS
     //throw new RuntimeException("Composition of choco-based connectors not defined.")
   }
 
+  throw new RuntimeException("ChoConnector not maintained.\n"+
+      "Only works when IDs are alwyas constant - not the case with nodes (workers).\n"+
+      "Need to make IDs of variable dynamic.")
+  
+  def getID = uid
+  def updateID(newID:Int) = {}
 
     //
 //

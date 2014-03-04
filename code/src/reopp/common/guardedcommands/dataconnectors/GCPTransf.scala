@@ -11,29 +11,24 @@ import reopp.common.Utils._
  */
 class GCPTransf[A] (a: String, b: String, uid: Int, f: PartialFunction[A,_]) extends GCConnector(List(a,b), uid) {
 
-  private val av = Var(flowVar(a,uid))
-  private val bv = Var(flowVar(b,uid))
-
-  val pred = Predicate(){
+  private val pred = Predicate(){
     case x: A => f.isDefinedAt(x)
     case _ => false
   }
-  val guard = Pred(dataVar(a,uid),pred)
+  private def guard = Pred(dataVar(a,uid),pred)
 
-  val func = Function()( f )
+  private val func = Function()( f )
 
 
-  val constraints = Formula(
-    bv --> av,
-    bv -->  (bv := (func,av)),
+  def getConstraints = Formula(
+    b --> a,
+    b -->  (b := (func,a)),
     //    bv := av ,
-    bv --> guard,
-    (av /\ guard) --> bv
+    b --> guard,
+    (a /\ guard) --> b
   )
 
   if (!useData) throw new Exception("Partial transfer requires 'useData' option")
 
   if (useCC3) throw new Exception("CC3 not implemented")
-
-  def getConstraints = constraints
 }

@@ -13,10 +13,8 @@ import reopp.common.guardedcommands._
  */
 
 class GCSSpout(a: String, b: String, uid: Int) extends GCConnector(List(a,b), uid) {
-  val av = Var(flowVar(a,uid))
-  val bv = Var(flowVar(b,uid))
 
-  def getConstraints =  av <-> bv
+  def getConstraints =  a <-> b
 
   if (useCC3) throw new Exception("CC3 not implemented")
 }

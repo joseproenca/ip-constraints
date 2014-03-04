@@ -13,22 +13,23 @@ import reopp.common.guardedcommands._
  */
 
 class GCExRouter(a: String, b: String, c: String, uid: Int) extends GCConnector(List(a,b,c), uid) {
-  val av = Var(flowVar(a,uid))
-  val bv = Var(flowVar(b,uid))
-  val cv = Var(flowVar(c,uid))
+//  val a = Var(flowVar(a,uid))
+//  val b = Var(flowVar(b,uid))
+//  val c = Var(flowVar(c,uid))
 
-  private var constraints = Formula(
-    av --> (bv or cv),
-    (bv or cv) --> av,
-    Neg(bv and cv)
+  private def constraints = Formula(
+    a --> (b or c),
+    (b or c) --> a,
+    Neg(b and c)
   )
 
-  if (useData) constraints ++= Set(
-    bv --> VarAssgn(dataVar(b,uid),dataVar(a,uid)),
-    cv --> VarAssgn(dataVar(c,uid),dataVar(a,uid))
-  )
+  private def dataConstraints =
+    constraints ++ Set(
+      b --> (b := a), //VarAssgn(dataVar(b,uid),dataVar(a,uid)),
+      c --> (c := a) // VarAssgn(dataVar(c,uid),dataVar(a,uid))
+    )
 
   if (useCC3) throw new Exception("CC3 not implemented")
 
-  def getConstraints = constraints
+  def getConstraints = if (useData) dataConstraints else constraints
 }

@@ -13,41 +13,42 @@ import reopp.common.guardedcommands._
  */
 
 class GCNMerger(srcs: List[String], snk: String, uid: Int) extends GCConnector(snk :: srcs, uid) {
-  def v(x:String) = Var(flowVar(x, uid))
 
-  val orSrcs = genSrcOr(srcs)
-  def genSrcOr(lst:List[String]): Guard = lst match {
-    case x::Nil => v(x)
-    case x::xs  => v(x) or genSrcOr(xs)
+  private def orSrcs = genSrcOr(srcs)
+  private def genSrcOr(lst:List[String]): Guard = lst match {
+    case x::Nil => x
+    case x::xs  => x or genSrcOr(xs)
     case Nil    => Neg(True)
   }
 
-  val c1 = v(snk) --> orSrcs
+  private def c1 = snk --> orSrcs
 
-  val c2 = orSrcs --> v(snk)
+  private def c2 = orSrcs --> snk
 
-  val c3 = True --> Neg(genSrcAnd(srcs))
+  private def c3 = True --> Neg(genSrcAnd(srcs))
 
-  def genSrcAnd(lst:List[String]): Guard = lst match {
+  private def genSrcAnd(lst:List[String]): Guard = lst match {
     case Nil    => True
     case x::Nil => Neg(True) // because of the negation before the or - no restrictions if there is 1 end.
-    case x1::x2::Nil => v(x1) and v(x2)
-    case x::xs  => v(x) and genSrcAnd(xs)
+    case x1::x2::Nil => x1 and x2
+    case x::xs  => x and genSrcAnd(xs)
   }
 
-  def genData(lst:List[String]): List[GuardedCom] =
-    for (src <- srcs) yield v(src) --> (v(snk) := v(src)) //VarAssgn(dataVar(snk,uid),dataVar(src,uid))
+  private def genData(lst:List[String]): List[GuardedCom] =
+    for (src <- srcs) yield src --> (snk := src) //VarAssgn(dataVar(snk,uid),dataVar(src,uid))
 
 
-  var constraints = Formula(
+  private def constraints = Formula(
     c1,
     c2,
     c3
   )
 
-  if (useData) constraints ++= genData(srcs)
+  private def dataConstraints = constraints ++ genData(srcs)
 
   if (useCC3) throw new Exception("CC3 not implemented")
 
-  def getConstraints = constraints
+//  def getConstraints = constraints
+  def getConstraints = if (useData) dataConstraints else constraints
+
 }

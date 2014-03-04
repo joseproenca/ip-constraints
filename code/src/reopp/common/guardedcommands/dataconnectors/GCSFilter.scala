@@ -26,9 +26,9 @@ class GCSFilter (a: String, b: String, uid: Int,g: Guard) extends GCFilter(a,b,u
   }
 
 
-  override val constraints = Formula(
-      bv <-> av,
-      bv -->  (bv := av),
-      bv --> g
+  override def getConstraints = Formula(
+      b <-> a,
+      b -->  (b := a),
+      b --> g
     )
 }
