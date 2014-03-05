@@ -193,7 +193,7 @@ class PEval(
     // and without known data yet
     for ((v,bool) <- sol.varMap)
       if (isFlowVar(v) && bool) {
-        val vd = flow2data(v)
+        val vd = dataVar(v)
         if (!(data contains vd) && !(rest contains vd))
           rest += vd -> Set(vd)
       }

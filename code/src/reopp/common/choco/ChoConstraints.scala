@@ -161,11 +161,11 @@ class ChoConstraints extends Constraints[ChoSolution,ChoConstraints] {
 
 
     for (v <- order) {                    // for the next varname
-      if (svars contains data2flow((v)))  // checks if it has a real (flow) variable
-        flowvar ::= svars(data2flow(v))   // append it to flowvar
+      if (svars contains flowVar((v)))  // checks if it has a real (flow) variable
+        flowvar ::= svars(flowVar(v))   // append it to flowvar
       //        if (svars contains v)               datavar ::= svars(v)
       svars -= v
-      svars -= data2flow(v)
+      svars -= flowVar(v)
     }
 
     val fullorder: Array[IntDomainVar] = (flowvar ::: svars.values.toList).toArray
