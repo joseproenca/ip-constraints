@@ -19,7 +19,7 @@ class GCSyncFifo(a: String, b: String, var data: Option[Any], uid: Int) extends 
   def fullFifo =
     if (useData) Formula(
       a --> b,
-      b --> (b := data.get)  // DataAssgn(dataVar(b,uid),data.get)
+      b --> (b :== data.get)  // DataAssgn(dataVar(b,uid),data.get)
     )
     else Formula(a --> b)
 

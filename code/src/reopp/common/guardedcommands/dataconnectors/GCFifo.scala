@@ -24,7 +24,7 @@ class GCFifo(a: String, b: String, var data: Option[Any], uid: Int = 0) extends 
   private def fullFifo =
     if (useData) Formula(
         !a,
-        b --> (b := data.get)
+        b --> (b :== data.get)
       )
     else if (useCC3) throw new Exception("CC3 not implemented")
     else Formula(Neg(a))

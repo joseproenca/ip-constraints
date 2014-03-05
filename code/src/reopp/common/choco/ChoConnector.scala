@@ -12,6 +12,7 @@ import reopp.common.Utils._
  * To change this template use File | Settings | File Templates.
  */
 
+@deprecated
 abstract class ChoConnector(ends: List[String], uid: Int) extends Connector[ChoSolution,ChoConstraints](ends) {
 
 

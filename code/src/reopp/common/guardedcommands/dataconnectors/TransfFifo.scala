@@ -17,7 +17,7 @@ class TransfFifo(in: String, out: String, var data: Option[Any], uid: Int = 0)
 
   private def fullFifo = Formula(
     in --> (out /\ (out := (double,in))),
-    (!in /\ out) --> (out := data.get)
+    (!in /\ out) --> (out :== data.get)
   )
 
   def getConstraints = if (data.isDefined) fullFifo else emptyFifo

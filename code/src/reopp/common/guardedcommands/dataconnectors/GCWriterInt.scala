@@ -20,7 +20,7 @@ class GCWriterInt(val x: String, uid: Int, var data: List[Int]) extends GCConnec
   
   def getConstraints: Formula = {
     if (!data.isEmpty) {
-      if(useData) x := data.head  //Formula(xv --> IntAssgn(dataVar(x,uid),data.head)) //(xv := data.head))
+      if(useData) x :== data.head  //Formula(xv --> IntAssgn(dataVar(x,uid),data.head)) //(xv := data.head))
       else Formula()
     }
     else !x

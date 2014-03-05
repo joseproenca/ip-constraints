@@ -45,7 +45,7 @@ class TestChocoX extends FunSpec {
     val b = mkVar("b")
     val c = mkVar("c")
     val cs2 = Formula(
-      a := "aaa",
+      a :== "aaa",
       (a :< pred) --> (b := a)
     )
 

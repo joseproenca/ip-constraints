@@ -24,7 +24,7 @@ class GCWriter (val x: String, uid: Int, var data: List[Any]) extends GCConnecto
   def getConstraints = {
     if (!data.isEmpty) {
       if(useData)
-        x --> (x := data.head)//(Var(flowVar(x,uid)) --> DataAssgn(dataVar(x,uid),data.head))
+        x --> (x :== data.head)//(Var(flowVar(x,uid)) --> DataAssgn(dataVar(x,uid),data.head))
 
       else if (useCC3) throw new Exception("CC3 not implemented")
       else Formula()

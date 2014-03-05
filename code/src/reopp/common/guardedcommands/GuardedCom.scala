@@ -506,15 +506,20 @@ abstract sealed class Statement {
 
 /// concrete GUARDS
 case class Var(name: String) extends Guard {
+  /** Assignment of data variables. */
   def :=(v:Var): Statement = VarAssgn(flow2data(name),flow2data(v.name))
-  def :=(d:Any): Statement = DataAssgn(flow2data(name),d)
+  /** Assignment of data values. */
+  def :== (d:Any): Statement = DataAssgn(flow2data(name),d)
 //  def :=(d:Int): Statement = DataAssgn(flow2data(name),Int.box(d))
 //  def :=(d: Any): Statement = d match {
 //    case (v:Var) => VarAssgn(flow2data(name),flow2data(v.name))
 //    case _ => DataAssgn(flow2data(name),d)
 //  }
+  /** Application of a function to a var, and assignment of the result. */
   def :=(f:common.Function,v:Var): Statement = FunAssgn(flow2data(name),flow2data(v.name),f)
+  /** Application of a function to a list of vars, and assignment of the result. */
   def :=(f:common.Function,vs:List[Var]): Statement = NFunAssgn(flow2data(name),vs.map(v => flow2data(v.name)),f)
+  /** Guard to check whether the variables belongs to the given predicate. */
   def :< (p:Predicate): Guard = Pred(flow2data(name),p)
   def dataName = flow2data(name)
 }

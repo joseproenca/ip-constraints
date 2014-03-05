@@ -66,12 +66,12 @@ class TestFunctions extends FunSpec {
       transf("a","b",new Double) ++
       filter("b","c",evend("d)")) ++
       filter("b","d",evend("b")) ++
-      Formula(a := 3 , a)
+      Formula(a :== 3 , a)
     val c22 =
       transf("a","b",new Double) ++
       filter("b","c",oddd("d)")) ++
       filter("b","d",evend("b")) ++
-      (a := 3) ++ a
+      (a :== 3) ++ a
 
 
     //    println(c1.commands)

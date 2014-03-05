@@ -24,7 +24,7 @@ class GCSimpleVarFilter(a : String, b : String, pred: Predicate, id: Int)
     )
     else Formula(
       a --> (a :< pred),
-      b --> (b := data.get)
+      b --> (b :== data.get)
     )
 
   override def update(sol: OptionSol[GCSolution]) {
