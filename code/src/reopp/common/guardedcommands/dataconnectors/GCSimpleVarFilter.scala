@@ -29,7 +29,7 @@ class GCSimpleVarFilter(a : String, b : String, pred: Predicate, id: Int)
 
   override def update(sol: OptionSol[GCSolution]) {
     if (sol.isDefined)
-      if (sol.get hasFlowOn mkVar(a))
-        data = Some(sol.get getDataOn dataVar(a,getID))
+      if (sol.get hasFlowOn a.flow)
+        data = Some(sol.get getDataOn a.data)
   }
 }

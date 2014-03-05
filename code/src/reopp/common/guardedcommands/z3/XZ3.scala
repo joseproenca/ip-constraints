@@ -124,7 +124,7 @@ object XZ3 {
 
     def xpred(p: reopp.common.Predicate, v:String) = {
       extraAssigns += z3.mkImplies(
-        z3.mkNot(z3.mkBoolConst(z3.mkStringSymbol(Utils.data2flow(v)))),
+        z3.mkNot(z3.mkBoolConst(z3.mkStringSymbol(Utils.flowVar(v)))),
         getVar(v) === constant(0))
       predicate( n => {
 //        println("testing if "+p+"(#"+n+")")
@@ -143,7 +143,7 @@ object XZ3 {
       fvarseed -= 1
       extraAssigns += (varVal === constant(fvarseed+1))
       extraAssigns += z3.mkImplies(
-        z3.mkNot(z3.mkBoolConst(z3.mkStringSymbol(Utils.data2flow(v)))),
+        z3.mkNot(z3.mkBoolConst(z3.mkStringSymbol(Utils.flowVar(v)))),
         getVar(v) === constant(0))
 
       function( n =>
@@ -163,7 +163,7 @@ object XZ3 {
       extraAssigns += (varVal === constant(fvarseed+1))
       for (v <- vs)
         extraAssigns += z3.mkImplies(
-          z3.mkNot(z3.mkBoolConst(z3.mkStringSymbol(Utils.data2flow(v)))),
+          z3.mkNot(z3.mkBoolConst(z3.mkStringSymbol(Utils.flowVar(v)))),
           getVar(v) === constant(0))
 
 

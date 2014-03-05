@@ -21,24 +21,24 @@ class GCFifo(a: String, b: String, var data: Option[Any], uid: Int = 0) extends 
 
   private def emptyFifo = Formula(!b)
 
-  private def fullFifo =
+  private def fullFifo: Formula =
     if (useData) Formula(
         !a,
         b --> (b :== data.get)
       )
     else if (useCC3) throw new Exception("CC3 not implemented")
-    else Formula(Neg(a))
+    else !a //Formula(Neg(a))
 
 
   def getConstraints = if (data.isDefined) fullFifo else emptyFifo
 
   override def update(s: OptionSol[GCSolution]) = s match  {
     case SomeSol(sol) =>
-      if (sol hasFlowOn a) {
-        data = Some(sol(a.dataName))
+      if (sol hasFlowOn a.flow) {
+        data = Some(sol(a.data))
         // println("FIFO: FLOW IN!")
       }
-      else if (sol hasFlowOn b) {
+      else if (sol hasFlowOn b.flow) {
         data = None
         // println("FIFO: FLOW OUT!")
       }

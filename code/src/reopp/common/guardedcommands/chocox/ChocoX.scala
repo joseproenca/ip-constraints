@@ -91,7 +91,7 @@ object ChocoX {
     }
     for ((p,v,iv) <- xpredicates) {
       val d2: MutMap[Integer,AnyRef] = datahash.asInstanceOf[MutMap[Integer,AnyRef]]
-      chocos += XPredManager.genConstr(getVar(vm,Utils.data2flow(v)),getVar(vm,v),iv,d2,funhash,buf,p)
+      chocos += XPredManager.genConstr(getVar(vm,Utils.flowVar(v)),getVar(vm,v),iv,d2,funhash,buf,p)
     }
     optimChocoVars(gcs,vm) // replace "a = b" by "a = a" in the choco constraints
 //    gcs.close() // add some-flow condition

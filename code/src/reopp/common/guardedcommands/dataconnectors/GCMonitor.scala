@@ -19,7 +19,7 @@ class GCMonitor (a: String, b: String, uid: Int, f: Function) extends GCSync(a,b
 //    println("updating! - based on "+a+"\n"+s.get)
 //    println("s.get of "+a+": "+s.get.getDataOn(dataVar(a,uid)))
     super.update(s)
-    if (s.isDefined && (s.get hasFlowOn mkVar(a)) && s.get.getDataOn(dataVar(a, getID)).isDefined)
-        f.calculate(s.get.getDataOn(dataVar(a,getID)).get)
+    if (s.isDefined && (s.get hasFlowOn a.flow) && s.get.getDataOn(a.data).isDefined)
+        f.calculate(s.get.getDataOn(a.data).get)
   }
 }

@@ -26,7 +26,7 @@ class TransfFifo(in: String, out: String, var data: Option[Any], uid: Int = 0)
     case SomeSol(sol) =>
       if ((sol hasFlowOn mkVar(in)) && !(sol hasFlowOn mkVar(out))) {
         // data goes in
-        data = Some(sol(out.dataName))
+        data = Some(sol(out.data))
       }
       else if ((sol hasFlowOn mkVar(out)) && !(sol hasFlowOn mkVar(out))) {
         // data goes out

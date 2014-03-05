@@ -89,7 +89,7 @@ object ChocoBuilderSAT {
       for ((pred,fs,xflow) <- da.domainWithEnd(v)) {
 
         //        println("added LazyPred("+predVar(v,pred,fs)+","+data2flow(v)+","+data2flow(xflow)+","+fs+")")
-        res = res and LazyPred(predVar(v,pred,fs),data2flow(v),data2flow(xflow),d,pred,fs)
+        res = res and LazyPred(predVar(v,pred,fs),flowVar(v),flowVar(xflow),d,pred,fs)
       }
 
       //        var newd = d

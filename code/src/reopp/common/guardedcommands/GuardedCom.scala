@@ -464,17 +464,17 @@ abstract sealed class Statement {
   def partialEval(sol: Solution): PEval = this match {
     case g: Guard => new PEval(Map(),Map(),Map())
     case IntAssgn(v, d) =>
-      if (sol.hasFlowOn(data2flow(v))) new PEval(Map(v -> d),Map(),Map())
+      if (sol.hasFlowOn(flowVar(v))) new PEval(Map(v -> d),Map(),Map())
       else new PEval(Map(),Map(),Map())
     case DataAssgn(v, d) =>
-      if (sol.hasFlowOn(data2flow(v))) new PEval(Map(v -> d),Map(),Map())
+      if (sol.hasFlowOn(flowVar(v))) new PEval(Map(v -> d),Map(),Map())
       else new PEval(Map(),Map(),Map())
     case VarAssgn(v1, v2) =>
-      if (sol.hasFlowOn(data2flow(v2))) new PEval(Map(),Map(v2 -> ImSet(v1)),Map())
+      if (sol.hasFlowOn(flowVar(v2))) new PEval(Map(),Map(v2 -> ImSet(v1)),Map())
       else new PEval(Map(),Map(),Map())
     // TODO: CHANGE PEval to split at x=f(y), and include this info in PEval
     case FunAssgn(v1, v2, f) =>
-      if (sol.hasFlowOn(data2flow(v2))) new PEval(Map(),Map(),Map(v2 -> ImSet((v1,f))))
+      if (sol.hasFlowOn(flowVar(v2))) new PEval(Map(),Map(),Map(v2 -> ImSet((v1,f))))
       else new PEval(Map(),Map(),Map())
     case NFunAssgn(v,vs,f) => vs match {
       case List(v2) => FunAssgn(v,v2,f).partialEval(sol)
@@ -507,21 +507,22 @@ abstract sealed class Statement {
 /// concrete GUARDS
 case class Var(name: String) extends Guard {
   /** Assignment of data variables. */
-  def :=(v:Var): Statement = VarAssgn(flow2data(name),flow2data(v.name))
+  def :=(v:Var): Statement = VarAssgn(dataVar(name),dataVar(v.name))
   /** Assignment of data values. */
-  def :== (d:Any): Statement = DataAssgn(flow2data(name),d)
+  def :== (d:Any): Statement = DataAssgn(dataVar(name),d)
 //  def :=(d:Int): Statement = DataAssgn(flow2data(name),Int.box(d))
 //  def :=(d: Any): Statement = d match {
 //    case (v:Var) => VarAssgn(flow2data(name),flow2data(v.name))
 //    case _ => DataAssgn(flow2data(name),d)
 //  }
   /** Application of a function to a var, and assignment of the result. */
-  def :=(f:common.Function,v:Var): Statement = FunAssgn(flow2data(name),flow2data(v.name),f)
+  def :=(f:common.Function,v:Var): Statement = FunAssgn(dataVar(name),dataVar(v.name),f)
   /** Application of a function to a list of vars, and assignment of the result. */
-  def :=(f:common.Function,vs:List[Var]): Statement = NFunAssgn(flow2data(name),vs.map(v => flow2data(v.name)),f)
+  def :=(f:common.Function,vs:List[Var]): Statement = NFunAssgn(dataVar(name),vs.map(v => dataVar(v.name)),f)
   /** Guard to check whether the variables belongs to the given predicate. */
-  def :< (p:Predicate): Guard = Pred(flow2data(name),p)
-  def dataName = flow2data(name)
+  def :< (p:Predicate): Guard = Pred(dataVar(name),p)
+  def data = dataVar(name)
+  def flow = flowVar(name)
 }
 case class IntPred(v:String, p: IntPredicate) extends Guard
 case class Pred(v:String, p:Predicate) extends Guard

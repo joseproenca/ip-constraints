@@ -1,7 +1,7 @@
 package reopp.common.guardedcommands
 
 import reopp.common._
-import reopp.common.Utils.{ppVar,flow2data}
+import reopp.common.Utils.{ppVar,dataVar}
 
 /**
  * Created with IntelliJ IDEA.
@@ -30,10 +30,10 @@ class GCSolution(val boolSol: Solution, var varMap: Map[String, Any]) extends So
 
   def getDataOn(end: String) = varMap.get(end)
 
-//  def getDataOn(end: Var) = varMap.get(flow2data(end.name))
+//  def getDataOn(end: Var) = varMap.get(dataVar(end.name))
 
 
-//  def apply(end: Var): Any = apply(flow2data(end.name))
+//  def apply(end: Var): Any = apply(dataVar(end.name))
 //
   // not needed, but used in tests (laziness)
   def apply(v:String): Any = //varMap(v)

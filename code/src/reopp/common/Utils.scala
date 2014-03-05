@@ -16,10 +16,10 @@ object Utils {
   def srcVar(x: String, uid: Int = 0): String = "R€" + x + "€" + uid
   def snkVar(x: String, uid: Int = 0): String = "K€" + x + "€" + uid
 
-  def flow2data(x: String): String = "D" + x.tail
-  def data2flow(x: String): String = "F" + x.tail
-  def flow2src(x: String):  String = "R" + x.tail
-  def flow2snk(x: String):  String = "K" + x.tail
+  def dataVar(x: String): String = "D" + x.tail
+  def flowVar(x: String): String = "F" + x.tail
+  def srcVar(x: String):  String = "R" + x.tail
+  def snkVar(x: String):  String = "K" + x.tail
   def var2port(x: String):  String = {
     val y = x.drop(2) . split("€") // y1 is the port
     val z = y(1).split("#")        // z1 is the uid
