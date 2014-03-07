@@ -102,8 +102,8 @@ object AllApprovalData extends App {
   val problem = genMergers(n) ++
     filter("x","app-ok",approve) ++
     filter("x","den-ok",deny) ++
-    filter("x","neither-ok", Neg(Pred(dataVar("x",0),approve)) and
-                             Neg(Pred(dataVar("x",0),deny)))
+    genfilter("x","neither-ok", v => Neg(Pred(v,approve)) and
+                                     Neg(Pred(v,deny)))
 //    flow("x") ++
 //    flow("app-ok")
 //    writer("x",List(19))

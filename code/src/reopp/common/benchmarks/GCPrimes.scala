@@ -88,10 +88,10 @@ object GCPrimes extends App {
 
   def genFilters(size: Int): Formula = {
     var commands = new GCSDrain("x","x"+size,0).getConstraints ++
-                   new GCFilter("x","x0",0,IntPred(dataVar("x",0),new GT(1))).getConstraints
+                   new GCIFilter("x","x0",0,new GT(1)).getConstraints
 //                   new GCSync("x","x0",0).getConstraints
     for (i <- 0 to (size-1)) commands = commands ++
-      new GCFilter("x"+i,"x"+(i+1),0,Neg(IntPred(dataVar("x"+i,0),new Divides(i)))).getConstraints
+      new GCIFilter("x"+i,"x"+(i+1),0,new Divides(i),positive=false).getConstraints
 //      new GCSync("x"+i,"x"+(i+1),0).getConstraints
     commands
   }

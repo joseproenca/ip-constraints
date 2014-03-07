@@ -30,8 +30,8 @@ object GCSpouts extends App {
   def genFilters(times: Int): Formula = {
     var res = Formula()
     for (i <- 0 to (times-1)) {
-      res ++= new GCFilter("a","b",i,IntPred(dataVar("a",i),gtwo)).getConstraints ++
-              new GCFilter("b","c",i,Neg(IntPred(dataVar("b",i),lfive))).getConstraints
+      res ++= new GCIFilter("a","b",i,gtwo).getConstraints ++
+              new GCIFilter("b","c",i,lfive,positive=false).getConstraints
       // manual replicator from (startVar.startUid) to (x,i)
     }
     res ++= new GCReader("c",times-1,1).getConstraints
@@ -40,7 +40,7 @@ object GCSpouts extends App {
 
   def genSpout(): Formula = {
     new GCSSpout("x","a",0).getConstraints ++
-      new GCFilter("x","reader",0,(IntPred(dataVar("x",0),lfive))).getConstraints ++
+      new GCIFilter("x","reader",0,lfive).getConstraints ++
       new GCReader("reader",0,1).getConstraints
   }
 

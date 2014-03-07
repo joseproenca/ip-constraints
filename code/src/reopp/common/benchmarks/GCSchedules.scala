@@ -36,9 +36,9 @@ object GCSchedules extends App {
 //    new GCWriter("x",i,List(500)).getConstraints ++
     val res =
       new GCExRouter("x","a","b",i).getConstraints ++
-      new GCFilter("a","e",i,Neg(IntPred(dataVar("a",i),evening))).getConstraints ++
-      new GCFilter("a","f",i,IntPred(dataVar("a",i),evening)).getConstraints ++
-      new GCFilter("b","g",i,IntPred(dataVar("b",i),morning)).getConstraints ++
+      new GCIFilter("a","e",i,evening,positive=false).getConstraints ++
+      new GCIFilter("a","f",i,evening).getConstraints ++
+      new GCIFilter("b","g",i,morning).getConstraints ++
       new GCMerger("e","g","m",i).getConstraints ++
       new GCSDrain("a","c",i).getConstraints ++
       new GCSDrain("b","d",i).getConstraints ++

@@ -34,9 +34,12 @@ object GCLoanRequest extends App {
       new GCIMerger("req2","auth2","pin",0).getConstraints ++
       new GCMerger("denied","appr2","out",0).getConstraints ++
       // filters
-      new GCFilter("login","auth",0,IntPred(dataVar("login",0),new Authorised)).getConstraints ++
-      new GCFilter("isEn","denied",0,IntPred(dataVar("isEn",0),new Deny)).getConstraints ++
-      new GCFilter("isEn","appr1",0,IntPred(dataVar("isEn",0),new Approve)).getConstraints
+//      new GCFilter("login","auth",0,IntPred(dataVar("login",0),new Authorised)).getConstraints ++
+//      new GCFilter("isEn","denied",0,IntPred(dataVar("isEn",0),new Deny)).getConstraints ++
+//      new GCFilter("isEn","appr1",0,IntPred(dataVar("isEn",0),new Approve)).getConstraints
+      new GCIFilter("login","auth",0,new Authorised).getConstraints ++
+      new GCIFilter("isEn","denied",0,new Deny).getConstraints ++
+      new GCIFilter("isEn","appr1",0,new Approve).getConstraints
 
   var problems: List[Formula] = for (bankclerk <- List(1,3)) yield
       baseProblem ++ // init state

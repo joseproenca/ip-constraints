@@ -8,6 +8,7 @@ import Utils._
 import reopp.common.guardedcommands.dataconnectors.ConstraintGen._
 import guardedcommands.Neg
 import guardedcommands.Pred
+import reopp.common.guardedcommands.Var
 
 /**
  * Created with IntelliJ IDEA.
@@ -82,8 +83,8 @@ object DetApproval extends App {
   val problem = genMergers(n) ++
     filter("x","app-ok",approve) ++
     filter("x","den-ok",deny) ++
-    filter("x","neither-ok", Neg(Pred(dataVar("x",0),approve)) and
-      Neg(Pred(dataVar("x",0),deny))) //++
+    genfilter("x","neither-ok", (v:Var) => Neg(Pred(v,approve)) and
+      Neg(Pred(v,deny))) //++
 //    transf("x","y",confirm) ++ filter("y","z",approve)
 
   //    flow("x") ++

@@ -3,7 +3,7 @@ package reopp.common.guardedcommands.dataconnectors
 import reopp.common.guardedcommands._
 import reopp.common.guardedcommands.Var
 import scala.Some
-import reopp.common.{Predicate, Utils}
+import reopp.common.{Predicate, IntPredicate, Utils}
 
 /**
  * Created with IntelliJ IDEA.
@@ -17,10 +17,13 @@ object ConstraintGen {
   def adrain(a: String, b: String, i: Int = 0) = new GCADrain(a,b,i).getConstraints
   def fifo(a: String, b: String, data:Option[Any], i: Int = 0) = new GCFifo(a,b,data,i).getConstraints
   def sfifo(a: String, b: String, data:Option[Any], i: Int = 0) = new GCSyncFifo(a,b,data,i).getConstraints
-  def filter(a: String, b: String, g:Guard) = new GCFilter(a,b,0,g).getConstraints
+//  def filter(a: String, b: String, g:Guard) = new GCFilter(a,b,0,g).getConstraints
+  def ifilter(a: String, b: String, filter:IntPredicate, i: Int = 0) = new GCIFilter(a,b,i,filter).getConstraints
+  def inegfilter(a: String, b: String, filter:IntPredicate, i: Int = 0) = new GCIFilter(a,b,i,filter,false).getConstraints
   def filter(a: String, b: String, filter:Predicate, i: Int = 0) = new GCFilter(a,b,i,filter).getConstraints
   def negfilter(a: String, b: String, filter:Predicate, i: Int = 0) = new GCFilter(a,b,i,filter,false).getConstraints
   def imerger(a: String, b: String, c: String, i: Int = 0) = new GCIMerger(a,b,c,i).getConstraints
+  def genfilter(a: String, b: String, guardFunc: Var=>Guard, i: Int = 0) = new GCGenFilter(a,b,i,guardFunc).getConstraints
   def merger(a: String, b: String, c: String, i: Int = 0) = new GCMerger(a,b,c,i).getConstraints
   def nmerger(srcs: List[String], snk: String, i: Int = 0) = new GCNMerger(srcs,snk,i).getConstraints
   def lossy(a: String, b: String, i: Int = 0) = new GCLossy(a,b,i).getConstraints

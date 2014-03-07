@@ -2,7 +2,7 @@ package reopp.common.guardedcommands
 
 import org.scalatest.FunSpec
 import reopp.common.Utils._
-import reopp.common.guardedcommands.dataconnectors.{GCFilter, GCTransf}
+import reopp.common.guardedcommands.dataconnectors.{GCIFilter, GCTransf}
 import reopp.common.examples.{Double, LT, GT}
 
 /**
@@ -25,8 +25,8 @@ class TestFunctIteration extends FunSpec {
     println("--- 1: data provided - no CSP solving ---")
     val c1 =
       new GCTransf("z","a",0,double).getConstraints ++
-      new GCFilter("a","b",0,lfivex("a")).getConstraints ++
-      new GCFilter("b","c",0,gtwox("b")).getConstraints ++
+      new GCIFilter("a","b",0,lfive).getConstraints ++
+      new GCIFilter("b","c",0,gtwo).getConstraints ++
       new GCTransf("c","d",0,double).getConstraints ++
       Formula(True --> IntAssgn(dataVar("z",0),2)) ++
       Formula(True --> Var(flowVar("z",0)))
@@ -38,8 +38,8 @@ class TestFunctIteration extends FunSpec {
     println("--- 2: data not provided - CSP has a sol ---")
     val c2=
       new GCTransf("z","a",0,double).getConstraints ++
-      new GCFilter("a","b",0,lfivex("a")).getConstraints ++
-      new GCFilter("b","c",0,gtwox("b")).getConstraints ++
+      new GCIFilter("a","b",0,lfive).getConstraints ++
+      new GCIFilter("b","c",0,gtwo).getConstraints ++
       new GCTransf("c","d",0,double).getConstraints ++
       Formula(True --> Var(flowVar("b",0)))
     val res2 = c2.solveIterative
@@ -50,8 +50,8 @@ class TestFunctIteration extends FunSpec {
     println("--- 3: data not provided - CSP needs reiteration ---")
     val c3=
       new GCTransf("z","a",0,double).getConstraints ++
-      new GCFilter("a","b",0,lfivex("a")).getConstraints ++
-      new GCFilter("b","c",0,gtwox("b")).getConstraints ++
+      new GCIFilter("a","b",0,lfive).getConstraints ++
+      new GCIFilter("b","c",0,gtwo).getConstraints ++
       new GCTransf("c","d",0,double).getConstraints ++
       Formula(True --> Var(flowVar("a",0)))
     val res3 = c3.solveIterative
@@ -118,8 +118,8 @@ class TestFunctIteration extends FunSpec {
     println("--- 4: data provided (SMT) ---")
     val c4=
       new GCTransf("z","a",0,double).getConstraints ++
-      new GCFilter("a","b",0,lfivex("a")).getConstraints ++
-      new GCFilter("b","c",0,gtwox("b")).getConstraints ++
+      new GCIFilter("a","b",0,lfive).getConstraints ++
+      new GCIFilter("b","c",0,gtwo).getConstraints ++
       new GCTransf("c","d",0,double).getConstraints ++
       Formula(True --> IntAssgn(dataVar("z",0),2)) ++
       Formula(True --> Var(flowVar("b",0)))
@@ -129,8 +129,8 @@ class TestFunctIteration extends FunSpec {
 
 //    println("--- data not provided - CSP has a sol ---")
 //    val c5=
-//      new GCFilter("a","b",0,lfivex("a")).getConstraints ++
-//      new GCFilter("b","c",0,gtwox("b")).getConstraints ++
+//      new GCIFilter("a","b",0,lfivex("a")).getConstraints ++
+//      new GCIFilter("b","c",0,gtwox("b")).getConstraints ++
 //      Formula(True --> SGuard(Var(flowVar("b",0))))
 //    val res5 = c5.solveChocoSat
 //    if (res5.isDefined) println("solved:\n"+res5.get.pretty)
@@ -139,8 +139,8 @@ class TestFunctIteration extends FunSpec {
     println("--- 6: data not provided (SMT)  ---")
     val c6=
       new GCTransf("z","a",0,double).getConstraints ++
-      new GCFilter("a","b",0,lfivex("a")).getConstraints ++
-      new GCFilter("b","c",0,gtwox("b")).getConstraints ++
+      new GCIFilter("a","b",0,lfive).getConstraints ++
+      new GCIFilter("b","c",0,gtwo).getConstraints ++
       new GCTransf("c","d",0,double).getConstraints ++
       Formula(True --> Var(flowVar("d",0)))
     val res6 = c6.solveChoco

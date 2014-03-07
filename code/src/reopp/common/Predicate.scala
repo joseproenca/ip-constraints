@@ -50,7 +50,7 @@ object Predicate {
       catch {
         case e: scala.MatchError => {println(s"FAIL (match error by predicate) - unexpected $x:${x.getClass}");false }
         case e: java.lang.ClassCastException => println(s"FAIL (match error by predicate) - unexpected $x:${x.getClass}");false
-        case e => {println("FAIL");throw e}
+        case e:Throwable => {println("FAIL");throw e}
         // note: 'A' is lost at runtime, so the matchError does not work.
       }
     override def toString = name

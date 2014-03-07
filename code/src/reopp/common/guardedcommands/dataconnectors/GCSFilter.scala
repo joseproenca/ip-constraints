@@ -12,23 +12,22 @@ import reopp.common.guardedcommands.Pred
  *
  * Created by jose on 10/04/13.
  */
-class GCSFilter (a: String, b: String, uid: Int,g: Guard) extends GCFilter(a,b,uid,g) {
+class GCSFilter (a: String, b: String, uid: Int,p: Predicate) extends GCFilter(a,b,uid,p) {
 
-  /**
-   * Build guard (formula) from a Predicate
-   * @param a source end
-   * @param b sink end
-   * @param uid unique channel id
-   * @param p predicate
-   */
-  def this(a: String, b:String, uid: Int, p: Predicate) {
-      this(a,b,uid,Pred(dataVar(a,uid),p))
-  }
-
+//  /**
+//   * Build guard (formula) from a Predicate
+//   * @param a source end
+//   * @param b sink end
+//   * @param uid unique channel id
+//   * @param p predicate
+//   */
+//  def this(a: String, b:String, uid: Int, p: Predicate) {
+//      this(a,b,uid,Pred(dataVar(a,uid),p))
+//  }
 
   override def getConstraints = Formula(
       b <-> a,
       b -->  (b := a),
-      b --> g
+      b --> guard
     )
 }

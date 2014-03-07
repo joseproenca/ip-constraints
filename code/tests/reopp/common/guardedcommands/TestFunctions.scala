@@ -3,7 +3,7 @@ package reopp.common.guardedcommands
 import reopp.common.{Utils}
 import Utils._
 import org.scalatest.FunSpec
-import reopp.common.guardedcommands.dataconnectors.{GCFilter, GCTransf}
+import reopp.common.guardedcommands.dataconnectors.{GCIFilter, GCTransf}
 import reopp.common.guardedcommands.dataconnectors.ConstraintGen._
 import reopp.common.examples.{Double, Odd, Even}
 
@@ -43,20 +43,20 @@ class TestFunctions extends FunSpec {
 
     // TEST
     val c1= new GCTransf("a","b",0,new Double()).getConstraints ++
-      new GCFilter("b","c",0,evend("b")).getConstraints ++
-      new GCFilter("b","d",0,evend("b")).getConstraints ++
+      new GCIFilter("b","c",0,even).getConstraints ++
+      new GCIFilter("b","d",0,even).getConstraints ++
       Formula(True --> IntAssgn(dataVar("a",0),3)) ++
       Formula(True --> Var(flowVar("a",0)))
 
     val c2= new GCTransf("a","b",0,new Double()).getConstraints ++
-      new GCFilter("b","c",0,oddd("b")).getConstraints ++
-      new GCFilter("b","d",0,evend("b")).getConstraints ++
+      new GCIFilter("b","c",0,odd).getConstraints ++
+      new GCIFilter("b","d",0,even).getConstraints ++
       Formula(True --> IntAssgn(dataVar("a",0),3)) ++
       Formula(True --> Var(flowVar("a",0)))
 
     val c3= new GCTransf("a","b",0,new Double()).getConstraints ++
-      new GCFilter("b","c",0,oddd("b")).getConstraints ++
-      new GCFilter("b","d",0,oddd("b")).getConstraints ++
+      new GCIFilter("b","c",0,odd).getConstraints ++
+      new GCIFilter("b","d",0,odd).getConstraints ++
       Formula(True --> IntAssgn(dataVar("a",0),3)) ++
       Formula(True --> Var(flowVar("a",0)))
 
@@ -64,13 +64,13 @@ class TestFunctions extends FunSpec {
     val a = mkVar("a")
     val c11 =
       transf("a","b",new Double) ++
-      filter("b","c",evend("d)")) ++
-      filter("b","d",evend("b")) ++
+      ifilter("b","c",even) ++
+      ifilter("b","d",even) ++
       Formula(a :== 3 , a)
     val c22 =
       transf("a","b",new Double) ++
-      filter("b","c",oddd("d)")) ++
-      filter("b","d",evend("b")) ++
+      ifilter("b","c",odd) ++
+      ifilter("b","d",even) ++
       (a :== 3) ++ a
 
 

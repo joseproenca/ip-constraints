@@ -18,7 +18,7 @@ object ConnectorGen {
   def fifo(a: String, b: String, data:Option[AnyRef], i: Int = 0) = new GCFifo(a,b,data,i)
   def sfifo(a: String, b: String, data:Option[AnyRef], i: Int = 0) = new GCSyncFifo(a,b,data,i)
   // filters!
-  def filter(a: String, b: String, g:Guard) = new GCFilter(a,b,0,g)
+//  def filter(a: String, b: String, g:Guard) = new GCFilter(a,b,0,g)
   def filter(a: String, b: String, filter:Predicate, i: Int = 0) = new GCFilter(a,b,i,filter)
   def filter[A](a: String, b: String, filter: (A) => Boolean) = new GCTFilter(a,b,0,filter)
   def filter[A](a: String, b: String, filter: (A) => Boolean,i: Int) = new GCTFilter(a,b,i,filter)

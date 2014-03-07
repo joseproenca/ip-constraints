@@ -18,14 +18,14 @@ import collection.mutable
  */
 case class GuardedCom(g:Guard, st: Statement) {
 
-  def optimiseEqVars(vars: mutable.Map[String, String]) {
-    if (g == True)
-      GuardedCom(True,st.optimiseEqVars(vars))
-    else {
-      for (v <- fv) vars(v) = v
-      this
-    }
-  }
+//  def optimiseEqVars(vars: mutable.Map[String, String]) {
+//    if (g == True)
+//      GuardedCom(True,st.optimiseEqVars(vars))
+//    else {
+//      for (v <- fv) vars(v) = v
+//      this
+//    }
+//  }
 
 
   def fv:Set[String] = g.fv ++ st.fv
@@ -108,9 +108,9 @@ abstract sealed class Guard extends Statement{
   def <->(e: Guard) = Equiv(this,e)
   def unary_! = Neg(this)
 
-  override def optimiseEqVars(vars: mutable.Map[String, String]): Guard =
-    // TODO: under construction
-    throw new RuntimeException("Under construction")
+//  override def optimiseEqVars(vars: mutable.Map[String, String]): Guard =
+//    // TODO: under construction
+//    throw new RuntimeException("Under construction")
 
 
   override def fv: Set[String] = this match {
@@ -283,17 +283,17 @@ abstract sealed class Statement {
     }
   }
 
-  def optimiseEqVars(vars: mutable.Map[String, String]): Statement =
-    throw new RuntimeException("under construction.")
-//  this match {
-//    case g: Guard => g.optimiseEqVars(vars)
-//    case IntAssgn(v, d) => { vars(v) = v; this }
-//    case VarAssgn(v1, v2) =>
-//      if (vars contains v1) vars(.......)
-//    case FunAssgn(v1, v2, f) =>
-//    case DataAssgn(v, d) =>
-//    case Seq(sts) =>
-//  }
+//  def optimiseEqVars(vars: mutable.Map[String, String]): Statement =
+//    throw new RuntimeException("under construction.")
+////  this match {
+////    case g: Guard => g.optimiseEqVars(vars)
+////    case IntAssgn(v, d) => { vars(v) = v; this }
+////    case VarAssgn(v1, v2) =>
+////      if (vars contains v1) vars(.......)
+////    case FunAssgn(v1, v2, f) =>
+////    case DataAssgn(v, d) =>
+////    case Seq(sts) =>
+////  }
 
 
   /** Collects all (free) variables. Functional implementation. */

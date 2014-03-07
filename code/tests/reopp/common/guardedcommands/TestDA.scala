@@ -5,6 +5,7 @@ import reopp.common.{Utils}
 import Utils._
 import reopp.common.guardedcommands.dataconnectors.{GCSync, GCFilter}
 import reopp.common.examples.{Odd, Even}
+import reopp.common.guardedcommands.dataconnectors.GCIFilter
 
 /**
  * Created with IntelliJ IDEA.
@@ -35,26 +36,28 @@ class TestDA extends FunSpec {
     val even = new Even
     val odd = new Odd
 
-    def evend(x:String) = IntPred(dataVar(x,0),even)
-    def oddd(x:String) = IntPred(dataVar(x,0),odd)
+//    def evend(x:String) = IntPred(dataVar(x,0),even)
+//    def oddd(x:String) = IntPred(dataVar(x,0),odd)
+    def evend(x:String) = even
+    def oddd(x:String) = odd
 
     // TEST
     // data fails first filter, second should be lazy using chocoSAT. No flow on "c", so fail.
-    val c1= new GCFilter("a","b",0,oddd("a")).getConstraints ++
-            new GCFilter("b","c",0,evend("b")).getConstraints ++
+    val c1= new GCIFilter("a","b",0,oddd("a")).getConstraints ++
+            new GCIFilter("b","c",0,evend("b")).getConstraints ++
             Formula(True --> IntAssgn(dataVar("a",0),2)) ++
             Formula(True --> (Var(flowVar("c",0))))
     // Result is correct, but it is ALWAYS checking all predicates!
 
     // both predicate hold - requirement for at least an end with flow yields dataflow everywhere
-    val c2= new GCFilter("a","b",0,evend("a")).getConstraints ++
-            new GCFilter("b","c",0,evend("b")).getConstraints ++
+    val c2= new GCIFilter("a","b",0,evend("a")).getConstraints ++
+            new GCIFilter("b","c",0,evend("b")).getConstraints ++
             Formula(True --> IntAssgn(dataVar("a",0),6)) //++
 //            Formula(True --> SGuard((Var(flowVar("a",0)))))
 
     // as c1, but data flow only on "a" and is discarded (no requirement to flow on "c").
-    val c3= new GCFilter("a","b",0,oddd("a")).getConstraints ++
-            new GCFilter("b","c",0,evend("b")).getConstraints ++
+    val c3= new GCIFilter("a","b",0,oddd("a")).getConstraints ++
+            new GCIFilter("b","c",0,evend("b")).getConstraints ++
             Formula(True --> IntAssgn(dataVar("a",0),2)) //++
 //            Formula(True --> SGuard(Var(flowVar("b",0))))
 

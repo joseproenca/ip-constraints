@@ -73,7 +73,7 @@ class Engine[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
     (for (n<-nodes) yield (n.pretty)).mkString("\n")
    
   private def debug(msg: String) {
-//    println("[DEPL] "+msg)
+//    println("[ENG] "+msg)
    }
 
 }

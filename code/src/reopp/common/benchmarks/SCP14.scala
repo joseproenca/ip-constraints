@@ -57,7 +57,7 @@ Possible methods: "sat", "smt", "all", "partial"<n>, "onebyone"<n>, "all0"
   
 //  args(0)="sensortree"
 //  args(1)="1"
-//  args(2)="all1"
+//  args(2)="partial0"
 //  args(3)=""
   
   val n = Integer.parseInt(args(1))
@@ -71,7 +71,7 @@ Possible methods: "sat", "smt", "all", "partial"<n>, "onebyone"<n>, "all0"
 
   val nat = "[a-zA-Z]".r.replaceAllIn(args(2),"")
   val pvt = nat == "0"    
-  val workers = if (nat matches "[0-9]+") nat.toInt else 1
+  val workers = if (!pvt && (nat matches "[0-9]+")) nat.toInt else 1
 
   val debug = (args.size > 3) && (args(3) startsWith "debug")
 
