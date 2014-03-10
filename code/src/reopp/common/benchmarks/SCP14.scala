@@ -55,9 +55,9 @@ Possible methods: "sat", "smt", "all", "partial"<n>, "onebyone"<n>, "all0"
   Warmup.go
 
   
-  args(0)="transactions-sseqn"
-  args(1)="91"
-  args(2)="all0"
+//  args(0)="transactions-sseqn"
+//  args(1)="91"
+//  args(2)="all0"
 //  args(3)=""
   
   val n = Integer.parseInt(args(1))
