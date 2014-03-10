@@ -32,8 +32,8 @@ object ChoParSpouts extends App {
   if (n > 0)
     problem ++=
       ( new ChoSSpout("b1","c1",0).getConstraints ++
-        ChoConstraints(Var(flowVar("a1",0))) ++
-        ChoConstraints(Var(flowVar("d1",0))) ++
+        ChoConstraints(Var(mkFlowVar("a1"))) ++
+        ChoConstraints(Var(mkFlowVar("d1"))) ++
         new ChoFilter("b1","a1",0,new LT(1).choPred).getConstraints ++
         new ChoFilter("c1","d1",0,new GT(1).choPred).getConstraints
         )

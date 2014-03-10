@@ -54,6 +54,14 @@ abstract class Formula extends Constraints[GCSolution,Formula] {
   def solve(tried:Option[NoneSol]) = solveChocoDyn(tried)  // choco - 2nd attempt (dynamic mapping between ints (in choco) and the value they represent)
 //  def solve = solveXZ3       // z3    - same as chocoDyn. Tricks used to be able to recover solution and to avoid incomplete theories (not possible to say "if A is instantiated...")
 
+  
+  def withID(uid:Int) : Formula = {
+	  val thisComms = commands
+ 	  new Formula() {
+		  override val commands = thisComms.map(GuardedCom.addID(_,uid)) 
+	  }
+  } 
+  
   /**
    * Collect the domain of every guarded command in field 'da'.
    * Used by 'collectVars'.
@@ -221,7 +229,7 @@ abstract class Formula extends Constraints[GCSolution,Formula] {
    * @param sol Solution to this' abstract problem
    * @return A partial evaluation - initially only a set of (var and data) assignments and function applications.
    */
-  def partialEval(sol:Solution): PEval = { //(Map[String,Int], Map[String,Set[String]]) = {
+  def partialEval(sol:Solution[_]): PEval = { //(Map[String,Int], Map[String,Set[String]]) = {
     val pevals = commands.map(_.partialEval(sol)) // list of pairs of maps
     val peval = pevals.foldRight[PEval](new PEval(Map(),Map(),Map()))((x:PEval,y:PEval) => x++y)//(x._1++y._1, x._2++y._2))
     peval
@@ -258,7 +266,7 @@ abstract class Formula extends Constraints[GCSolution,Formula] {
       if (!funDependent) for (v <- group) {
         if (da.max contains v) {
           for ((pred,fs) <- da.domain(v)) {
-            val pvar = predVar(v,pred,fs)
+            val pvar = mkPredVar(v,pred,fs)
             avoid ::= (if (sol(pvar)) vars(pvar) * (-1)
             else vars(pvar))
           }
@@ -614,7 +622,7 @@ abstract class Formula extends Constraints[GCSolution,Formula] {
     // solveDomain; toCNF; solveBool?; [partialEval; quotient; dataAssign(done?); solveData(done?); incrementAndSolve?]
     val time = System.currentTimeMillis()
     val builders = ChocoBuilderSAT.gc2BoolConstrBuilders(this,da)
-//    println("#> solving abst using choco SAT cnf - "+da.pp)
+//    println("#> solving abst using choco SAT cnf - ") //+da.pp)
 //    println("builder: "+builders.mkString("\n"))
     val optSolBool = ChocoBuilderSAT.solveChocoBool(da,builders)
 
@@ -664,7 +672,7 @@ abstract class Formula extends Constraints[GCSolution,Formula] {
         // TODO: Check if FUNCTIONS need to be considered.
         if (da.max contains v) {
           for ((pred,fs) <- da.domain(v)) {
-            val pvar = predVar(v,pred,fs)
+            val pvar = mkPredVar(v,pred,fs)
             avoid = avoid or (if (sol hasFlowOn pvar) common.choco.Neg(common.choco.Var(pvar))
             else common.choco.Var(pvar))
           }

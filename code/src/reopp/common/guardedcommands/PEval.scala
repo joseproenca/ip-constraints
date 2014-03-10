@@ -193,7 +193,7 @@ class PEval(
     // and without known data yet
     for ((v,bool) <- sol.varMap)
       if (isFlowVar(v) && bool) {
-        val vd = dataVar(v)
+        val vd = toDataVar(v)
         if (!(data contains vd) && !(rest contains vd))
           rest += vd -> Set(vd)
       }
@@ -247,7 +247,7 @@ class PEval(
                 val flowpred = FlowPred((x:IntegerExpressionVariable) =>
                   pred.asInstanceOf[IntPredicate].choPred(comp(fs.asInstanceOf[List[IntFunction]])(x)),"x")
 
-                preds += (if (sol(predVar(v,pred,fs))) flowpred
+                preds += (if (sol(mkPredVar(v,pred,fs))) flowpred
                           else reopp.common.choco.Neg(flowpred))
               }
               else
@@ -331,7 +331,7 @@ class PEval(
 
   def isFinished = rest.isEmpty
 
-  def getSol(sol:Solution) : GCSolution = {
+  def getSol(sol:Solution[_]) : GCSolution = {
     new GCSolution(sol,data)
   }
 

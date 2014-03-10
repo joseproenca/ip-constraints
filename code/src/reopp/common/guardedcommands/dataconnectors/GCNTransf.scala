@@ -10,7 +10,7 @@ import reopp.common.guardedcommands.GuardedCom
  *
  * Created by jose on 10/04/13.
  */
-class GCNTransf (ans: List[String], b: String, uid: Int, f: Function) extends GCConnector(ans ++ List(b), uid) {
+class GCNTransf (ans: List[String], b: String, f: Function) extends GCConnector(ans ++ List(b)) {
   private val as = ans.map(mkVar(_))
 //  private val b:Var = "b" // mkVar(bn, uid) // Var(flowVar(bn,uid)) // implicit conversion
 

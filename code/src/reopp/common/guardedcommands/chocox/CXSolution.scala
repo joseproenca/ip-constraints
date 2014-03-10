@@ -4,6 +4,7 @@ import choco.cp.solver.CPSolver
 import choco.kernel.model.variables.integer.IntegerVariable
 import reopp.common.{Buffer, Predicate, EmptySol, Solution}
 import reopp.common.guardedcommands.GCSolution
+import reopp.common.Utils.addID
 import reopp.common
 
 /**
@@ -56,6 +57,12 @@ class CXSolution(choSol: CPSolver, varMap:Map[String,IntegerVariable],
   def size = varMap.size
   def sizeModel = choSol.getModel.getNbIntVars
 
+//  override type S = CXSolution
+  override def withID(id:Int) = new CXSolution(choSol,varMap,b,datahash,funhash,newpred) {
+    override def hasFlowOn(end:String) = super.hasFlowOn(addID(end,id))
+    override def getDataOn(end:String) = super.getDataOn(addID(end,id))
+  }
+
   override def toString: String = {
     var res: String = ""
     //    val it: java.util.Iterator[IntegerVariable] = choSol.getModel.getIntVarIterator
@@ -106,13 +113,15 @@ class CXSolution(choSol: CPSolver, varMap:Map[String,IntegerVariable],
 }
 
 object CXSolution {
-  class MyEmptySol extends Solution {
+  class MyEmptySol extends Solution[MyEmptySol] {
     def hasFlowOn(end: String) = false
     def getDataOn(end: String) = None
+    type S = MyEmptySol
+    def withID(id:Int) = this
     override def toString = "ø"
   }
 
-  implicit object NoSol extends EmptySol[CXSolution] {
+  implicit object NoSol extends EmptySol[GCSolution] {
     def sol = new CXSolution(new CPSolver(),Map(),new Buffer,Map(),Map(),Map())
   }
 }

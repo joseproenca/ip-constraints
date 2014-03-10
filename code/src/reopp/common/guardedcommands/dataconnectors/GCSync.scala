@@ -12,7 +12,7 @@ import reopp.common.guardedcommands._
  * To change this template use File | Settings | File Templates.
  */
 
-class GCSync(a: String, b: String, uid: Int) extends GCConnector(List(a,b), uid) {
+class GCSync(a: String, b: String) extends GCConnector(List(a,b)) {
 
   private def constraints = Formula(
     a <-> b

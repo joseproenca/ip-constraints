@@ -8,7 +8,7 @@ import akka.actor.Actor
 import akka.actor.ActorRef
 import akka.actor.Props
 
-class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
+class Worker[S<:Solution[S],C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
       (conflictMng: ActorRef, strat: Str)
       (implicit builder: CBuilder[S,C]) extends Actor {
 
@@ -59,7 +59,15 @@ class Worker[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
     case QuitAndUpdate(ns:Iterable[Nd]) =>
       debug("updating and quitting. Bye!\n"+sol)
       for (n:Nd <- ns) {
-        n.connector.update(sol)
+        n.connector.update(sol.map(_.withID(n.uid)))
+//        n.connector.update(sol)
+//        if (sol.isDefined) {
+//          n.connector.update(SomeSol(sol.get.withID(n.uid)))
+//        }
+//        else{
+//          println("no sol...")
+//          n.connector.update(sol)
+//        }          
 //        n.init // start if ready --> NO, otherwise new workers will start before current and unlocked
       }
 //      sender ! Updated
@@ -144,7 +152,7 @@ object Worker {
 //    w.work(node) // w ! Claim(node)
 //    w
 //  }
-  def props[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
+  def props[S<:Solution[S],C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
       (conflictMng: ActorRef, strat:Str)
       (implicit builder: CBuilder[S,C]): Props =
       	Props(new Worker[S,C,Str](conflictMng,strat))

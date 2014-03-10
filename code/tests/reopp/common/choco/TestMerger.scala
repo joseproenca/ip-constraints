@@ -32,9 +32,9 @@ class TestMerger extends FunSpec {
 //    c = c ++ Set(Var(Utils.flowVar("x",44)))
 
     c ++=
-      sync("x",44,"w",42) ++
-      sync("y",44,"w",43) ++
-      sync("r",45,"a",44)
+      sync("x44","w42") ++
+      sync("y44","w43") ++
+      sync("r45","a44")
 
     c.close()
 

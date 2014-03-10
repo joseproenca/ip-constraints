@@ -4,6 +4,7 @@ import choco.kernel.model.variables.integer.IntegerVariable
 import choco.cp.solver.CPSolver
 import scala.collection.mutable.{Map => MuMap}
 import reopp.common.{Buffer, Solution, EmptySol}
+import reopp.common.Utils.addID
 import reopp.common
 
 /**
@@ -15,11 +16,16 @@ import reopp.common
  */
 
 class ChoSolution(val choSol: CPSolver, varMap: Map[String, IntegerVariable], buf: Option[Buffer])
-    extends Solution {
+    extends Solution[ChoSolution] {
   val extension = MuMap[String, Int]()
 
   override def getBuffer = buf
 
+  type S = ChoSolution
+  def withID(id:Int) = new ChoSolution(choSol,varMap,buf) {
+    override def hasFlowOn(end:String) = super.hasFlowOn(addID(end,id))
+    override def getDataOn(end:String) = super.getDataOn(addID(end,id))
+  }
 
   def getDataOn(v: String) = getVal(v).map(Int.box(_))
 
@@ -83,9 +89,11 @@ class ChoSolution(val choSol: CPSolver, varMap: Map[String, IntegerVariable], bu
 }
 
 object ChoSolution {
-  class MyEmptySol extends Solution {
+  class MyEmptySol extends Solution[MyEmptySol] {
     def hasFlowOn(end: String) = false
     def getDataOn(end: String) = None
+    type S = MyEmptySol
+    def withID(id:Int) = this
     override def toString = "ø"
   }
 

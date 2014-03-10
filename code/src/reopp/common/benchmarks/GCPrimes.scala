@@ -87,22 +87,22 @@ object GCPrimes extends App {
   )
 
   def genFilters(size: Int): Formula = {
-    var commands = new GCSDrain("x","x"+size,0).getConstraints ++
-                   new GCIFilter("x","x0",0,new GT(1)).getConstraints
+    var commands = new GCSDrain("x","x"+size).getConstraints ++
+                   new GCIFilter("x","x0",new GT(1)).getConstraints
 //                   new GCSync("x","x0",0).getConstraints
     for (i <- 0 to (size-1)) commands = commands ++
-      new GCIFilter("x"+i,"x"+(i+1),0,new Divides(i),positive=false).getConstraints
+      new GCIFilter("x"+i,"x"+(i+1),new Divides(i),positive=false).getConstraints
 //      new GCSync("x"+i,"x"+(i+1),0).getConstraints
     commands
   }
 
   def genSpout(): Formula = {
-    new GCSSpout("reader","x",0).getConstraints
+    new GCSSpout("reader","x").getConstraints
   }
 
 
   val problem = genFilters(n) ++ genSpout ++
-    Formula(True --> Var(flowVar("x0",0))) // require some dataflow
+    Formula(True --> Var(mkFlowVar("x0"))) // require some dataflow
 
   if (justInit) problem.justInit = true
 //  println(problem.commands.mkString(","))

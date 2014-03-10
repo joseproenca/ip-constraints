@@ -13,7 +13,7 @@ import reopp.common.guardedcommands.Var
  * To change this template use File | Settings | File Templates.
  */
 
-class GCMonitor (a: String, b: String, uid: Int, f: Function) extends GCSync(a,b,uid) {
+class GCMonitor (a: String, b: String, f: Function) extends GCSync(a,b) {
 
   override def update(s: OptionSol[GCSolution]) {
 //    println("updating! - based on "+a+"\n"+s.get)

@@ -201,6 +201,7 @@ class DomainAbst {
 
 
   def guessOrder: List[String] = {
+//    println("guessing order - "+this)
     var done = Set[String]()
     var res = List[String]()
     for (m <- max) {

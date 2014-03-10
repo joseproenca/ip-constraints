@@ -127,7 +127,7 @@ object AllSyncTransactionSeq extends App {
     //    println("  # THE PROBLEM:\n"+problem.commands.mkString(" - ","\n - ","\n"))
 
     var time: Long = 0
-    var res: OptionSol[Solution] = null
+    var res: OptionSol[Solution[_]] = null
     var spent: Long = 0
 
 

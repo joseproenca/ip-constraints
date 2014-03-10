@@ -87,14 +87,14 @@ object ChocoDyn {
 
   private def addPred(v: String, p: Predicate, vm: VarMap, dm: DataMap, b:Buffer, np: NewPred, cs: MutSet[ChocoConstr]):
       IntegerVariable = {
-    val name = Utils.predVar(v,p,List())
+    val name = Utils.mkPredVar(v,p,List())
     if (np contains name) np(name)
     else {
       val iv = Choco.makeBooleanVar(name)
       np(name) = iv
       cs += DynPredManager.genPredicate(
         // BoolVar of v              ,DataVar of v, PredVar,dm,b,predicate
-        getVar(vm,Utils.flowVar(v)),getVar(vm,v),iv      ,dm,b,p)
+        getVar(vm,Utils.toFlowVar(v)),getVar(vm,v),iv      ,dm,b,p)
       iv
     }
   }
@@ -106,14 +106,14 @@ object ChocoDyn {
     case FunAssgn(v1, v2:String, fn) => // v1 = f(v2)
       cs += DynFuncManager.genFunction(
         // boolvar of v1             , datavar of v1, boolvar of v2               , datavar of v2,dm,b,function
-        getVar(vm,Utils.flowVar(v1)),getVar(vm,v1) ,getVar(vm,Utils.flowVar(v2)),getVar(vm,v2) ,dm,b,fn)
+        getVar(vm,Utils.toFlowVar(v1)),getVar(vm,v1) ,getVar(vm,Utils.toFlowVar(v2)),getVar(vm,v2) ,dm,b,fn)
       Choco.TRUE
     case NFunAssgn(v1, v2s:List[String], fn) => // v1 = f(v2s)
       cs += DynNFuncManager.genNFunction(
         // boolvar of v1             , datavar of v1,
-        getVar(vm,Utils.flowVar(v1)),getVar(vm,v1) ,
+        getVar(vm,Utils.toFlowVar(v1)),getVar(vm,v1) ,
         // boolvars of v2                          ,
-        v2s.map(v2=>getVar(vm,Utils.flowVar(v2))),
+        v2s.map(v2=>getVar(vm,Utils.toFlowVar(v2))),
         // datavar of v2           ,dm,b,function
         v2s.map(v2=>getVar(vm,v2)) ,dm,b,fn)
       Choco.TRUE

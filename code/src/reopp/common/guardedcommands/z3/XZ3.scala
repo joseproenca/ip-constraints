@@ -56,8 +56,10 @@ object XZ3 {
 
     if (!solver.check().isDefined || !solver.check().get)
       NoneSol(theory.buf)
-    else
-      SomeSol(GCWrapper(new XZ3Solution(theory,solver.getModel()),theory.buf))
+    else{
+      val gcsol: GCSolution = GCWrapper(new XZ3Solution(theory,solver.getModel()),theory.buf)
+      SomeSol[GCSolution](gcsol)
+    }
 
 //    z3.checkAndGetModel() match {
 ////      case (None, m) =>
@@ -124,7 +126,7 @@ object XZ3 {
 
     def xpred(p: reopp.common.Predicate, v:String) = {
       extraAssigns += z3.mkImplies(
-        z3.mkNot(z3.mkBoolConst(z3.mkStringSymbol(Utils.flowVar(v)))),
+        z3.mkNot(z3.mkBoolConst(z3.mkStringSymbol(Utils.mkFlowVar(v)))),
         getVar(v) === constant(0))
       predicate( n => {
 //        println("testing if "+p+"(#"+n+")")
@@ -143,7 +145,7 @@ object XZ3 {
       fvarseed -= 1
       extraAssigns += (varVal === constant(fvarseed+1))
       extraAssigns += z3.mkImplies(
-        z3.mkNot(z3.mkBoolConst(z3.mkStringSymbol(Utils.flowVar(v)))),
+        z3.mkNot(z3.mkBoolConst(z3.mkStringSymbol(Utils.mkFlowVar(v)))),
         getVar(v) === constant(0))
 
       function( n =>
@@ -163,7 +165,7 @@ object XZ3 {
       extraAssigns += (varVal === constant(fvarseed+1))
       for (v <- vs)
         extraAssigns += z3.mkImplies(
-          z3.mkNot(z3.mkBoolConst(z3.mkStringSymbol(Utils.flowVar(v)))),
+          z3.mkNot(z3.mkBoolConst(z3.mkStringSymbol(Utils.mkFlowVar(v)))),
           getVar(v) === constant(0))
 
 
@@ -242,7 +244,7 @@ object XZ3 {
     new GCSolution(s,Map()) {
       override def getDataOn(end:String) = s.getDataOn(end)
     }
-  private class XZ3Solution(theory: XTheory, model: Z3Model) extends Solution {
+  private class XZ3Solution(theory: XTheory, model: Z3Model) extends Solution[XZ3Solution] {
     private val z3 = theory.getContext
 
     // map values in the solution (e.g., ts--441326531!val!1) to valid data
@@ -266,6 +268,12 @@ object XZ3 {
     def getDataOn(end: String) =
       theory.getVal(theory.getVar(end),model,solValVars)
 //      model.evalAs[Int](z3.mkBoolConst(z3.mkStringSymbol(end)))
+
+    type S = XZ3Solution
+    def withID(id:Int) = new XZ3Solution(theory,model) {
+      override def hasFlowOn(end:String) = super.hasFlowOn(addID(end,id))
+      override def getDataOn(end:String) = super.getDataOn(addID(end,id))
+    }
 
     override def toString = {
       var res = ""

@@ -1,7 +1,7 @@
 package reopp.common.choco
 
 import reopp.common.{Utils}
-import Utils.{flowVar,dataVar}
+import Utils.{mkFlowVar,mkDataVar}
 import org.scalatest.FunSpec
 import dataconnectors.{ChoReader, ChoFilter, ChoWriter}
 import ChoConnector.ChoBuilder._
@@ -41,9 +41,9 @@ class TestFilter extends FunSpec {
 ////    c = c ++ Set(Var(ConstrBuilder.flowVar("x",44)))
 
     c ++=
-      sync("fi",43,"w",42) ++
-      sync("fi",44,"fo",43) ++
-      sync("r",45,"fo",44)
+      sync("fi43","w42") ++
+      sync("fi44","fo43") ++
+      sync("r45","fo44")
 
     c.close()
 
@@ -58,13 +58,13 @@ class TestFilter extends FunSpec {
     {assert(res.isDefined)}
 
     it ("after first filter there is data flow")
-    {assert(res.get.hasFlowOn(flowVar("fo",43)))}
+    {assert(res.get.hasFlowOn(mkFlowVar("fo43")))}
 
     it ("after first filter data is 7")
-    {assert(res.get.getVal(dataVar("fo",43)) == Some(7))}
+    {assert(res.get.getVal(mkDataVar("fo43")) == Some(7))}
 
     it ("after 2nd filter there is no dataflow")
-    {assert(!res.get.hasFlowOn(flowVar("fo",44)))}
+    {assert(!res.get.hasFlowOn(mkFlowVar("fo44")))}
 
   }
 }

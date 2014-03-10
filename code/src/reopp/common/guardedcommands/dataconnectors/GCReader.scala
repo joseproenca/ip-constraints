@@ -14,7 +14,7 @@ import reopp.common.guardedcommands._
  * To change this template use File | Settings | File Templates.
  */
 
-class GCReader(x: String, id: Int, var size: Int) extends GCConnector(List(x), id) {
+class GCReader(x: String, var size: Int) extends GCConnector(List(x)) {
 
   def getConstraints =
     if (size != 0) Formula()
@@ -24,7 +24,7 @@ class GCReader(x: String, id: Int, var size: Int) extends GCConnector(List(x), i
     if (s.isDefined)
     if (s.get hasFlowOn mkVar(x)) {
       println("//////////////////")
-      println("// Got data - "+x+": "+s.get.getDataOn(dataVar(x,getID)))
+      println("// Got data - "+x+": "+s.get.getDataOn(mkDataVar(x)))
 //      println("// new size: "+size)
       println("//////////////////")
       notifyflow()

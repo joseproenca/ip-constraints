@@ -1,7 +1,7 @@
 package reopp.common.guardedcommands
 
 import reopp.common._
-import reopp.common.Utils.{ppVar,dataVar}
+import reopp.common.Utils.{ppVar,mkDataVar,addID}
 
 /**
  * Created with IntelliJ IDEA.
@@ -11,7 +11,7 @@ import reopp.common.Utils.{ppVar,dataVar}
  * To change this template use File | Settings | File Templates.
  */
 
-class GCSolution(val boolSol: Solution, var varMap: Map[String, Any]) extends Solution {
+class GCSolution(val boolSol: Solution[_], var varMap: Map[String, Any]) extends Solution[GCSolution] {
 //  var buf: Option[Buffer] = None
   override def getBuffer = boolSol.getBuffer //buf
 
@@ -21,6 +21,13 @@ class GCSolution(val boolSol: Solution, var varMap: Map[String, Any]) extends So
     boolSol hasFlowOn end
   //if (boolSol contains end) varMap(end) else false
 
+  type S = GCSolution
+  def withID(id:Int) = new GCSolution(boolSol,varMap) {
+	    override def hasFlowOn(end:String) = super.hasFlowOn(addID(end,id))
+	    override def getDataOn(end:String) = super.getDataOn(addID(end,id))
+  }
+ 
+    
   override def toString: String = {
     var res = boolSol.toString
     for ((v:String,k:Any) <- varMap.toList.sortBy((x:(String,Any)) => x._1))
@@ -47,9 +54,11 @@ class GCSolution(val boolSol: Solution, var varMap: Map[String, Any]) extends So
 }
 
 object GCSolution {
-  class MyEmptySol extends Solution {
+  class MyEmptySol extends Solution[MyEmptySol] {
     def hasFlowOn(end: String) = false
     def getDataOn(end: String) = None
+    type S = MyEmptySol
+    def withID(id:Int) = this
     override def toString = "Ø"
   }
 

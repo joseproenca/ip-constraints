@@ -2,7 +2,7 @@ package reopp.common.guardedcommands.dataconnectors
 
 import reopp.common.guardedcommands._
 import reopp.common.Utils
-import Utils.{flowVar,st2GC,srcVar,snkVar,st2GCs}
+import Utils._
 import reopp.common.guardedcommands.Var
 
 /**
@@ -13,7 +13,7 @@ import reopp.common.guardedcommands.Var
  * To change this template use File | Settings | File Templates.
  */
 
-class GCADrain (a: String, b: String, uid: Int) extends GCConnector(List(a,b), uid) {
+class GCADrain (a: String, b: String) extends GCConnector(List(a,b)) {
 
 
   def getConstraints = if (!useCC3)

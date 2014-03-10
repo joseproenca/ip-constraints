@@ -13,7 +13,7 @@ import reopp.common.guardedcommands._
  * To change this template use File | Settings | File Templates.
  */
 
-class GCLossy(a: String, b: String, uid: Int) extends GCConnector(List(a,b), uid) {
+class GCLossy(a: String, b: String) extends GCConnector(List(a,b)) {
 
   private def constraints : Formula = b --> a
 

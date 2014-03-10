@@ -5,13 +5,17 @@ package reopp.common
  *
  * Created by jose on 01/08/13.
  */
-abstract sealed class OptionSol[+S <: Solution] {
+abstract sealed class OptionSol[+S <: Solution[_]] {
   def get: S
   def isDefined: Boolean
   def getBuffer: Option[Buffer]
+  def map[B <: Solution[B]](f:(S=>B)): OptionSol[B] = this match {
+    case SomeSol(s:S) => SomeSol(f(s))
+    case NoneSol(b) => NoneSol(b)
+  } 
 }
 
-case class SomeSol[+S <: Solution](s:S) extends OptionSol[S] {
+case class SomeSol[+S <: Solution[_]](s:S) extends OptionSol[S] {
   def get = s
   val isDefined = true
   def getBuffer = s.getBuffer

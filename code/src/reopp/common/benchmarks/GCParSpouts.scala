@@ -34,20 +34,20 @@ object GCParSpouts extends App {
 
   if (n > 0)
     problem ++=
-      ( new GCSSpout("b1","c1",0).getConstraints ++
-        Formula(True --> Var(flowVar("a1",0))) ++
-        Formula(True --> Var(flowVar("d1",0))) ++
-        new GCIFilter("b1","a1",0,new LT(1)).getConstraints ++
-        new GCIFilter("c1","d1",0,new GT(1)).getConstraints
+      ( new GCSSpout("b1","c1").getConstraints ++
+        Formula(True --> Var(mkFlowVar("a1"))) ++
+        Formula(True --> Var(mkFlowVar("d1"))) ++
+        new GCIFilter("b1","a1",new LT(1)).getConstraints ++
+        new GCIFilter("c1","d1",new GT(1)).getConstraints
       )
 
   for (i <- 2 to n) {
     problem ++=
-      ( new GCSSpout("b"+i,"c"+i,0).getConstraints ++
-        new GCIFilter("b"+i,"a"+i,0,new LT(i)).getConstraints ++
-        new GCIFilter("c"+i,"d"+i,0,new GT(i)).getConstraints ++
-        new GCSDrain("a"+i,"a"+(i-1),0).getConstraints ++
-        new GCSDrain("d"+i,"d"+(i-1),0).getConstraints
+      ( new GCSSpout("b"+i,"c"+i).getConstraints ++
+        new GCIFilter("b"+i,"a"+i,new LT(i)).getConstraints ++
+        new GCIFilter("c"+i,"d"+i,new GT(i)).getConstraints ++
+        new GCSDrain("a"+i,"a"+(i-1)).getConstraints ++
+        new GCSDrain("d"+i,"d"+(i-1)).getConstraints
       )
   }
 

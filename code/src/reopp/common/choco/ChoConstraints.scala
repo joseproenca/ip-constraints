@@ -25,6 +25,16 @@ import scala.Some
 class ChoConstraints extends Constraints[ChoSolution,ChoConstraints] {
   type mytype = ChoConstraints
 
+//  throw new RuntimeException("ChoConstraint not maintained.\n"+
+//      "Only works when IDs are alwyas constant - not the case with nodes (workers).\n"+
+//      "Need to make IDs of variable dynamic.")
+
+  // incorrect definition
+  def withID(uid:Int) =   throw new RuntimeException("ChoConstraint not maintained.\n"+
+      "Only works when IDs are alwyas constant - not the case with nodes (workers).\n"+
+      "Need to make IDs of variable dynamic.")
+
+  
   var constrBuilders = List[ConstrBuilder]()   // kept in sync -'
 
   def impose(c:ConstrBuilder) {
@@ -136,6 +146,7 @@ class ChoConstraints extends Constraints[ChoSolution,ChoConstraints] {
     // If there is an order of variables passed, use a strategy based on that order.
     if (!(order isEmpty))
       s.addGoal(new AssignVar(new StaticVarOrder(s,buildOrder(order, s)),new IncreasingDomain))
+//    println("order: "+order.mkString("-"))
 
 //    println("solving...")
     val solved = s.solve
@@ -159,14 +170,14 @@ class ChoConstraints extends Constraints[ChoSolution,ChoConstraints] {
 //    println("port names in the solver: "+svars.keys.map(var2port(_)).mkString(" - "))
 //    println("port vars in the order: "+order.map(var2port(_)).mkString(" -> "))
 
-
     for (v <- order) {                    // for the next varname
-      if (svars contains flowVar((v)))  // checks if it has a real (flow) variable
-        flowvar ::= svars(flowVar(v))   // append it to flowvar
+      if (svars contains toFlowVar((v)))  // checks if it has a real (flow) variable
+        flowvar ::= svars(toFlowVar(v))   // append it to flowvar
       //        if (svars contains v)               datavar ::= svars(v)
       svars -= v
-      svars -= flowVar(v)
+      svars -= mkFlowVar(v)
     }
+//    println("flowvars: "+flowvar.mkString(","))
 
     val fullorder: Array[IntDomainVar] = (flowvar ::: svars.values.toList).toArray
     //      val fullorder: Array[IntDomainVar] = (flowvar.reverse ::: svars.values.toList.sortBy(_.getName()).reverse).toArray

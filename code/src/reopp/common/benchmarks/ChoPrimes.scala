@@ -97,7 +97,7 @@ object ChoPrimes extends App {
 
 
   val problem = genFilters(n) ++ genSpout ++
-    ChoConstraints(Var(flowVar("x0",0))) // require some dataflow
+    ChoConstraints(Var(mkFlowVar("x0"))) // require some dataflow
 
 
   val time = System.currentTimeMillis()

@@ -12,7 +12,7 @@ import reopp.common.guardedcommands._
  * To change this template use File | Settings | File Templates.
  */
 
-class GCNExRouter(src: String, snks: List[String], uid: Int) extends GCConnector(src::snks, uid) {
+class GCNExRouter(src: String, snks: List[String]) extends GCConnector(src::snks) {
 //  def v(x:String) = Var(flowVar(x, uid))
 
 
@@ -30,7 +30,7 @@ class GCNExRouter(src: String, snks: List[String], uid: Int) extends GCConnector
   }
 
   private def genData(lst:List[String]): List[GuardedCom] =
-    for (snk <- snks) yield snk --> VarAssgn(dataVar(snk,uid),dataVar(src,uid))
+    for (snk <- snks) yield snk --> VarAssgn(snk.data,src.data)
 
   private def c1 = src --> orSnks
   private def c2 = orSnks --> src

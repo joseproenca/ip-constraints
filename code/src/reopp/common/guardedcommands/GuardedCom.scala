@@ -41,7 +41,7 @@ case class GuardedCom(g:Guard, st: Statement) {
         val dv = dom.domain(v) // v -> Set(P1,P2,P3)
 //        println(" ** "+v+" - "+dv.mkString(","))
         for ((p,fs) <- dv)
-          res += predVar(v,p,fs)
+          res += mkPredVar(v,p,fs)
       }
       else {
         res += v
@@ -78,7 +78,7 @@ case class GuardedCom(g:Guard, st: Statement) {
   }
 
 
-  def partialEval(sol:Solution): PEval = { //(Map[String,Int], Map[String,String]) = {
+  def partialEval(sol:Solution[_]): PEval = { //(Map[String,Int], Map[String,String]) = {
     if (g.eval(sol)) {
 //      println("  # PE ("+g.toString+"): "+st.toString)
       st.partialEval(sol)
@@ -139,8 +139,8 @@ abstract sealed class Guard extends Statement{
 
   override def afv2(da:DomainAbst,vs:MutMap[String,Int]): Unit = this match {
     case Var(name) => updD(da,vs,name)
-    case IntPred(v, p) => for ((p,fs) <- da.domain(v)) updD(da,vs,predVar(v,p,fs))
-    case Pred(v, p) => for ((p,fs) <- da.domain(v)) updD(da,vs,predVar(v,p,fs))
+    case IntPred(v, p) => for ((p,fs) <- da.domain(v)) updD(da,vs,mkPredVar(v,p,fs))
+    case Pred(v, p) => for ((p,fs) <- da.domain(v)) updD(da,vs,mkPredVar(v,p,fs))
     case And(g1, g2) => {g1.afv2(da,vs); g2.afv2(da,vs)}
     case Or(g1, g2) => {g1.afv2(da,vs); g2.afv2(da,vs)}
     case Neg(g) => g.afv2(da,vs)
@@ -187,13 +187,13 @@ abstract sealed class Guard extends Statement{
     case Neg(Or(e1,e2)) => (Neg(e1) and Neg(e2)).toCNF(vars,da)
     case Var(a) => List(Array(vars(a)))
     case Neg(Var(a)) => List(Array(vars(a)*(-1)))
-    case IntPred(v, p) => Var(predVar(v,p,List())).toCNF(vars,da)
+    case IntPred(v, p) => Var(mkPredVar(v,p,List())).toCNF(vars,da)
     //      if (da.domain(v) contains p) Var(predVar(v,p)).toCNF(vars,da)
     //      else List(Array())
-    case Neg(IntPred(v, p)) => List(Array(vars(predVar(v,p,List()))*(-1)))
+    case Neg(IntPred(v, p)) => List(Array(vars(mkPredVar(v,p,List()))*(-1)))
     //      Neg(Var(predVar(v,p))).toCNF(vars,da)
-    case Pred(v, p) => Var(predVar(v,p,List())).toCNF(vars,da)
-    case Neg(Pred(v, p)) => List(Array(vars(predVar(v,p,List()))*(-1)))
+    case Pred(v, p) => Var(mkPredVar(v,p,List())).toCNF(vars,da)
+    case Neg(Pred(v, p)) => List(Array(vars(mkPredVar(v,p,List()))*(-1)))
     case True => List()
     case Neg(True) => List(Array())
     case Neg(Neg(a)) => a.toCNF(vars,da)
@@ -216,13 +216,13 @@ abstract sealed class Guard extends Statement{
     case Neg(Or(e1,e2)) => (Neg(e1) and Neg(e2)).toCNF2(vars,da,l)
     case Var(a) => l += Array(vars(a))
     case Neg(Var(a)) => l += Array(vars(a)*(-1))
-    case IntPred(v, p) => Var(predVar(v,p,List())).toCNF2(vars,da,l)
+    case IntPred(v, p) => Var(mkPredVar(v,p,List())).toCNF2(vars,da,l)
     //      if (da.domain(v) contains p) Var(predVar(v,p)).toCNF(vars,da)
     //      else List(Array())
-    case Neg(IntPred(v, p)) => l += Array(vars(predVar(v,p,List()))*(-1))
+    case Neg(IntPred(v, p)) => l += Array(vars(mkPredVar(v,p,List()))*(-1))
     //      Neg(Var(predVar(v,p))).toCNF(vars,da)
-    case Pred(v, p) => Var(predVar(v,p,List())).toCNF2(vars,da,l)
-    case Neg(Pred(v, p)) => l += Array(vars(predVar(v,p,List()))*(-1))
+    case Pred(v, p) => Var(mkPredVar(v,p,List())).toCNF2(vars,da,l)
+    case Neg(Pred(v, p)) => l += Array(vars(mkPredVar(v,p,List()))*(-1))
     case True => {}
     case Neg(True) => l += Array()
     case Neg(Neg(a)) => a.toCNF2(vars,da,l)
@@ -234,10 +234,10 @@ abstract sealed class Guard extends Statement{
   }
 
 
-  def eval(sol: Solution): Boolean = this match {
+  def eval(sol: Solution[_]): Boolean = this match {
     case Var(name) => sol.hasFlowOn(name)
-    case IntPred(v, p) => sol.hasFlowOn(predVar(v,p,List()))
-    case Pred(v, p) => sol.hasFlowOn(predVar(v,p,List()))
+    case IntPred(v, p) => sol.hasFlowOn(mkPredVar(v,p,List()))
+    case Pred(v, p) => sol.hasFlowOn(mkPredVar(v,p,List()))
     case And(g1, g2) => g1.eval(sol) && g2.eval(sol)
     case Or(g1, g2) => g1.eval(sol) || g2.eval(sol)
     case Neg(g) => !g.eval(sol)
@@ -321,14 +321,14 @@ abstract sealed class Statement {
   }
   def afv2(da:DomainAbst,vs:MutMap[String,Int]): Unit = this match {
     case g: Guard => g.afv2(da,vs)
-    case IntAssgn(v, _)  => for ((p,fs) <- da.domain(v)) updD(da,vs,predVar(v,p,fs))
-    case DataAssgn(v, _) => for ((p,fs) <- da.domain(v)) updD(da,vs,predVar(v,p,fs))
+    case IntAssgn(v, _)  => for ((p,fs) <- da.domain(v)) updD(da,vs,mkPredVar(v,p,fs))
+    case DataAssgn(v, _) => for ((p,fs) <- da.domain(v)) updD(da,vs,mkPredVar(v,p,fs))
     case VarAssgn(v1, v2) =>
-      for ((p,fs) <- da.domain(v1)) updD(da,vs,predVar(v1,p,fs))
-      for ((p,fs) <- da.domain(v2)) updD(da,vs,predVar(v2,p,fs))
+      for ((p,fs) <- da.domain(v1)) updD(da,vs,mkPredVar(v1,p,fs))
+      for ((p,fs) <- da.domain(v2)) updD(da,vs,mkPredVar(v2,p,fs))
     case FunAssgn(v1,v2,_) =>
-      for ((p,fs) <- da.domain(v1)) updD(da,vs,predVar(v1,p,fs))
-      for ((p,fs) <- da.domain(v2)) updD(da,vs,predVar(v2,p,fs))
+      for ((p,fs) <- da.domain(v1)) updD(da,vs,mkPredVar(v1,p,fs))
+      for ((p,fs) <- da.domain(v2)) updD(da,vs,mkPredVar(v2,p,fs))
     case NFunAssgn(v,v2s,f) => v2s match {
       case List(v2) => FunAssgn(v,v2,f).afv2(da,vs)
       case _ => throw new Exception("Predicate abstraction cannot be applied to n-ary functions - "+f)
@@ -382,10 +382,10 @@ abstract sealed class Statement {
         for (f<-fs.reverse) newd = f.calculate(newd)
 //        println("precomputing "+v+" for "+pred+" after "+fs+" ("+d+" -> "+newd+")")
         if (pred.check(newd)) {
-          res ::= vars(predVar(v,pred,fs))
+          res ::= vars(mkPredVar(v,pred,fs))
         }
         else
-          res ::= vars(predVar(v,pred,fs)) * (-1)
+          res ::= vars(mkPredVar(v,pred,fs)) * (-1)
       }
 //      println("got array "+res.mkString("[",",","]"))
       res.map(Array(_))
@@ -397,7 +397,7 @@ abstract sealed class Statement {
       var res: CNF.Core = List()
       for ((pred,fs) <- d1)
         if (d2 contains (pred,fs)) {
-          val t =  (Var(predVar(v1,pred,fs)) <-> Var(predVar(v2,pred,fs))).toCNF(vars,da)
+          val t =  (Var(mkPredVar(v1,pred,fs)) <-> Var(mkPredVar(v2,pred,fs))).toCNF(vars,da)
 //          println("converting "+v1+" <-> "+v2+" for "+pred+" - "+ t.map(_.mkString(",")).mkString("["," ; ","]"))
           res :::= t
         }
@@ -410,7 +410,7 @@ abstract sealed class Statement {
       for ((pred,fs) <- d1)
         if (d2 contains (pred,f::fs)) {
 //          println("adding "+predVar(v1,pred,fs)+" <-> "+predVar(v2,pred,f::fs))
-          val t =  (Var(predVar(v1,pred,fs)) <-> Var(predVar(v2,pred,f::fs))).toCNF(vars,da)
+          val t =  (Var(mkPredVar(v1,pred,fs)) <-> Var(mkPredVar(v2,pred,f::fs))).toCNF(vars,da)
           res :::= t
         }
     //      println("conversion: "+res.map(_.mkString(",")).mkString("["," ; ","]"))
@@ -434,23 +434,23 @@ abstract sealed class Statement {
         var newd: Any = d
         for (f<-fs.reverse) newd = f.calculate(newd)
         if (pred.check(newd)) {
-          l += Array(vars(predVar(v,pred,fs)))
+          l += Array(vars(mkPredVar(v,pred,fs)))
         }
         else
-          l += Array(vars(predVar(v,pred,fs)) * (-1))
+          l += Array(vars(mkPredVar(v,pred,fs)) * (-1))
       }
     case VarAssgn(v1, v2) =>
       val (d1,d2) = (da.domain(v1),da.domain(v2))
       for ((pred,fs) <- d1)
         if (d2 contains (pred,fs)) {
-          (Var(predVar(v1,pred,fs)) <-> Var(predVar(v2,pred,fs))).toCNF2(vars,da,l)
+          (Var(mkPredVar(v1,pred,fs)) <-> Var(mkPredVar(v2,pred,fs))).toCNF2(vars,da,l)
         }
     case FunAssgn(v1, v2, f) =>
       //      println("converting var eq of "+v1+" and "+v2)
       val (d1,d2) = (da.domain(v1),da.domain(v2))
       for ((pred,fs) <- d1)
         if (d2 contains (pred,f::fs)) {
-          (Var(predVar(v1,pred,fs)) <-> Var(predVar(v2,pred,f::fs))).toCNF2(vars,da,l)
+          (Var(mkPredVar(v1,pred,fs)) <-> Var(mkPredVar(v2,pred,f::fs))).toCNF2(vars,da,l)
         }
     case NFunAssgn(v,vs,f) => vs match {
       case List(v2) => FunAssgn(v,v2,f).toCNF2(vars,da,l)
@@ -461,20 +461,20 @@ abstract sealed class Statement {
   }
 
 
-  def partialEval(sol: Solution): PEval = this match {
+  def partialEval(sol: Solution[_]): PEval = this match {
     case g: Guard => new PEval(Map(),Map(),Map())
     case IntAssgn(v, d) =>
-      if (sol.hasFlowOn(flowVar(v))) new PEval(Map(v -> d),Map(),Map())
+      if (sol.hasFlowOn(toFlowVar(v))) new PEval(Map(v -> d),Map(),Map())
       else new PEval(Map(),Map(),Map())
     case DataAssgn(v, d) =>
-      if (sol.hasFlowOn(flowVar(v))) new PEval(Map(v -> d),Map(),Map())
+      if (sol.hasFlowOn(toFlowVar(v))) new PEval(Map(v -> d),Map(),Map())
       else new PEval(Map(),Map(),Map())
     case VarAssgn(v1, v2) =>
-      if (sol.hasFlowOn(flowVar(v2))) new PEval(Map(),Map(v2 -> ImSet(v1)),Map())
+      if (sol.hasFlowOn(toFlowVar(v2))) new PEval(Map(),Map(v2 -> ImSet(v1)),Map())
       else new PEval(Map(),Map(),Map())
     // TODO: CHANGE PEval to split at x=f(y), and include this info in PEval
     case FunAssgn(v1, v2, f) =>
-      if (sol.hasFlowOn(flowVar(v2))) new PEval(Map(),Map(),Map(v2 -> ImSet((v1,f))))
+      if (sol.hasFlowOn(toFlowVar(v2))) new PEval(Map(),Map(),Map(v2 -> ImSet((v1,f))))
       else new PEval(Map(),Map(),Map())
     case NFunAssgn(v,vs,f) => vs match {
       case List(v2) => FunAssgn(v,v2,f).partialEval(sol)
@@ -507,22 +507,22 @@ abstract sealed class Statement {
 /// concrete GUARDS
 case class Var(name: String) extends Guard {
   /** Assignment of data variables. */
-  def :=(v:Var): Statement = VarAssgn(dataVar(name),dataVar(v.name))
+  def :=(v:Var): Statement = VarAssgn(toDataVar(name),toDataVar(v.name))
   /** Assignment of data values. */
-  def :== (d:Any): Statement = DataAssgn(dataVar(name),d)
+  def :== (d:Any): Statement = DataAssgn(toDataVar(name),d)
 //  def :=(d:Int): Statement = DataAssgn(flow2data(name),Int.box(d))
 //  def :=(d: Any): Statement = d match {
 //    case (v:Var) => VarAssgn(flow2data(name),flow2data(v.name))
 //    case _ => DataAssgn(flow2data(name),d)
 //  }
   /** Application of a function to a var, and assignment of the result. */
-  def :=(f:common.Function,v:Var): Statement = FunAssgn(dataVar(name),dataVar(v.name),f)
+  def :=(f:common.Function,v:Var): Statement = FunAssgn(toDataVar(name),toDataVar(v.name),f)
   /** Application of a function to a list of vars, and assignment of the result. */
-  def :=(f:common.Function,vs:List[Var]): Statement = NFunAssgn(dataVar(name),vs.map(v => dataVar(v.name)),f)
+  def :=(f:common.Function,vs:List[Var]): Statement = NFunAssgn(toDataVar(name),vs.map(v => toDataVar(v.name)),f)
   /** Guard to check whether the variables belongs to the given predicate. */
-  def :< (p:Predicate): Guard = Pred(dataVar(name),p)
-  def data = dataVar(name)
-  def flow = flowVar(name)
+  def :< (p:Predicate): Guard = Pred(toDataVar(name),p)
+  def data = toDataVar(name)
+  def flow = toFlowVar(name)
 }
 case class IntPred(v:String, p: IntPredicate) extends Guard
 case class Pred(v:String, p:Predicate) extends Guard
@@ -554,5 +554,35 @@ object CNF2 {
   type Core = ListBuffer[Array[Int]]
 }
 
+/** General functions that traverse guardd commands. */
+object GuardedCom {
+  
+  def addID(gc: GuardedCom, id:Int): GuardedCom =
+    GuardedCom(addID(gc.g,id),addID(gc.st,id))
+  
+    // TODO: replace name+_+i with addID.
+  def addID(grd:Guard, id:Int): Guard = grd match {
+    // guards
+    case Var(name) => Var(Utils.addID(name,id))
+    case IntPred(v, p) => IntPred(Utils.addID(v,id),p)
+    case Pred(v, p) => Pred(Utils.addID(v,id),p)
+    case And(g1, g2) => And(addID(g1,id),addID(g2,id))
+    case Or(g1, g2) => Or(addID(g1,id),addID(g2,id))
+    case Neg(g) => Neg(addID(g,id))
+    case Impl(g1, g2) => Impl(addID(g1,id),addID(g2,id))
+    case Equiv(g1, g2) => Equiv(addID(g1,id),addID(g2,id))
+    case True => True
+  }
+    // other statements
+  def addID(st:Statement, id:Int): Statement = st match {
+    case g:Guard => addID(g,id)
+    case IntAssgn(v,d) => IntAssgn(Utils.addID(v,id),d)
+    case DataAssgn(v,d) => DataAssgn(Utils.addID(v,id),d)
+    case VarAssgn(v1,v2) => VarAssgn(Utils.addID(v1,id),Utils.addID(v2,id))
+    case FunAssgn(v1,v2,f) => FunAssgn(Utils.addID(v1,id),Utils.addID(v2,id),f)
+    case NFunAssgn(v1,v2s,f) => NFunAssgn(Utils.addID(v1,id),v2s.map(Utils.addID(_,id)),f)
+    case Seq(sts) => Seq(sts.map((x:Statement) => addID(x,id)))
+  }
+}
 
 

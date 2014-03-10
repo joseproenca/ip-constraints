@@ -28,7 +28,7 @@ class TestDreams extends FunSpec {
     {
       var counter = 0
       override protected def processSol(sol:OptionSol[Sol],freshSol:Boolean): Nothing = {
-        val a = mkVar("a",uid)
+        val a = mkVar("a")
 
         if (freshSol) println("counter! "+counter)
 
@@ -53,7 +53,7 @@ class TestDreams extends FunSpec {
       }
     }
 
-    val lossy = Actor[Sol,Constr](uid => new GCLossy("x","y",uid))
+    val lossy = Actor[Sol,Constr](uid => new GCLossy("x","y"))
                //new connectors.Lossy
 
 

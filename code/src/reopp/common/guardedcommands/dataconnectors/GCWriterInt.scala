@@ -14,7 +14,7 @@ import reopp.common.guardedcommands._
  */
 
 @deprecated
-class GCWriterInt(val x: String, uid: Int, var data: List[Int]) extends GCConnector(List(x), uid) {
+class GCWriterInt(val x: String, var data: List[Int]) extends GCConnector(List(x)) {
 
   if (useCC3) throw new Exception("CC3 not implemented")
   

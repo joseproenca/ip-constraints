@@ -4,7 +4,7 @@ import reopp.common.guardedcommands.{Formula, GCSolution}
 import reopp.common.{Constraints, Solution}
 
 
-class OneStepStrategy[S<:Solution,C<:Constraints[S,C]] extends Strategy[S,C,OneStepStrategy[S,C]] {
+class OneStepStrategy[S<:Solution[S],C<:Constraints[S,C]] extends Strategy[S,C,OneStepStrategy[S,C]] {
   // Find the next nodes (from the fringe) to expand to.
   def nextNodes = if (!fringe.isEmpty) Set(fringe.head) else Set()
 

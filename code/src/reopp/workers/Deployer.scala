@@ -19,7 +19,7 @@ import akka.event.Logging
  * To change this template use File | Settings | File Templates.
  */
 
-class Deployer[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
+class Deployer[S<:Solution[S],C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
   (maxWorkers: Int) //, conflictManager: ActorRef)
   (implicit builder: CBuilder[S,C], sb: StrategyBuilder[S,C,Str])
   extends Actor {

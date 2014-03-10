@@ -12,7 +12,7 @@ import reopp.common.guardedcommands.Pred
  *
  * Created by jose on 10/04/13.
  */
-class GCSFilter (a: String, b: String, uid: Int,p: Predicate) extends GCFilter(a,b,uid,p) {
+class GCSFilter (a: String, b: String, p: Predicate) extends GCFilter(a,b,p) {
 
 //  /**
 //   * Build guard (formula) from a Predicate

@@ -55,12 +55,12 @@ class TestInteraction extends FunSpec {
     }
 
     val c =
-      new GCFilter("af1","bf1",0,checkPwd) ++
-      new GCFilter("af2","bf2",0,checkPwd) ++
-      new GCMerger("bf1","bf2","out",0) ++
-      new GCWriter("af1",0,List("joe")) ++
-      new GCWriter("af2",0,List("alex")) ++
-      new GCADrain("af1","af2",0)
+      new GCFilter("af1","bf1",checkPwd) ++
+      new GCFilter("af2","bf2",checkPwd) ++
+      new GCMerger("bf1","bf2","out") ++
+      new GCWriter("af1",List("joe")) ++
+      new GCWriter("af2",List("alex")) ++
+      new GCADrain("af1","af2")
 
     // TEST
     // data fails first filter, second should be lazy using chocoSAT. No flow on "c", so fail.

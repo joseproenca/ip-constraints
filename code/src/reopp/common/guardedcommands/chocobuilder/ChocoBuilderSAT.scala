@@ -63,8 +63,8 @@ object ChocoBuilderSAT {
 
   def gc2BoolConstrBuilder(g:Guard): ConstrBuilder = g match {
     case Var(name) => common.choco.Var(name)
-    case IntPred(v, p) => common.choco.Var(predVar(v,p,List()))//reopp.common.choco.FlowPred(p.choPred,v)
-    case Pred(v, p) => common.choco.Var(predVar(v,p,List()))
+    case IntPred(v, p) => common.choco.Var(mkPredVar(v,p,List()))//reopp.common.choco.FlowPred(p.choPred,v)
+    case Pred(v, p) => common.choco.Var(mkPredVar(v,p,List()))
     case And(g1, g2) => gc2BoolConstrBuilder(g1) and gc2BoolConstrBuilder(g2)
     case Or(g1, g2) =>  gc2BoolConstrBuilder(g1) or  gc2BoolConstrBuilder(g2)
     case Neg(g) => common.choco.Neg(gc2BoolConstrBuilder(g))
@@ -89,7 +89,7 @@ object ChocoBuilderSAT {
       for ((pred,fs,xflow) <- da.domainWithEnd(v)) {
 
         //        println("added LazyPred("+predVar(v,pred,fs)+","+data2flow(v)+","+data2flow(xflow)+","+fs+")")
-        res = res and LazyPred(predVar(v,pred,fs),flowVar(v),flowVar(xflow),d,pred,fs)
+        res = res and LazyPred(mkPredVar(v,pred,fs),toFlowVar(v),toFlowVar(xflow),d,pred,fs)
       }
 
       //        var newd = d
@@ -106,7 +106,7 @@ object ChocoBuilderSAT {
       var res: ConstrBuilder= TrueC
       for ((pred,fs) <- d2)
         if (d1 contains (pred,fs)) {
-          val t = common.choco.VarEq(predVar(v1,pred,fs),predVar(v2,pred,fs))
+          val t = common.choco.VarEq(mkPredVar(v1,pred,fs),mkPredVar(v2,pred,fs))
           res = res and t
         }
       res
@@ -118,7 +118,7 @@ object ChocoBuilderSAT {
       var res: ConstrBuilder= TrueC
       for ((pred,fs) <- d1)
         if (d2 contains (pred,fs++List(f))) {
-          val t = common.choco.VarEq(predVar(v1,pred,fs),predVar(v2,pred,fs++List(f)))
+          val t = common.choco.VarEq(mkPredVar(v1,pred,fs),mkPredVar(v2,pred,fs++List(f)))
           //          println("adding "+predVar(v1,pred,fs)+" == "+predVar(v2,pred,fs++List(f)))
           res = res and t
         }

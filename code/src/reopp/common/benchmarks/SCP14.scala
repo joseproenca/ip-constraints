@@ -55,9 +55,9 @@ Possible methods: "sat", "smt", "all", "partial"<n>, "onebyone"<n>, "all0"
   Warmup.go
 
   
-//  args(0)="sensortree"
-//  args(1)="1"
-//  args(2)="partial0"
+  args(0)="transactions-sseqn"
+  args(1)="91"
+  args(2)="all0"
 //  args(3)=""
   
   val n = Integer.parseInt(args(1))
@@ -88,10 +88,10 @@ Possible methods: "sat", "smt", "all", "partial"<n>, "onebyone"<n>, "all0"
                else GenEngine.all(1) // declared, but only constraints are used.
                
   def wiredWriter(sk:String,dt:Any) =
-    new GCWriter(sk,0,List(dt)) {
+    new GCWriter(sk,List(dt)) {
               override def update(s:OptionSol[S]) {
                 if (pvt) {
-//                  println("killing engine earlier! - sol:\n"+s)
+                  //println("killing engine earlier! - sol:\n"+s)
                   engine.kill
                 }
                 else super.update(s)
@@ -101,7 +101,7 @@ Possible methods: "sat", "smt", "all", "partial"<n>, "onebyone"<n>, "all0"
   type S = GCSolution
   type C = Formula
   
-  def show(time:Long,mode:String,res:OptionSol[Solution]) {
+  def show(time:Long,mode:String,res:OptionSol[Solution[_]]) {
       if (debug) { 
         if (res.isDefined) println(mode+" - solved in "+time+" ms:\n"+res.get)
         else println(mode+" - no solution (in "+time+" ms)")
@@ -372,7 +372,7 @@ Possible methods: "sat", "smt", "all", "partial"<n>, "onebyone"<n>, "all0"
 	
     // use the generators to produce all the nodes
     var mrg = Set[(Node[S,C],String)]((mainNode -> "x")).toIterable
-	for (h <- 0 to height) {
+	for (h <- 1 to height) {
 	  mrg = addMrgLevel(mrg)
 	}
     addWriters(mrg)

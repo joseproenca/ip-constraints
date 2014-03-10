@@ -41,8 +41,8 @@ object ChoLoanRequest extends App {
     new ChoFifo("start","req1",None,0).getConstraints ++
     new ChoFifo("auth","auth2",None,0).getConstraints ++
     new ChoFifo("pin","appr2",None,0).getConstraints ++
-    ChoConstraints(Var(flowVar("start",0))) ++ // force data on start
-    ChoConstraints(Var(flowVar("login",0)))    // and on login
+    ChoConstraints(Var(mkFlowVar("start"))) ++ // force data on start
+    ChoConstraints(Var(mkFlowVar("login")))    // and on login
 
   // after success of 1
 //  problems :::= List(baseProblem ++
@@ -63,7 +63,7 @@ object ChoLoanRequest extends App {
     new ChoFifo("start","req1",None,0).getConstraints ++
     new ChoFifo("auth","auth2",Some(1),0).getConstraints ++
     new ChoFifo("pin","appr2",None,0).getConstraints ++
-    ChoConstraints(Var(flowVar("pin",0)))    // force data on IMerger
+    ChoConstraints(Var(mkFlowVar("pin")))    // force data on IMerger
   )
 
   // if only IMerger had flow before

@@ -18,7 +18,7 @@ class Reader (var n:Int) extends Node[GCSolution, Formula] {
 //  val uid = hashCode()
 
   val connector = //new ChoReaderPassive("r",uid,n)
-    new GCReader("r",uid,n) { override def isProactive = false }
+    new GCReader("r",n) { override def isProactive = false }
 
   // suggests which ends must have dataflow if "end" has also dataflow
   def guessRequirements(nd: Node[GCSolution, Formula]) = Set()

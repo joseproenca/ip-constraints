@@ -191,8 +191,8 @@ object Z3 {
 
   def gc2boolz3(g: Guard, z3: Z3Context): Z3AST = g match {
     case Var(name)     => z3.mkBoolConst(z3.mkStringSymbol(name))
-    case IntPred(v, p) => z3.mkBoolConst(z3.mkStringSymbol(predVar(v,p,List())))
-    case Pred(v, p)    => z3.mkBoolConst(z3.mkStringSymbol(predVar(v,p,List())))
+    case IntPred(v, p) => z3.mkBoolConst(z3.mkStringSymbol(mkPredVar(v,p,List())))
+    case Pred(v, p)    => z3.mkBoolConst(z3.mkStringSymbol(mkPredVar(v,p,List())))
     case And(g1, g2)   => z3.mkAnd(gc2boolz3(g1,z3),gc2boolz3(g2,z3))
     case Or(g1, g2)    => z3.mkOr(gc2boolz3(g1,z3),gc2boolz3(g2,z3))
     case Neg(g)        => z3.mkNot(gc2boolz3(g,z3))
@@ -213,9 +213,9 @@ object Z3 {
         for (f<-fs.reverse) newd = f.calculate(newd)
 //        println("Adding data assignm.: "+predVar(v,pred,fs)+" to true/false")
         if  (pred.check(newd))
-          res = z3.mkAnd(res,z3.mkBoolConst(z3.mkStringSymbol(predVar(v,pred,fs))))
+          res = z3.mkAnd(res,z3.mkBoolConst(z3.mkStringSymbol(mkPredVar(v,pred,fs))))
         else
-          res = z3.mkAnd(res,z3.mkNot(z3.mkBoolConst(z3.mkStringSymbol(predVar(v,pred,fs)))))
+          res = z3.mkAnd(res,z3.mkNot(z3.mkBoolConst(z3.mkStringSymbol(mkPredVar(v,pred,fs)))))
       }
       res
     case VarAssgn(v1, v2) =>
@@ -224,7 +224,7 @@ object Z3 {
       for((pred,fs) <- d1)
         if (d2 contains (pred,fs)) {
 //          println("Adding pred equiv: "+predVar(v1,pred,fs)+"<->"+predVar(v2,pred,fs))
-          val t = gc2boolz3(Var(predVar(v1,pred,fs)) <-> Var(predVar(v2,pred,fs)),da,z3)
+          val t = gc2boolz3(Var(mkPredVar(v1,pred,fs)) <-> Var(mkPredVar(v2,pred,fs)),da,z3)
           res = z3.mkAnd(res,t)
         }
       res
@@ -234,7 +234,7 @@ object Z3 {
       for((pred,fs) <- d1)
         if (d2 contains (pred,f::fs)) {
 //          println("Adding func assignm.: "+predVar(v1,pred,fs)+" <- "+predVar(v2,pred,f::fs))
-          val t = gc2boolz3(Var(predVar(v1,pred,fs)) <-> Var(predVar(v2,pred,f::fs)),da,z3)
+          val t = gc2boolz3(Var(mkPredVar(v1,pred,fs)) <-> Var(mkPredVar(v2,pred,f::fs)),da,z3)
           res = z3.mkAnd(res,t)
         }
       res

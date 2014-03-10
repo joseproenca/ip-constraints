@@ -12,7 +12,7 @@ import reopp.common.guardedcommands._
  * To change this template use File | Settings | File Templates.
  */
 
-class GCSSpout(a: String, b: String, uid: Int) extends GCConnector(List(a,b), uid) {
+class GCSSpout(a: String, b: String) extends GCConnector(List(a,b)) {
 
   def getConstraints =  a <-> b
 

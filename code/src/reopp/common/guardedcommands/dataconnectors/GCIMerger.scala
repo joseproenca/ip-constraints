@@ -15,7 +15,7 @@ import reopp.common.guardedcommands.Var
  * To change this template use File | Settings | File Templates.
  */
 
-class GCIMerger(a: String, b: String, c: String, uid: Int) extends GCConnector(List(a,b,c), uid) {
+class GCIMerger(a: String, b: String, c: String) extends GCConnector(List(a,b,c)) {
   private val ab = a+b
 
   private def constraints = Formula(Set(
@@ -25,10 +25,10 @@ class GCIMerger(a: String, b: String, c: String, uid: Int) extends GCConnector(L
 
   private def dataConstraints =
 	  constraints ++ Set(
-	    (a and b and ab)      --> VarAssgn(dataVar(c,uid),dataVar(a,uid)),
-	    (a and b and Neg(ab)) --> VarAssgn(dataVar(c,uid),dataVar(b,uid)),
-	    (a and Neg(b)) --> VarAssgn(dataVar(c,uid),dataVar(a,uid)),
-	    (b and Neg(a)) --> VarAssgn(dataVar(c,uid),dataVar(b,uid))
+	    (a and b and ab)      --> VarAssgn(mkDataVar(c),mkDataVar(a)),
+	    (a and b and Neg(ab)) --> VarAssgn(mkDataVar(c),mkDataVar(b)),
+	    (a and Neg(b)) --> VarAssgn(mkDataVar(c),mkDataVar(a)),
+	    (b and Neg(a)) --> VarAssgn(mkDataVar(c),mkDataVar(b))
 	  )
 
   def getConstraints = if (useData) dataConstraints else constraints

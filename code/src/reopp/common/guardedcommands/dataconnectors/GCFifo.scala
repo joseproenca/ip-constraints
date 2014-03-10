@@ -14,10 +14,10 @@ import reopp.common.SomeSol
  * To change this template use File | Settings | File Templates.
  */
 
-class GCFifo(a: String, b: String, var data: Option[Any], uid: Int = 0) extends GCConnector(List(a,b), uid) {
+class GCFifo(a: String, b: String, var data: Option[Any]) extends GCConnector(List(a,b)) {
 
 //  def this(a: String, b: String, dt: Option[Int], uid: Int) = this(a,b, dt.map(Int.box(_)),uid)
-  def this(a: String, b: String, uid: Int) = this(a,b, scala.None:Option[Any],uid)
+  def this(a: String, b: String) = this(a,b, scala.None:Option[Any])
 
   private def emptyFifo = Formula(!b)
 

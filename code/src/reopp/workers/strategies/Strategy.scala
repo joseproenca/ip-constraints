@@ -2,6 +2,7 @@ package reopp.workers.strategies
 
 import reopp.workers.Node
 import reopp.common._
+import Utils.addID
 
 
 /**
@@ -12,7 +13,7 @@ import reopp.common._
  * To change this template use File | Settings | File Templates.
  */
 
-trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
+trait Strategy[S<:Solution[S],C<:Constraints[S,C],St<:Strategy[S,C, St]] {
   type Nd = Node[S,C]
 
   val owned = scala.collection.mutable.Set[Nd]()
@@ -32,6 +33,7 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
   /** Merges the information from another traversal. Should be extended by subclasses.
    *  Right now it only merges the previous buffer. */
   def merge(s:St) {
+    //println("merging strats: "+triedSol+" - "+s.triedSol)
     (triedSol,s.triedSol) match {
       case (None,Some(NoneSol(Some(_)))) => triedSol = s.triedSol
       case (Some(NoneSol(None)),Some(NoneSol(Some(_)))) => triedSol = s.triedSol
@@ -40,7 +42,14 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
     }
   }
 
-  def solve(implicit builder:CBuilder[S,C]): OptionSol[S] = solve(triedSol)
+  def solve(implicit builder:CBuilder[S,C]): OptionSol[S] = {
+    solve(triedSol) match {
+      case s:NoneSol =>
+        triedSol = Some(s)
+        s
+      case s => s
+    }
+  }
   
   // aux functions
   private def solve(tried:Option[NoneSol])(implicit builder:CBuilder[S,C]): OptionSol[S] = {
@@ -53,16 +62,16 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
     val fstConn = fstNode.connector
 
     //println("building neighbour constraints = border + sync")
-    var c = neighbourConstr(fstNode,fstConn.getConstraints)(builder)
+    var c = neighbourConstr(fstNode,fstConn.getConstraints.withID(fstNode.uid))(builder)
 
     // collect the constraints + neighbour constraints of owned ports,
     // avoiding adding repeated neighbours (via "included") -- DROPPED (reopp.common neighbours of 2 nodes must be added 2x)
     for (n <- (owned - fstNode)) {
-      c ++= n.connector.getConstraints
+      c ++= n.connector.getConstraints.withID(n.hashCode())
       c = neighbourConstr(n,c)(builder)
     }
 
-    //println("solving: "+c)
+//    println("solving: "+c)
     val res = c.solve(tried)
     //if (res.isDefined) println("-------------\nSolved:\n"+res.get)
     //else println("failed")
@@ -89,17 +98,17 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
 
 
   private def sync(n1:Nd,n2:Nd, basec: C)(implicit cbuilder: CBuilder[S,C]): C = {
-    val uid1 = n1.connector.getID
-    val uid2 = n2.connector.getID
+    val uid1 = n1.uid //connector.getID
+    val uid2 = n2.uid //connector.getID
     var res = basec
 
     for (ends <- n1.getConnectedEndsTo(n2))
       if (n1 hasSourceEnd ends._1) {
-    	  res ++= cbuilder.sync(ends._2,uid2,ends._1,uid1)
+    	  res ++= cbuilder.sync(addID(ends._2,uid2),addID(ends._1,uid1))
       }
     for (ends <- n2.getConnectedEndsTo(n1))
       if (n2 hasSourceEnd ends._1) {
-    	  res ++= cbuilder.sync(ends._2,uid1,ends._1,uid2)
+    	  res ++= cbuilder.sync(addID(ends._2,uid2),addID(ends._1,uid1))
       }    	  
 //    for ((e1,u1,e2,u2) <- n1.flowconn)
 //      if (u2 == uid2) res ++= cbuilder.sync(e1,u1,e2,u2)
@@ -110,14 +119,14 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
 
   // n1 owend, n2 not owned -> border n1.ends inters. n2.ends
   private def border(n1:Nd,n2:Nd, basec: C)(implicit cbuilder: CBuilder[S,C]): C = {
-    val uid1 = n1.connector.getID
+    val uid1 = n1.uid //connector.getID
     var res = basec
 
     if (n1 connectedTo n2) {
       //println(s"connected: $n1 -- $n2")
       for (end <- n1.getConnectedEndsTo(n2)) {
         //println("noflow at "+end._1)
-        res ++= cbuilder.noflow(end._1,uid1)
+        res ++= cbuilder.noflow(addID(end._1,uid1))
       }
     }
 
@@ -167,7 +176,7 @@ trait Strategy[S<:Solution,C<:Constraints[S,C],St<:Strategy[S,C, St]] {
 }
 
 
-abstract class StrategyBuilder[S <: Solution, C <: Constraints[S, C], St <: Strategy[S, C, St]] {
+abstract class StrategyBuilder[S <: Solution[S], C <: Constraints[S, C], St <: Strategy[S, C, St]] {
   def apply: St
 }
 

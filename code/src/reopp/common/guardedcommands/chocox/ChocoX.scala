@@ -58,7 +58,7 @@ object ChocoX {
                       xps: MutSet[(Predicate,String,IntegerVariable)]): IntegerVariable = {
     if (np contains (p,v)) np(p,v)
     else {
-      val iv = Choco.makeBooleanVar(Utils.predVar(v,p,List()))
+      val iv = Choco.makeBooleanVar(Utils.mkPredVar(v,p,List()))
       np((p,v)) = iv
 //      val d2: MutMap[Integer,AnyRef] = d.asInstanceOf[MutMap[Integer,AnyRef]]
 ////      .map((n:Integer,smt:Any) => (n,smt.asInstanceOf[AnyRef]))
@@ -91,7 +91,7 @@ object ChocoX {
     }
     for ((p,v,iv) <- xpredicates) {
       val d2: MutMap[Integer,AnyRef] = datahash.asInstanceOf[MutMap[Integer,AnyRef]]
-      chocos += XPredManager.genConstr(getVar(vm,Utils.flowVar(v)),getVar(vm,v),iv,d2,funhash,buf,p)
+      chocos += XPredManager.genConstr(getVar(vm,Utils.mkFlowVar(v)),getVar(vm,v),iv,d2,funhash,buf,p)
     }
     optimChocoVars(gcs,vm) // replace "a = b" by "a = a" in the choco constraints
 //    gcs.close() // add some-flow condition

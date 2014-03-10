@@ -3,8 +3,8 @@ package reopp.common.guardedcommands.dataconnectors
 import reopp.common.guardedcommands._
 import reopp.common._
 
-class TransfFifo(in: String, out: String, var data: Option[Any], uid: Int = 0)
-    extends GCConnector(List(in,out), uid) {
+class TransfFifo(in: String, out: String, var data: Option[Any])
+    extends GCConnector(List(in,out)) {
 
   private val double = Function("double") {
     case i:Int => i*2

@@ -9,15 +9,17 @@ import Utils._
  *
  * Created by jose on 06/06/12.
  */
-abstract class GCConnector(ends: List[String], initID: Int = 0) extends Connector[GCSolution,Formula](ends) {
+abstract class GCConnector(ends: List[String]) extends Connector[GCSolution,Formula](ends) {
   useData = true // data by default
   
-  protected var id = initID
-
-  def updateID(newID:Int) {
-    id = newID
-  }
-  def getID = id
+//  var optID: Option[Int] = None 
+  
+//  private var id = initID
+//
+//  def updateID(newID:Int) {
+//    id = newID
+//  }
+//  def getID = id
     
 
   /**
@@ -32,12 +34,14 @@ abstract class GCConnector(ends: List[String], initID: Int = 0) extends Connecto
     (this,other) match {
       case (x:ComplexConnector,_) => x +++ other
       case (_,x:ComplexConnector) => x +++ this
-      case _ => new ComplexConnector(List(this,other),ends ++ other.ends, id)
+      case _ => new ComplexConnector(List(this,other),ends ++ other.ends)
     }
 
-  implicit protected def mkVar(s:String): Var = Utils.mkVar(s,id)
-  protected def sr(s:String): Var = Var(srcVar(s,id))
-  protected def sk(s:String): Var = Var(snkVar(s,id))
+  implicit protected def mkVar(s:String): Var =
+//    if (optID.isDefined) Utils.mkVar(Utils.addID(s, optID.get)) else
+    Utils.mkVar(s)
+  protected def sr(s:String): Var = Var(mkSrcVar(s))
+  protected def sk(s:String): Var = Var(mkSnkVar(s))
 
 
   /////////////////////////////////////////////////////////////////////////
@@ -88,13 +92,13 @@ abstract class GCConnector(ends: List[String], initID: Int = 0) extends Connecto
 object GCConnector {
   /** Needed to carry the sync and noflow operations for GCConnectors. */ 
   implicit object GCBuilder extends CBuilder[GCSolution,Formula] {
-    def sync(e1: String, id1: Int, e2: String, id2: Int): Formula = {
-      val from = Var(flowVar(e1,id1))
-      val to = Var(flowVar(e2,id2))
+    def sync(e1: String, e2: String): Formula = {
+      val from = Var(mkFlowVar(e1))
+      val to = Var(mkFlowVar(e2))
       st2GC((from <-> to) and (to := from))
     }
-    def noflow(end: String, uid: Int): Formula =
-      st2GC(!mkVar(end,uid))
+    def noflow(end: String): Formula =
+      st2GC(!mkVar(end))
   }
 }
 

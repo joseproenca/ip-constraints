@@ -30,25 +30,25 @@ object GCSpouts extends App {
   def genFilters(times: Int): Formula = {
     var res = Formula()
     for (i <- 0 to (times-1)) {
-      res ++= new GCIFilter("a","b",i,gtwo).getConstraints ++
-              new GCIFilter("b","c",i,lfive,positive=false).getConstraints
+      res ++= new GCIFilter("a"+i,"b"+i,gtwo).getConstraints ++
+              new GCIFilter("b"+i,"c"+i,lfive,positive=false).getConstraints
       // manual replicator from (startVar.startUid) to (x,i)
     }
-    res ++= new GCReader("c",times-1,1).getConstraints
+    res ++= new GCReader("c"+(times-1),1).getConstraints
     res
   }
 
   def genSpout(): Formula = {
-    new GCSSpout("x","a",0).getConstraints ++
-      new GCIFilter("x","reader",0,lfive).getConstraints ++
-      new GCReader("reader",0,1).getConstraints
+    new GCSSpout("x0","a0").getConstraints ++
+      new GCIFilter("x0","reader0",lfive).getConstraints ++
+      new GCReader("reader0",1).getConstraints
   }
 
 
 
   val problem = genFilters(1)  ++ genSpout() ++
 //    Formula(True --> SGuard(Var(flowVar("reader",0)))) ++
-    Formula(True --> VarAssgn(dataVar("x",0),dataVar("a",0)))
+    Formula(True --> VarAssgn(mkDataVar("x0"),mkDataVar("a0")))
 
   //  val schedule = genSched(0,true)  ++ new GCWriter("x",0,List(1400)).getConstraints // on, evening  - turn off
   //  val schedule = genSched(0,false) ++ new GCWriter("x",0,List(500)).getConstraints  // off, morning - turn on

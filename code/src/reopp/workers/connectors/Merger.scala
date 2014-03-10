@@ -16,7 +16,7 @@ import reopp.common.guardedcommands.dataconnectors.GCMerger
 
 class Merger extends Node[GCSolution, Formula] {
 //  val uid = hashCode
-  val connector = new GCMerger("a","b","c",uid)
+  val connector = new GCMerger("a","b","c")
 
 
   // suggests which ends must have dataflow if "end" has also dataflow

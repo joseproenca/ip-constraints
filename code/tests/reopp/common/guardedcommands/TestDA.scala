@@ -36,36 +36,36 @@ class TestDA extends FunSpec {
     val even = new Even
     val odd = new Odd
 
-//    def evend(x:String) = IntPred(dataVar(x,0),even)
-//    def oddd(x:String) = IntPred(dataVar(x,0),odd)
+//    def evend(x:String) = IntPred(mkDataVar(x),even)
+//    def oddd(x:String) = IntPred(mkDataVar(x),odd)
     def evend(x:String) = even
     def oddd(x:String) = odd
 
     // TEST
     // data fails first filter, second should be lazy using chocoSAT. No flow on "c", so fail.
-    val c1= new GCIFilter("a","b",0,oddd("a")).getConstraints ++
-            new GCIFilter("b","c",0,evend("b")).getConstraints ++
-            Formula(True --> IntAssgn(dataVar("a",0),2)) ++
-            Formula(True --> (Var(flowVar("c",0))))
+    val c1= new GCIFilter("a","b",oddd("a")).getConstraints ++
+            new GCIFilter("b","c",evend("b")).getConstraints ++
+            Formula(True --> IntAssgn(mkDataVar("a"),2)) ++
+            Formula(True --> (Var(mkFlowVar("c"))))
     // Result is correct, but it is ALWAYS checking all predicates!
 
     // both predicate hold - requirement for at least an end with flow yields dataflow everywhere
-    val c2= new GCIFilter("a","b",0,evend("a")).getConstraints ++
-            new GCIFilter("b","c",0,evend("b")).getConstraints ++
-            Formula(True --> IntAssgn(dataVar("a",0),6)) //++
-//            Formula(True --> SGuard((Var(flowVar("a",0)))))
+    val c2= new GCIFilter("a","b",evend("a")).getConstraints ++
+            new GCIFilter("b","c",evend("b")).getConstraints ++
+            Formula(True --> IntAssgn(mkDataVar("a"),6)) //++
+//            Formula(True --> SGuard((Var(flowVar("a")))))
 
     // as c1, but data flow only on "a" and is discarded (no requirement to flow on "c").
-    val c3= new GCIFilter("a","b",0,oddd("a")).getConstraints ++
-            new GCIFilter("b","c",0,evend("b")).getConstraints ++
-            Formula(True --> IntAssgn(dataVar("a",0),2)) //++
-//            Formula(True --> SGuard(Var(flowVar("b",0))))
+    val c3= new GCIFilter("a","b",oddd("a")).getConstraints ++
+            new GCIFilter("b","c",evend("b")).getConstraints ++
+            Formula(True --> IntAssgn(mkDataVar("a"),2)) //++
+//            Formula(True --> SGuard(Var(flowVar("b"))))
 
     // control test with no data filters.
-    val c4= new GCSync("a","b",0).getConstraints ++
-            new GCSync("b","c",0).getConstraints ++
-            Formula(True --> IntAssgn(dataVar("a",0),3))// ++
-//            Formula(True --> SGuard(Var(flowVar("b",0))))
+    val c4= new GCSync("a","b").getConstraints ++
+            new GCSync("b","c").getConstraints ++
+            Formula(True --> IntAssgn(mkDataVar("a"),3))// ++
+//            Formula(True --> SGuard(Var(flowVar("b"))))
 
     //    println(c1.commands)
 

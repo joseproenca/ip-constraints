@@ -49,7 +49,7 @@ object Subtract extends App {
       reader("res",2)
 
 
-  var sol: OptionSol[Solution] = connector.getConstraints.solveChocoDyn
+  var sol: OptionSol[Solution[_]] = connector.getConstraints.solveChocoDyn
 
   sol match {
     case SomeSol(s) => println("Choco: Solved!\n"+s)

@@ -16,7 +16,7 @@ import reopp.common.guardedcommands.GCConnector.GCBuilder // provides implicit b
 class Lossy extends Actor[GCSolution, Formula] {
 //  private val uid = hashCode
 
-  val behaviour = new GCLossy("x","y",uid)
+  val behaviour = new GCLossy("x","y")
 
 //// Also works, but this should be done in choco.connectors.
 //  val constr = ChoConstraints(Impl(Var(ConstrBuilder.flowVar("a",uid)), Var(ConstrBuilder.flowVar("b",uid))))

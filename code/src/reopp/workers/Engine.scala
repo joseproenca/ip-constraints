@@ -12,7 +12,7 @@ import reopp.common.Connector
  * Manages the creation of nodes, and the creation of the main Deployer actor.
  * Starts the system by feeding all nodes to the Deployer.
  */
-class Engine[S<:Solution,C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
+class Engine[S<:Solution[S],C<:Constraints[S,C],Str<:Strategy[S,C,Str]]
       (maxWorkers: Int)
       (implicit builder: CBuilder[S,C], sb: StrategyBuilder[S,C,Str]) {
 

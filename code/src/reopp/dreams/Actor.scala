@@ -14,7 +14,7 @@ import reopp.common.{Solution, Connector, Constraints, CBuilder}
  * To change this template use File | Settings | File Templates.
  */
 
-abstract class Actor[S<:Solution, C<:Constraints[S,C]](implicit noSol:EmptySol[S], b:CBuilder[S,C])
+abstract class Actor[S<:Solution[S], C<:Constraints[S,C]](implicit noSol:EmptySol[S], b:CBuilder[S,C])
   extends scala.actors.Actor {
 
   val uid = hashCode()
@@ -146,7 +146,7 @@ private def sync(basec: C)(implicit cbuilder: CBuilder[S,C]): C = {
 //  println("synching all source ends of "+myrank)
   var res = basec
   for ((e1,u1,e2,u2) <- flowconn)
-    res ++= cbuilder.sync(e1,u1,e2,u2)
+    res ++= cbuilder.sync(e1,e2)
 //  println("new constraints: "+res)
   res
 }
@@ -256,7 +256,7 @@ private def sync(basec: C)(implicit cbuilder: CBuilder[S,C]): C = {
 }
 
 object Actor {
-  def apply[S<:Solution, C<:Constraints[S,C]]
+  def apply[S<:Solution[S], C<:Constraints[S,C]]
   (conn : Int => Connector[S,C])
   (implicit noSol:EmptySol[S], b:CBuilder[S,C]): Actor[S,C] =
     new Actor[S,C]() {
@@ -271,7 +271,7 @@ object Actor {
 /////////////////////////
 
 //  private val thisactor = this
-class End[S<:Solution, C<:Constraints[S,C]](val a: Actor[S,C], val e: String) {
+class End[S<:Solution[S], C<:Constraints[S,C]](val a: Actor[S,C], val e: String) {
   /**
    * Add to connections from this and the other actor, so we know how
    * to traverse the graph of actors.
@@ -291,12 +291,13 @@ class End[S<:Solution, C<:Constraints[S,C]](val a: Actor[S,C], val e: String) {
 
     // better design: expose connections and flowconn only via an interface...
     me.connections +=
-      other -> Set((myend,otherend,other.behaviour.getID))
+      other -> Set((myend,otherend,other.uid)) //behaviour.getID))
     other.connections +=
-      me -> Set((otherend,myend,me.behaviour.getID))
+      me -> Set((otherend,myend,me.uid)) //behaviour.getID))
 
     // flow connections
-    me.flowconn += ((myend,me.behaviour.getID,otherend,other.behaviour.getID))
+//    me.flowconn += ((myend,me.behaviour.getID,otherend,other.behaviour.getID))
+    me.flowconn += ((myend,me.uid,otherend,other.uid))
     //    println("new flowconn: "+flowconn)
   }
 }

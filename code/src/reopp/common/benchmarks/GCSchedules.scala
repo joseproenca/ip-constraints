@@ -35,25 +35,25 @@ object GCSchedules extends App {
 
 //    new GCWriter("x",i,List(500)).getConstraints ++
     val res =
-      new GCExRouter("x","a","b",i).getConstraints ++
-      new GCIFilter("a","e",i,evening,positive=false).getConstraints ++
-      new GCIFilter("a","f",i,evening).getConstraints ++
-      new GCIFilter("b","g",i,morning).getConstraints ++
-      new GCMerger("e","g","m",i).getConstraints ++
-      new GCSDrain("a","c",i).getConstraints ++
-      new GCSDrain("b","d",i).getConstraints ++
-      new GCSDrain("g","b",i).getConstraints ++
-      new GCSync("e","disp",i).getConstraints ++
-      new GCSync("f","off",i).getConstraints ++
-      new GCSync("g","on",i).getConstraints ++
-      Formula(True --> Var(flowVar("x",i)))
+      new GCExRouter("x"+i,"a"+i,"b"+i).getConstraints ++
+      new GCIFilter("a"+i,"e"+i,evening,positive=false).getConstraints ++
+      new GCIFilter("a"+i,"f"+i,evening).getConstraints ++
+      new GCIFilter("b"+i,"g"+i,morning).getConstraints ++
+      new GCMerger("e"+i,"g"+i,"m"+i).getConstraints ++
+      new GCSDrain("a"+i,"c"+i).getConstraints ++
+      new GCSDrain("b"+i,"d"+i).getConstraints ++
+      new GCSDrain("g"+i,"b"+i).getConstraints ++
+      new GCSync("e"+i,"disp"+i).getConstraints ++
+      new GCSync("f"+i,"off"+i).getConstraints ++
+      new GCSync("g"+i,"on"+i).getConstraints ++
+      Formula(True --> Var(mkFlowVar("x"+i)))
 
     if (on) res ++
-      new GCSyncFifo("m","c",Some(Int.box(0)),i).getConstraints ++
-      new GCFifo("f","d",None,i).getConstraints
+      new GCSyncFifo("m"+i,"c"+i,Some(Int.box(0))).getConstraints ++
+      new GCFifo("f"+i,"d"+i,None).getConstraints
     else res ++
-      new GCSyncFifo("m","c",None,i).getConstraints ++
-      new GCFifo("f","d",Some(Int.box(0)),i).getConstraints
+      new GCSyncFifo("m"+i,"c"+i,None).getConstraints ++
+      new GCFifo("f"+i,"d"+i,Some(Int.box(0))).getConstraints
   }
 
 
@@ -62,11 +62,11 @@ object GCSchedules extends App {
     for (i <- uids) {
       res ++= genSched(i,on)
       // manual replicator from (startVar.startUid) to (x,i)
-      val av = Var(flowVar(startVar,startUid))
-      val bv = Var(flowVar("x",i))
+      val av = Var(mkFlowVar(startVar+startUid))
+      val bv = Var(mkFlowVar("x"+i))
       res ++= Formula(Set(
         True --> (av <-> bv),
-        av --> VarAssgn(dataVar("x",i), dataVar(startVar,startUid))
+        av --> VarAssgn(mkDataVar("x"+i), mkDataVar(startVar+startUid))
       ))
     }
     res
@@ -85,8 +85,8 @@ object GCSchedules extends App {
 
   val problem = genScheds(1 to n2, "time",0,on = true) ++   // some will display
     genScheds(n2+1 to n, "time",0,on = false) ++            // and some will turn on
-    new GCWriter("time",0,List(Int.box(500))).getConstraints ++    // (it is morning)
-    Formula(True --> Var(flowVar("time",0))) // require some dataflow
+    new GCWriter("time0",List(Int.box(500))).getConstraints ++    // (it is morning)
+    Formula(True --> Var(mkFlowVar("time0"))) // require some dataflow
 
   if (justInit) problem.justInit = true
 

@@ -6,9 +6,9 @@ package reopp.common
  * Created by jose on 08/11/12.
  */
 
-abstract class CBuilder[S<: Solution, C <: Constraints[S,C]] {
+abstract class CBuilder[S<: Solution[S], C <: Constraints[S,C]] {
   /** Creates a new constraint by ''connecting'' two ends, making the act as the same. */
-  def sync(end1: String, uid1: Int, end2: String, uid2: Int): C
+  def sync(end1: String, end2: String): C
   /** Empty constraint - identity for constraint composition. */
-  def noflow(end: String, uid: Int): C
+  def noflow(end: String): C
 }

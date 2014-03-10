@@ -9,13 +9,13 @@ import reopp.common.Utils._
  *
  * Created by jose on 12/04/13.
  */
-class GCPTransf[A] (a: String, b: String, uid: Int, f: PartialFunction[A,_]) extends GCConnector(List(a,b), uid) {
+class GCPTransf[A] (a: String, b: String, f: PartialFunction[A,_]) extends GCConnector(List(a,b)) {
 
   private val pred = Predicate(){
     case x: A => f.isDefinedAt(x)
     case _ => false
   }
-  private def guard = Pred(dataVar(a,uid),pred)
+  private def guard = Pred(mkDataVar(a),pred)
 
   private val func = Function()( f )
 

@@ -40,7 +40,7 @@ object DetApproval extends App {
     for (level <- 1 to height) {
       var newsrcs = List[String]()
       for (x <- srcs) {
-        res = res ++ new GCMerger(x+1,x+2,x,0).getConstraints
+        res = res ++ new GCMerger(x+1,x+2,x).getConstraints
         newsrcs :::= List(x+1,x+2)
       }
       srcs = newsrcs
@@ -109,7 +109,7 @@ object DetApproval extends App {
 
     //// QUICK-SAT ////
     var time = System.currentTimeMillis()
-    var res: OptionSol[Solution] = problem.quickDataSolve
+    var res: OptionSol[Solution[_]] = problem.quickDataSolve
     var spent = System.currentTimeMillis() - time
     if (res.isDefined) println("quick-sat - solved in "+spent+" ms:\n"+res.get)
     else println("quick-sat - no solution (in "+spent+" ms)")

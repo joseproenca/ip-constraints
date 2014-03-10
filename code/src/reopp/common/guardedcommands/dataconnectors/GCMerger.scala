@@ -12,7 +12,7 @@ import reopp.common.guardedcommands._
  * To change this template use File | Settings | File Templates.
  */
 
-class GCMerger(a: String, b: String, c: String, uid: Int) extends GCConnector(List(a,b,c), uid) {
+class GCMerger(a: String, b: String, c: String) extends GCConnector(List(a,b,c)) {
 //  val a = Var(flowVar(a,uid))
 //  val b = Var(flowVar(b,uid))
 //  val c = Var(flowVar(c,uid))

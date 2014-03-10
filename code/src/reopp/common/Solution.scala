@@ -8,7 +8,7 @@ package reopp.common
  * Created by jose on 02/05/12.
  */
 
-trait Solution {
+trait Solution[S <: Solution[S]] {
   /** If an end (variable) has dataflow. */
   def hasFlowOn(end: String): Boolean
   /** What data flow on a given end (variable). */
@@ -16,12 +16,14 @@ trait Solution {
   //def pretty: String
   /** Buffer with intermediate calculations. */
   def getBuffer: Option[Buffer]= None
+//  type S <: Solution // type returned when adding IDs
+  def withID(id:Int): S
 }
 
 /**
  * Represents an empty solution. Needed to give empty solutions as implicit parameters.
  * @tparam S is the precise type for the solution, subtype of [[reopp.common.Solution]]
  */
-trait EmptySol[S <: Solution] {
+trait EmptySol[S <: Solution[S]] {
   def sol: S
 }

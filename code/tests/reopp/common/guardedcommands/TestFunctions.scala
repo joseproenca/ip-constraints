@@ -38,27 +38,27 @@ class TestFunctions extends FunSpec {
 
     def println(s:String) = System.out.println(s)
 
-    def evend(x:String) = IntPred(dataVar(x,0),even)
-    def oddd(x:String) = IntPred(dataVar(x,0),odd)
+    def evend(x:String) = IntPred(mkDataVar(x),even)
+    def oddd(x:String) = IntPred(mkDataVar(x),odd)
 
     // TEST
-    val c1= new GCTransf("a","b",0,new Double()).getConstraints ++
-      new GCIFilter("b","c",0,even).getConstraints ++
-      new GCIFilter("b","d",0,even).getConstraints ++
-      Formula(True --> IntAssgn(dataVar("a",0),3)) ++
-      Formula(True --> Var(flowVar("a",0)))
+    val c1= new GCTransf("a","b",new Double()).getConstraints ++
+      new GCIFilter("b","c",even).getConstraints ++
+      new GCIFilter("b","d",even).getConstraints ++
+      Formula(True --> IntAssgn(mkDataVar("a"),3)) ++
+      Formula(True --> Var(mkFlowVar("a")))
 
-    val c2= new GCTransf("a","b",0,new Double()).getConstraints ++
-      new GCIFilter("b","c",0,odd).getConstraints ++
-      new GCIFilter("b","d",0,even).getConstraints ++
-      Formula(True --> IntAssgn(dataVar("a",0),3)) ++
-      Formula(True --> Var(flowVar("a",0)))
+    val c2= new GCTransf("a","b",new Double()).getConstraints ++
+      new GCIFilter("b","c",odd).getConstraints ++
+      new GCIFilter("b","d",even).getConstraints ++
+      Formula(True --> IntAssgn(mkDataVar("a"),3)) ++
+      Formula(True --> Var(mkFlowVar("a")))
 
-    val c3= new GCTransf("a","b",0,new Double()).getConstraints ++
-      new GCIFilter("b","c",0,odd).getConstraints ++
-      new GCIFilter("b","d",0,odd).getConstraints ++
-      Formula(True --> IntAssgn(dataVar("a",0),3)) ++
-      Formula(True --> Var(flowVar("a",0)))
+    val c3= new GCTransf("a","b",new Double()).getConstraints ++
+      new GCIFilter("b","c",odd).getConstraints ++
+      new GCIFilter("b","d",odd).getConstraints ++
+      Formula(True --> IntAssgn(mkDataVar("a"),3)) ++
+      Formula(True --> Var(mkFlowVar("a")))
 
     // new syntax:
     val a = mkVar("a")
@@ -102,11 +102,11 @@ class TestFunctions extends FunSpec {
     it ("c3 should have sol") {assert (res3.isDefined)}
 
     it ("c1 should have flow on both filters")
-    {assert (res1.get.hasFlowOn(flowVar("c",0)) && res1.get.hasFlowOn(flowVar("d",0)))}
+    {assert (res1.get.hasFlowOn(mkFlowVar("c")) && res1.get.hasFlowOn(mkFlowVar("d")))}
     it ("c2 should have flow on 2nd filter with data 6.")
-    {assert (!res2.get.hasFlowOn(flowVar("c",0)) && res2.get.getDataOn(dataVar("d",0))==Some(6))}
+    {assert (!res2.get.hasFlowOn(mkFlowVar("c")) && res2.get.getDataOn(mkDataVar("d"))==Some(6))}
     it ("c3 should have no flow on both filters")
-    {assert (!res3.get.hasFlowOn(flowVar("c",0)) && !res3.get.hasFlowOn(flowVar("d",0)))}
+    {assert (!res3.get.hasFlowOn(mkFlowVar("c")) && !res3.get.hasFlowOn(mkFlowVar("d")))}
 
 
     val const = c2

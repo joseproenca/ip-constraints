@@ -95,7 +95,7 @@ object AllApproval extends App {
     var res = List[GCWriter]()
     for (i <- n to 1 by -1) {
       res ::=
-        new GCWriter("w"+i,0,List(join(i,(i*3 % 16)+5,(i*4 % 16)+5,(i*5 % 16)+5,(i*6 % 16)+5)))
+        new GCWriter("w"+i,List(join(i,(i*3 % 16)+5,(i*4 % 16)+5,(i*5 % 16)+5,(i*6 % 16)+5)))
       //      println("new writer: "+(i,(i*3 % 16)+5,(i*4 % 16)+5,(i*5 % 16)+5)+ " -- "+
       //        join(i,(i*3 % 16)+5,(i*4 % 16)+5,(i*5 % 16)+5))
     }
@@ -219,7 +219,7 @@ object AllApproval extends App {
     //    println("  # THE PROBLEM:\n"+problem.commands.mkString(" - ","\n - ","\n"))
 
     var time: Long = 0
-    var res: OptionSol[Solution] = null
+    var res: OptionSol[Solution[_]] = null
     var spent: Long = 0
 
     //// DYN-CHOCO ////

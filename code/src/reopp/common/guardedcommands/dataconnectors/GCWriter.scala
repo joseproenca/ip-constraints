@@ -13,10 +13,10 @@ import reopp.common.guardedcommands.Var
  * To change this template use File | Settings | File Templates.
  */
 
-class GCWriter (val x: String, uid: Int, var data: List[Any]) extends GCConnector(List(x), uid) {
+class GCWriter (val x: String, var data: List[Any]) extends GCConnector(List(x)) {
 
 //  def this(x: String, uid: Int, dt: List[Int]) = this(x, uid, dt.map(Int.box(_)))
-  def this(x: String, uid: Int) = this(x, uid, Nil: List[Any])
+  def this(x: String) = this(x, Nil: List[Any])
 
 
   //var constraints = loadConstraints
@@ -33,15 +33,16 @@ class GCWriter (val x: String, uid: Int, var data: List[Any]) extends GCConnecto
   }
 
   override def update(s: OptionSol[GCSolution]) {
-    if (s.isDefined)
-    if (s.get.hasFlowOn(mkVar(x))) {
-      //      println("Writer: FLOW! new size: "+size)
+    if (s.isDefined && s.get.hasFlowOn(mkVar(x))) {
+//            println("Writer: FLOW! new size: "+data.size)
       notifyflow()
       // update state
       data = data.tail
       // update constraints
       // constraints = loadConstraints --- done by getConstraints by updating state
     }
+//    else
+//      println(s"no flow on '${mkVar(x).name}' with solution: $s")
   }
 
   override def isProactive: Boolean = !data.isEmpty

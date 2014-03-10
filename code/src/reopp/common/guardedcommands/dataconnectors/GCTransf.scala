@@ -13,7 +13,7 @@ import reopp.common.guardedcommands.Var
  * To change this template use File | Settings | File Templates.
  */
 
-class GCTransf(a: String, b: String, uid: Int, f: Function) extends GCConnector(List(a,b), uid) {
+class GCTransf(a: String, b: String, f: Function) extends GCConnector(List(a,b)) {
 
   private def constraints = Formula(
     a <-> b
@@ -27,5 +27,5 @@ class GCTransf(a: String, b: String, uid: Int, f: Function) extends GCConnector(
   def getConstraints = if (useData) dataConstraints else constraints
 }
 
-class GCTTransf[A](a: String, b: String, uid: Int, f: (A) => Any)
-    extends GCTransf(a: String, b: String, uid: Int, Function.apply[A]()(f))
+class GCTTransf[A](a: String, b: String, f: (A) => Any)
+    extends GCTransf(a: String, b: String, Function.apply[A]()(f))

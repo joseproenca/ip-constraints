@@ -4,7 +4,7 @@ import reopp.common.guardedcommands.{Formula, GCSolution}
 import reopp.common.{Constraints, Solution}
 
 
-class CompleteStrategy[S <: Solution, C <: Constraints[S, C]] extends Strategy[S, C, CompleteStrategy[S, C]] {
+class CompleteStrategy[S <: Solution[S], C <: Constraints[S, C]] extends Strategy[S, C, CompleteStrategy[S, C]] {
   override def merge(s: CompleteStrategy[S, C]) {
     throw new RuntimeException("CompleteStrategy cannot be merged")
   }

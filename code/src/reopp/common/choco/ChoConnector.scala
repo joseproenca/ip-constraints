@@ -36,6 +36,8 @@ abstract class ChoConnector(ends: List[String], uid: Int) extends Connector[ChoS
   
   def getID = uid
   def updateID(newID:Int) = {}
+  def dataVar(name:String,uid:Int): String = throw new RuntimeException("ChoConnector not maintained.\n")
+  def flowVar(name:String,uid:Int): String = throw new RuntimeException("ChoConnector not maintained.\n")
 
     //
 //
@@ -125,16 +127,16 @@ object ChoConnector {
   }
 
   implicit object ChoBuilder extends CBuilder[ChoSolution,ChoConstraints] {
-    def sync(e1: String, id1: Int, e2: String, id2: Int): ChoConstraints = {
-      var res: ConstrBuilder = VarEq(flowVar(e1,id1),flowVar(e2,id2))
+    def sync(e1: String, e2: String): ChoConstraints = {
+      var res: ConstrBuilder = VarEq(mkFlowVar(e1),mkFlowVar(e2))
 //      if (useData)
-      res = And(res, VarEq(dataVar(e1,id1),dataVar(e2,id2)))
+      res = And(res, VarEq(mkDataVar(e1),mkDataVar(e2)))
       //res.toChoco()
       //throw new RuntimeException("sync method not implemented for choco constraints.")
       ChoConstraints(res)
     }
-    def noflow(end: String, uid: Int): ChoConstraints =
-      ChoConstraints(Neg(Var(flowVar(end,uid))))
+    def noflow(end: String): ChoConstraints =
+      ChoConstraints(Neg(Var(mkFlowVar(end))))
   }
 
 

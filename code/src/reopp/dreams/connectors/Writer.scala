@@ -21,11 +21,11 @@ class Writer(var n:Int) extends Actor[GCSolution, Formula] {
 //                      else stateIdle
 //  private val uid = hashCode
 
-  val behaviour = new GCWriter("a",uid,(1 to n).map(Int.box(_)).toList) {
+  val behaviour = new GCWriter("a",(1 to n).map(Int.box(_)).toList) {
     private var triedAndFailed = false
     override def update(s: OptionSol[GCSolution]) {
       triedAndFailed = !s.isDefined
-      if (!triedAndFailed) triedAndFailed = !s.get.hasFlowOn(flowVar(x, uid))
+      if (!triedAndFailed) triedAndFailed = !s.get.hasFlowOn(mkFlowVar(x))
       super.update(s)
     }
     override def isProactive: Boolean = super.isProactive && !triedAndFailed

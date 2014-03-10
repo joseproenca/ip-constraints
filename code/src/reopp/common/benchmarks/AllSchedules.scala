@@ -57,25 +57,25 @@ object AllSchedules extends App {
 
     //    new GCWriter("x",i,List(500)).constraints ++
     val res =
-      exrouter("x","a","b",i) ++
-      negfilter("a","e",evening,i) ++
-      filter("a","f",evening,i) ++
-      filter("b","g",morning,i) ++
-      merger("e","g","m",i) ++
-      sdrain("a","c",i) ++
-      sdrain("b","d",i) ++
-      sdrain("g","b",i) ++
-      sync("e","disp",i) ++
-      sync("f","off",i) ++
-      sync("g","on",i) ++
-      Formula(Var(flowVar("x",i)))
+      exrouter("x"+i,"a"+i,"b"+i) ++
+      negfilter("a"+i,"e"+i,evening) ++
+      filter("a"+i,"f"+i,evening) ++
+      filter("b"+i,"g"+i,morning) ++
+      merger("e"+i,"g"+i,"m") ++
+      sdrain("a"+i,"c"+i) ++
+      sdrain("b"+i,"d"+i) ++
+      sdrain("g"+i,"b"+i) ++
+      sync("e"+i,"disp"+i) ++
+      sync("f"+i,"off"+i) ++
+      sync("g"+i,"on"+i) ++
+      Formula(Var(mkFlowVar("x"+i)))
 
     if (on) res ++
-      sfifo("m","c",Some(0),i) ++
-      fifo("f","d",None,i)
+      sfifo("m"+i,"c"+i,Some(0)) ++
+      fifo("f"+i,"d"+i,None)
     else res ++
-      sfifo("m","c",None,i) ++
-      fifo("f","d",Some(0),i)
+      sfifo("m"+i,"c"+i,None) ++
+      fifo("f"+i,"d"+i,Some(0))
   }
 
 
@@ -84,8 +84,8 @@ object AllSchedules extends App {
     for (i <- uids) {
       res ++= genSched(i,on)
       // manual replicator from (startVar.startUid) to (x,i)
-      val av = Var(flowVar(startVar,0))
-      val bv = Var(flowVar("x",i))
+      val av = Var(mkFlowVar(startVar+0))
+      val bv = Var(mkFlowVar("x"+i))
       res ++= Formula(
         av <-> bv,
         av --> (bv := av) //VarAssgn(dataVar("x",i), dataVar(startVar,startUid))
@@ -108,7 +108,7 @@ object AllSchedules extends App {
   val problem = genScheds(1 to n2, "time",on = true) ++   // some will display
     genScheds(n2+1 to n, "time",on = false) ++            // and some will turn on
     writer("time",List(500)) ++                        // (it is morning)
-    Formula(True --> Var(flowVar("time",0)))   // require some dataflow
+    Formula(True --> Var(mkFlowVar("time")))   // require some dataflow
 
 
 
@@ -178,7 +178,7 @@ object AllSchedules extends App {
     println("Schedules - size "+n)
 
     var time: Long = 0
-    var res: OptionSol[Solution] = null
+    var res: OptionSol[Solution[_]] = null
     var spent: Long = 0
 
 

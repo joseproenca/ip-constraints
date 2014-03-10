@@ -9,7 +9,7 @@ import reopp.common.{Constraints, Solution}
 // - extend priorityQueue: when registering a new node -> add dependencies
 // - shrink priority Queue: when registering a new node as well... -> remove it from the queue
 
-class HybridStrategy[S <: Solution, C <: Constraints[S, C]] extends Strategy[S,C,HybridStrategy[S,C]] {
+class HybridStrategy[S <: Solution[S], C <: Constraints[S, C]] extends Strategy[S,C,HybridStrategy[S,C]] {
                                                          // extends OneStepStrategy[S, C] {
                                                          // extends Strategy[S,C,OneStepStrategy[S,C]]
 

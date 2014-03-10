@@ -69,7 +69,7 @@ object ChoApproval extends App {
     new ChoFilter("x","den-ok",0,deny.choPred).getConstraints ++
     new ChoFilter("x","neither-ok",0, (x:IntegerVariable) =>
       Choco.and(Choco.not(approve.choPred(x)),Choco.not(deny.choPred(x)))).getConstraints ++
-    ChoConstraints(Var(flowVar("x",0))) // flow on one of the clients
+    ChoConstraints(Var(mkFlowVar("x"))) // flow on one of the clients
 
 //  println("prob: "+problem.constrBuilders)
 

@@ -7,7 +7,7 @@ package reopp.common
  * Created by jose on 02/05/12.
  */
 
-trait Constraints[S<:Solution,C<:Constraints[S,C]] {
+trait Constraints[S<:Solution[S],C<:Constraints[S,C]] {
 //  type mytype <: Constraints[S]
 
   /** Try to solve the current constraints.
@@ -28,6 +28,12 @@ trait Constraints[S<:Solution,C<:Constraints[S,C]] {
     * @return new combined constraint.
     */
   def ++(other:C): C
+  
+  /** Creates a new constraint with a unique ID in all of its variables.
+   *  @param uid unique ID to be added to the variable names.
+   */
+  def withID(uid:Int): C
+  
 //  def update(s:S)
 //  def +(other:mytype): mytype
 //  def +=(other:Constraints[S])

@@ -11,7 +11,7 @@ import reopp.common.IntPredicate
  * Created by jose on 07/06/12.
  */
 
-class GCFilter(a: String, b: String, uid: Int,p: Predicate, positive:Boolean = true) extends GCConnector(List(a,b), uid) {
+class GCFilter(a: String, b: String,p: Predicate, positive:Boolean = true) extends GCConnector(List(a,b)) {
 
 //  /**
 //   * Build guard (formula) from a Predicate
@@ -57,18 +57,18 @@ class GCFilter(a: String, b: String, uid: Int,p: Predicate, positive:Boolean = t
 //
 //}
 
-class GCTFilter[A](a: String, b: String, uid: Int,filter: (A) => Boolean)
-  extends GCFilter(a, b, uid, Predicate()(filter))
+class GCTFilter[A](a: String, b: String, filter: (A) => Boolean)
+  extends GCFilter(a, b, Predicate()(filter))
 
-class GCIFilter[A](a: String, b: String, uid: Int,p: IntPredicate, positive:Boolean = true)
-  extends GCFilter(a, b, uid, p, positive) {
+class GCIFilter[A](a: String, b: String, p: IntPredicate, positive:Boolean = true)
+  extends GCFilter(a, b,  p, positive) {
   override def guard =  if (positive) IntPred(a.data,p)
                         else      Neg(IntPred(a.data,p))
 }
 
-class GCGenFilter(a: String, b:String, uid: Int, gfunc: Var => Guard)
-	extends GCFilter(a,b,uid,null) {
-	override def guard: Guard = gfunc.apply( Var(Utils.dataVar(a,getID)) )
+class GCGenFilter(a: String, b:String, gfunc: Var => Guard)
+	extends GCFilter(a,b,null) {
+	override def guard: Guard = gfunc.apply( Var(Utils.mkDataVar(a)) )
   }
     
 

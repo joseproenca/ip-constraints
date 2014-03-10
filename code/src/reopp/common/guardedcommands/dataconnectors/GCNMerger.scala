@@ -12,7 +12,7 @@ import reopp.common.guardedcommands._
  * To change this template use File | Settings | File Templates.
  */
 
-class GCNMerger(srcs: List[String], snk: String, uid: Int) extends GCConnector(snk :: srcs, uid) {
+class GCNMerger(srcs: List[String], snk: String) extends GCConnector(snk :: srcs) {
 
   private def orSrcs = genSrcOr(srcs)
   private def genSrcOr(lst:List[String]): Guard = lst match {

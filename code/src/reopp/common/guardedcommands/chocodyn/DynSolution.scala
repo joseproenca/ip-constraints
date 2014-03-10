@@ -1,6 +1,7 @@
 package reopp.common.guardedcommands.chocodyn
 
 import reopp.common.{EmptySol, Buffer, Solution}
+import reopp.common.Utils.addID
 import choco.cp.solver.CPSolver
 import choco.kernel.model.variables.integer.IntegerVariable
 import reopp.common.guardedcommands.GCSolution
@@ -53,6 +54,12 @@ class DynSolution(choSol: CPSolver, varMap:Map[String,IntegerVariable],
   def size = varMap.size
   def sizeModel = choSol.getModel.getNbIntVars
 
+//  override type S = DynSolution
+  override def withID(id:Int) =
+    new DynSolution(choSol, varMap,b,datamap,newpred) {
+      override def getDataOn(end:String) = super.getDataOn(addID(end,id))
+    }
+
   override def toString: String = {
     var res: String = ""
     //    val it: java.util.Iterator[IntegerVariable] = choSol.getModel.getIntVarIterator
@@ -69,8 +76,12 @@ class DynSolution(choSol: CPSolver, varMap:Map[String,IntegerVariable],
 
     for ((k,v) <- varMap.toList.sortBy((x:(String,IntegerVariable)) => x._1)) {
       val dt = getDataOn(v)
-      if (dt.isDefined)
-        res += common.Utils.ppVar(k) + " -> " + dt.get + "\n"
+      if (dt.isDefined) {
+        if (dt.get.isInstanceOf[Int] && dt.get.asInstanceOf[Int] <= -21474830)
+        	res += common.Utils.ppVar(k) + " -> " + "-any-\n"
+    	else
+        	res += common.Utils.ppVar(k) + " -> " + dt.get + "\n"
+      }
       else
         res += common.Utils.ppVar(k) + " -> Undefined\n"
     }
@@ -86,13 +97,15 @@ class DynSolution(choSol: CPSolver, varMap:Map[String,IntegerVariable],
 }
 
 object DynSolution {
-  class MyEmptySol extends Solution {
+  class MyEmptySol extends Solution[MyEmptySol] {
     def hasFlowOn(end: String) = false
     def getDataOn(end: String) = None
+    type S = MyEmptySol
+    def withID(id:Int) = this
     override def toString = "ø"
   }
 
-  implicit object NoSol extends EmptySol[DynSolution] {
+  implicit object NoSol extends EmptySol[GCSolution] {
     def sol = new DynSolution(new CPSolver(),Map(),new Buffer, new DataMap(),mutable.Map())
   }
 }

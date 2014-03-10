@@ -3,7 +3,7 @@ package reopp.common.guardedcommands
 import org.scalatest.FunSpec
 import reopp.common.{Connector, Function, Predicate}
 import reopp.common.guardedcommands.dataconnectors.ConnectorGen._
-import reopp.common.Utils.flowVar
+import reopp.common.Utils.mkFlowVar
 
 /**
  * Test if the rollback function is exectuted.
@@ -62,7 +62,7 @@ class TestRollback extends FunSpec {
     it ("dyn should cancel once") {assert(counter_cancel == 1)}
     it ("dyn should cancel first request") {fstRequest == request_cancel}
     it ("dyn should have dataflow") {sol.isDefined}
-    it ("dyn should have dataflow on output") {sol.get.hasFlowOn(flowVar("res"))}
+    it ("dyn should have dataflow on output") {sol.get.hasFlowOn(mkFlowVar("res"))}
 
 //    //// OTHER SOLVERS ////
 //    counter_asked = 0
@@ -130,7 +130,7 @@ class TestRollback extends FunSpec {
     it ("sat should cancel once") {assert(counter_cancel == 1)}
     it ("sat should cancel first request") {fstRequest == request_cancel}
     it ("sat should have dataflow") {sol2.isDefined}
-    it ("sat should have dataflow on output") {sol2.get.hasFlowOn(flowVar("res"))}
+    it ("sat should have dataflow on output") {sol2.get.hasFlowOn(mkFlowVar("res"))}
 
 
   }
@@ -184,7 +184,7 @@ class TestRollback extends FunSpec {
     it ("sat should cancel once") {assert(counter_cancel == 1)}
     it ("sat should cancel first request") {fstRequest == request_cancel}
     it ("sat should have dataflow") {sol3.isDefined}
-    it ("sat should have dataflow on output") {sol3.get.hasFlowOn(flowVar("res"))}
+    it ("sat should have dataflow on output") {sol3.get.hasFlowOn(mkFlowVar("res"))}
 
 
   }

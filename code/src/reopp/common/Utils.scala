@@ -10,16 +10,16 @@ import guardedcommands.{GuardedCom, Var, Statement, Formula, True}
  * Created by jose on 06/06/12.
  */
 object Utils {
-  def flowVar(x: String, uid: Int = 0): String = "F€" + x + "€" + uid
-  def dataVar(x: String, uid: Int = 0): String = "D€" + x + "€" + uid
-  def predVar(v: String, pred: Any, fs: List[Any]) = v + "#" + pred + "_" + fs.mkString(".")//.hashCode()
-  def srcVar(x: String, uid: Int = 0): String = "R€" + x + "€" + uid
-  def snkVar(x: String, uid: Int = 0): String = "K€" + x + "€" + uid
+  def mkFlowVar(x: String): String = "F€" + x
+  def mkDataVar(x: String): String = "D€" + x
+  def mkPredVar(v: String, pred: Any, fs: List[Any]) = v + "#" + pred + "_" + fs.mkString(".")//.hashCode()
+  def mkSrcVar(x: String): String = "R€" + x
+  def mkSnkVar(x: String): String = "K€" + x
 
-  def dataVar(x: String): String = "D" + x.tail
-  def flowVar(x: String): String = "F" + x.tail
-  def srcVar(x: String):  String = "R" + x.tail
-  def snkVar(x: String):  String = "K" + x.tail
+  def toDataVar(x: String): String = "D" + x.tail
+  def toFlowVar(x: String): String = "F" + x.tail
+  def toSrcVar(x: String):  String = "R" + x.tail
+  def toSnkVar(x: String):  String = "K" + x.tail
   def var2port(x: String):  String = {
     val y = x.drop(2) . split("€") // y1 is the port
     val z = y(1).split("#")        // z1 is the uid
@@ -35,10 +35,17 @@ object Utils {
   def ppPredVar(x:String): String = { val y = x.split("€"); "P_"+placeIndex(y) }
   def ppVar(x:String) = if (x.startsWith("F€")) ppFlowVar(x) else ppDataVar(x)
   private def placeIndex(y:Array[String]) =
-    if (y(2) == "0") y(1) else y(1)+"_"+y(2)
+    if (y.size > 2) {
+    	if (y(2) == "0") y(1) else y(1)+"["+y(2).substring(6)+"]"
+    }
+    else if (y.size > 1) y(1) else ""
+//      if (y.isEmpty) "" else y(1)
 
+  // append IDs to variable names
+  def addID(n:String,id:Int): String = n+"€"+id
+      
   // Special treatment of guarded commands
-  def mkVar(x: String, uid: Int=0): Var = Var(flowVar(x,uid))
+  def mkVar(x: String): Var = Var(mkFlowVar(x))
   implicit def var2String(v: Var) = v.name
 
   implicit def st2GC(s: Statement): GuardedCom = GuardedCom(True,s)

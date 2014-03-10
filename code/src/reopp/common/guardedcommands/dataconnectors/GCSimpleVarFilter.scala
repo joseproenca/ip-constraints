@@ -12,8 +12,8 @@ import Utils._
  * Time: 16:52
  * To change this template use File | Settings | File Templates.
  */
-class GCSimpleVarFilter(a : String, b : String, pred: Predicate, id: Int)
-  extends GCConnector(List(a,b),id) {
+class GCSimpleVarFilter(a : String, b : String, pred: Predicate)
+  extends GCConnector(List(a,b)) {
 
   var data: Option[AnyRef] = None
 

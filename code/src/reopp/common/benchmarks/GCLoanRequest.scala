@@ -29,60 +29,60 @@ object GCLoanRequest extends App {
   Warmup.go
 
   val baseProblem: Formula =  // stateless part
-    new GCSDrain("req1","req2",0).getConstraints ++
-      new GCSDrain("appr1","appr2",0).getConstraints ++
-      new GCIMerger("req2","auth2","pin",0).getConstraints ++
-      new GCMerger("denied","appr2","out",0).getConstraints ++
+    new GCSDrain("req1","req2").getConstraints ++
+      new GCSDrain("appr1","appr2").getConstraints ++
+      new GCIMerger("req2","auth2","pin").getConstraints ++
+      new GCMerger("denied","appr2","out").getConstraints ++
       // filters
-//      new GCFilter("login","auth",0,IntPred(dataVar("login",0),new Authorised)).getConstraints ++
-//      new GCFilter("isEn","denied",0,IntPred(dataVar("isEn",0),new Deny)).getConstraints ++
-//      new GCFilter("isEn","appr1",0,IntPred(dataVar("isEn",0),new Approve)).getConstraints
-      new GCIFilter("login","auth",0,new Authorised).getConstraints ++
-      new GCIFilter("isEn","denied",0,new Deny).getConstraints ++
-      new GCIFilter("isEn","appr1",0,new Approve).getConstraints
+//      new GCFilter("login","auth",IntPred(dataVar("login"),new Authorised)).getConstraints ++
+//      new GCFilter("isEn","denied",IntPred(dataVar("isEn"),new Deny)).getConstraints ++
+//      new GCFilter("isEn","appr1",IntPred(dataVar("isEn"),new Approve)).getConstraints
+      new GCIFilter("login","auth",new Authorised).getConstraints ++
+      new GCIFilter("isEn","denied",new Deny).getConstraints ++
+      new GCIFilter("isEn","appr1",new Approve).getConstraints
 
   var problems: List[Formula] = for (bankclerk <- List(1,3)) yield
       baseProblem ++ // init state
-      new GCWriter("start",0,List(3)).getConstraints ++
-      new GCWriter("login",0,List(bankclerk)).getConstraints ++
-      new GCFifo("start","isEn",0).getConstraints ++
-      new GCFifo("start","req1",0).getConstraints ++
-      new GCFifo("auth","auth2",0).getConstraints ++
-      new GCFifo("pin","appr2",0).getConstraints ++
-      Formula(True --> Var(flowVar("start",0))) ++ // force data on start
-      Formula(True --> Var(flowVar("login",0)))    // and on login
+      new GCWriter("start",List(3)).getConstraints ++
+      new GCWriter("login",List(bankclerk)).getConstraints ++
+      new GCFifo("start","isEn").getConstraints ++
+      new GCFifo("start","req1").getConstraints ++
+      new GCFifo("auth","auth2").getConstraints ++
+      new GCFifo("pin","appr2").getConstraints ++
+      Formula(True --> Var(mkFlowVar("start"))) ++ // force data on start
+      Formula(True --> Var(mkFlowVar("login")))    // and on login
 
   // after success of 1
   problems :::= List(baseProblem ++
-    new GCWriter("start",0).getConstraints ++
-    new GCWriter("login",0).getConstraints ++
-    new GCFifo("start","isEn",Some(3),0).getConstraints ++
-    new GCFifo("start","req1",Some(3),0).getConstraints ++
-    new GCFifo("auth","auth2",Some(1),0).getConstraints ++
-    new GCFifo("pin","appr2",0).getConstraints ++
-    Formula(True --> Var(flowVar("pin",0)))    // force data on IMerger
+    new GCWriter("start").getConstraints ++
+    new GCWriter("login").getConstraints ++
+    new GCFifo("start","isEn",Some(3)).getConstraints ++
+    new GCFifo("start","req1",Some(3)).getConstraints ++
+    new GCFifo("auth","auth2",Some(1)).getConstraints ++
+    new GCFifo("pin","appr2").getConstraints ++
+    Formula(True --> Var(mkFlowVar("pin")))    // force data on IMerger
   )
 
   // after success of only login
   problems :::= List(baseProblem ++
-    new GCWriter("start",0).getConstraints ++
-    new GCWriter("login",0).getConstraints ++
-    new GCFifo("start","isEn",0).getConstraints ++
-    new GCFifo("start","req1",0).getConstraints ++
-    new GCFifo("auth","auth2",Some(1),0).getConstraints ++
-    new GCFifo("pin","appr2",0).getConstraints ++
-    Formula(True --> Var(flowVar("pin",0)))    // force data on IMerger
+    new GCWriter("start").getConstraints ++
+    new GCWriter("login").getConstraints ++
+    new GCFifo("start","isEn").getConstraints ++
+    new GCFifo("start","req1").getConstraints ++
+    new GCFifo("auth","auth2",Some(1)).getConstraints ++
+    new GCFifo("pin","appr2").getConstraints ++
+    Formula(True --> Var(mkFlowVar("pin")))    // force data on IMerger
   )
 
   // if only IMerger had flow before
   problems :::= (for (client <- List(1,2,3)) yield baseProblem ++
-    new GCWriter("start",0).getConstraints ++
-      new GCWriter("login",0).getConstraints ++
-      new GCFifo("start","isEn",Some(client),0).getConstraints ++
-      new GCFifo("start","req1",0).getConstraints ++
-      new GCFifo("auth","auth2",0).getConstraints ++
-      new GCFifo("pin","appr2",Some(1),0).getConstraints ++
-      Formula(True --> Var(flowVar("isEn",0)))) // force data before filters
+    new GCWriter("start").getConstraints ++
+      new GCWriter("login").getConstraints ++
+      new GCFifo("start","isEn",Some(client)).getConstraints ++
+      new GCFifo("start","req1").getConstraints ++
+      new GCFifo("auth","auth2").getConstraints ++
+      new GCFifo("pin","appr2",Some(1)).getConstraints ++
+      Formula(True --> Var(mkFlowVar("isEn")))) // force data before filters
 
   var time: Long = 0
   var res: OptionSol[GCSolution] = NoneSol()

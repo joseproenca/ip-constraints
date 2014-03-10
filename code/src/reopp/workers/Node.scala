@@ -12,7 +12,7 @@ import reopp.common.{Connector, CBuilder, Solution, Constraints}
  * To change this template use File | Settings | File Templates.
  */
 
-abstract class Node[S<:Solution, C<:Constraints[S,C]] {
+abstract class Node[S<:Solution[S], C<:Constraints[S,C]] {
 //    (deployer: OutputChannel[Any]) {
 
   val uid = hashCode()
@@ -63,11 +63,19 @@ abstract class Node[S<:Solution, C<:Constraints[S,C]] {
   // -                                         and know what to collect before solving constraints
   def guessRequirements(nd:Node[S,C]): Set[Node[S,C]]
 
+//  def update(sol:OptionSol[S]) {
+//    val wrappedSol: OptionSol[S] = sol match {
+//      case SomeSol(s) => SomeSol(new Solution{
+//      })
+//      case _ => sol      
+//    }
+//    connector.update(wrappedSol)
+//  }
 
   // Auxiliar functions
 
   /** checks if it can start, i.e., if it has a proactive connector. */
-  def canStart(): Boolean = {
+  def canStart: Boolean = {
 //    println("INIT? nd@["+hashCode()+"] "+connector.isProactive)
 //    if (connector.isProactive) deployer ! this
     connector.isProactive
@@ -166,7 +174,7 @@ object Node {
    * 			Every priority port must be connected before searching for a solution. 
    * @param conn function that, given a unique ID (of the node), returns the connector of this node.
    */
-  def apply[S<:Solution, C<:Constraints[S,C]]
+  def apply[S<:Solution[S], C<:Constraints[S,C]]
       (   deps: Iterable[(String,String)],
           priority: Iterable[String],
           conn : Connector[S,C])
@@ -174,7 +182,7 @@ object Node {
     new Node[S,C] {
       //      val uid = this.hashCode()
       val connector = conn //conn(uid)
-      connector.updateID(uid)
+//      connector.updateID(uid)
 
       // suggests which ends must have dataflow if "end" has also dataflow
       def guessRequirements(nd: Node[S, C]) = {
@@ -199,7 +207,7 @@ object Node {
 /////////////////////////
 
 //  private val thisactor = this
-class End[S<:Solution, C<:Constraints[S,C]](val n: Node[S,C], val e: String) {
+class End[S<:Solution[S], C<:Constraints[S,C]](val n: Node[S,C], val e: String) {
   /**
    * Add to connections from this and the other node, so we know how
    * to traverse the graph of nodes.

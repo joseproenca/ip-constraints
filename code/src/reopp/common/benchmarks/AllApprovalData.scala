@@ -53,7 +53,7 @@ object AllApprovalData extends App {
     var res = List[GCWriter]()
     for (i <- n to 1 by -1) {
       res ::=
-        new GCWriter("w"+i,0,List((i,(i*3 % 16)+5,(i*4 % 16)+5,(i*5 % 16)+5,(i*6 % 16)+5))) // tuple
+        new GCWriter("w"+i,List((i,(i*3 % 16)+5,(i*4 % 16)+5,(i*5 % 16)+5,(i*6 % 16)+5))) // tuple
 //        new GCWriter("w"+i,0,List(join(i,(i*3 % 16)+5,(i*4 % 16)+5,(i*5 % 16)+5)))
 //      println("new writer: "+(i,(i*3 % 16)+5,(i*4 % 16)+5,(i*5 % 16)+5)+ " -- "+
 //        join(i,(i*3 % 16)+5,(i*4 % 16)+5,(i*5 % 16)+5))
@@ -137,7 +137,7 @@ object AllApprovalData extends App {
 //    println("  # THE PROBLEM:\n"+problem.commands.mkString(" - ","\n - ","\n"))
 
     var time: Long = 0
-    var res: OptionSol[Solution] = null
+    var res: OptionSol[Solution[_]] = null
     var spent: Long = 0
 
     //// QUICK-SAT ////
@@ -190,9 +190,9 @@ object AllApprovalData extends App {
 //    if (res.isDefined) println("quick-z3  - solved in "+spent+" ms:\n"+res.get.pretty)
 //    else println("quick-z3  - no solution (in "+spent+" ms)")
     if (res.isDefined) println("ok/accept/neither: "+
-      res.get.getDataOn(dataVar("app-ok",0))+"/"+
-      res.get.getDataOn(dataVar("den-ok",0))+"/"+
-      res.get.getDataOn(dataVar("neither-ok",0))+"/"
+      res.get.getDataOn(mkDataVar("app-ok"))+"/"+
+      res.get.getDataOn(mkDataVar("den-ok"))+"/"+
+      res.get.getDataOn(mkDataVar("neither-ok"))+"/"
     )
     println("quick-z3  - "+spent)
 
@@ -203,9 +203,9 @@ object AllApprovalData extends App {
 //    if (res.isDefined) println("lazy-sat - solved in "+spent+" ms:\n"+res)
 //    else println("lazy-sat - no solution (in "+spent+" ms)")
     if (res.isDefined) println("ok/accept/neither: "+
-      res.get.getDataOn(dataVar("app-ok",0))+"/"+
-      res.get.getDataOn(dataVar("den-ok",0))+"/"+
-      res.get.getDataOn(dataVar("neither-ok",0))+"/"
+      res.get.getDataOn(mkDataVar("app-ok"))+"/"+
+      res.get.getDataOn(mkDataVar("den-ok"))+"/"+
+      res.get.getDataOn(mkDataVar("neither-ok"))+"/"
     )
     println("lazy-sat  - "+spent)
 
@@ -216,9 +216,9 @@ object AllApprovalData extends App {
 //        if (res.isDefined) println("lazy-sat - solved in "+spent+" ms:\n"+res)
 //        else println("lazy-sat - no solution (in "+spent+" ms)")
     if (res.isDefined) println("ok/accept/neither: "+
-      res.get.getDataOn(dataVar("app-ok",0))+"/"+
-      res.get.getDataOn(dataVar("den-ok",0))+"/"+
-      res.get.getDataOn(dataVar("neither-ok",0))+"/"
+      res.get.getDataOn(mkDataVar("app-ok"))+"/"+
+      res.get.getDataOn(mkDataVar("den-ok"))+"/"+
+      res.get.getDataOn(mkDataVar("neither-ok"))+"/"
     )
     println("choco dyn tables  - "+spent)
 
@@ -229,9 +229,9 @@ object AllApprovalData extends App {
 //        if (res.isDefined) println("lazy-sat - solved in "+spent+" ms:\n"+res)
 //        else println("lazy-sat - no solution (in "+spent+" ms)")
     if (res.isDefined) println("ok/accept/neither: "+
-      res.get.getDataOn(dataVar("app-ok",0))+"/"+
-      res.get.getDataOn(dataVar("den-ok",0))+"/"+
-      res.get.getDataOn(dataVar("neither-ok",0))+"/"
+      res.get.getDataOn(mkDataVar("app-ok"))+"/"+
+      res.get.getDataOn(mkDataVar("den-ok"))+"/"+
+      res.get.getDataOn(mkDataVar("neither-ok"))+"/"
       )
     println("X-Z3 - "+spent)
   }

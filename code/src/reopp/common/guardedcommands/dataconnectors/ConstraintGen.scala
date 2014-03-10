@@ -14,29 +14,29 @@ import reopp.common.{Predicate, IntPredicate, Utils}
  */
 
 object ConstraintGen {
-  def adrain(a: String, b: String, i: Int = 0) = new GCADrain(a,b,i).getConstraints
-  def fifo(a: String, b: String, data:Option[Any], i: Int = 0) = new GCFifo(a,b,data,i).getConstraints
-  def sfifo(a: String, b: String, data:Option[Any], i: Int = 0) = new GCSyncFifo(a,b,data,i).getConstraints
+  def adrain(a: String, b: String) = new GCADrain(a,b).getConstraints
+  def fifo(a: String, b: String, data:Option[Any]) = new GCFifo(a,b,data).getConstraints
+  def sfifo(a: String, b: String, data:Option[Any]) = new GCSyncFifo(a,b,data).getConstraints
 //  def filter(a: String, b: String, g:Guard) = new GCFilter(a,b,0,g).getConstraints
-  def ifilter(a: String, b: String, filter:IntPredicate, i: Int = 0) = new GCIFilter(a,b,i,filter).getConstraints
-  def inegfilter(a: String, b: String, filter:IntPredicate, i: Int = 0) = new GCIFilter(a,b,i,filter,false).getConstraints
-  def filter(a: String, b: String, filter:Predicate, i: Int = 0) = new GCFilter(a,b,i,filter).getConstraints
-  def negfilter(a: String, b: String, filter:Predicate, i: Int = 0) = new GCFilter(a,b,i,filter,false).getConstraints
-  def imerger(a: String, b: String, c: String, i: Int = 0) = new GCIMerger(a,b,c,i).getConstraints
-  def genfilter(a: String, b: String, guardFunc: Var=>Guard, i: Int = 0) = new GCGenFilter(a,b,i,guardFunc).getConstraints
-  def merger(a: String, b: String, c: String, i: Int = 0) = new GCMerger(a,b,c,i).getConstraints
-  def nmerger(srcs: List[String], snk: String, i: Int = 0) = new GCNMerger(srcs,snk,i).getConstraints
-  def lossy(a: String, b: String, i: Int = 0) = new GCLossy(a,b,i).getConstraints
-  def sdrain(a: String, b: String, i: Int = 0) = new GCSDrain(a,b,i).getConstraints
-  def sspout(a: String, b: String, i: Int = 0) = new GCSSpout(a,b,i).getConstraints
-  def sync(a: String, b: String, i: Int = 0) = new GCSync(a,b,i).getConstraints
-  def transf(a: String, b: String, f: reopp.common.Function, i: Int = 0) = new GCTransf(a,b,i,f).getConstraints
-  def monitor(a: String, b: String, f: reopp.common.Function, i: Int = 0) = new GCMonitor(a,b,i,f).getConstraints
-  def exrouter(a: String, b: String, c: String, i: Int = 0) = new GCExRouter(a,b,c,i).getConstraints
-  def nexrouter(src: String, snks: List[String], i: Int = 0) = new GCNExRouter(src,snks,i).getConstraints
-  def reader(a: String,n: Int, i: Int = 0) = new GCReader(a,i,n).getConstraints
-  def writer(a: String, data: List[Any], i: Int = 0): Formula = new GCWriter(a,i,data).getConstraints
+  def ifilter(a: String, b: String, filter:IntPredicate) = new GCIFilter(a,b,filter).getConstraints
+  def inegfilter(a: String, b: String, filter:IntPredicate) = new GCIFilter(a,b,filter,false).getConstraints
+  def filter(a: String, b: String, filter:Predicate) = new GCFilter(a,b,filter).getConstraints
+  def negfilter(a: String, b: String, filter:Predicate) = new GCFilter(a,b,filter,false).getConstraints
+  def imerger(a: String, b: String, c: String) = new GCIMerger(a,b,c).getConstraints
+  def genfilter(a: String, b: String, guardFunc: Var=>Guard) = new GCGenFilter(a,b,guardFunc).getConstraints
+  def merger(a: String, b: String, c: String) = new GCMerger(a,b,c).getConstraints
+  def nmerger(srcs: List[String], snk: String) = new GCNMerger(srcs,snk).getConstraints
+  def lossy(a: String, b: String) = new GCLossy(a,b).getConstraints
+  def sdrain(a: String, b: String) = new GCSDrain(a,b).getConstraints
+  def sspout(a: String, b: String) = new GCSSpout(a,b).getConstraints
+  def sync(a: String, b: String) = new GCSync(a,b).getConstraints
+  def transf(a: String, b: String, f: reopp.common.Function) = new GCTransf(a,b,f).getConstraints
+  def monitor(a: String, b: String, f: reopp.common.Function) = new GCMonitor(a,b,f).getConstraints
+  def exrouter(a: String, b: String, c: String) = new GCExRouter(a,b,c).getConstraints
+  def nexrouter(src: String, snks: List[String]) = new GCNExRouter(src,snks).getConstraints
+  def reader(a: String,n: Int) = new GCReader(a,n).getConstraints
+  def writer(a: String, data: List[Any]): Formula = new GCWriter(a,data).getConstraints
 
-  def flow(a: String, i: Int = 0) = Formula(True --> Var(Utils.flowVar(a,i)))
-  def noflow(a: String, i: Int = 0) = Formula(True --> Neg(Var(Utils.flowVar(a,i))))
+  def flow(a: String) = Formula(True --> Var(Utils.mkFlowVar(a)))
+  def noflow(a: String) = Formula(True --> Neg(Var(Utils.mkFlowVar(a))))
 }

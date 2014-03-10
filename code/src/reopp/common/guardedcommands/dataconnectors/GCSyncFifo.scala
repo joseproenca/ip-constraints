@@ -12,7 +12,7 @@ import reopp.common.guardedcommands._
  * To change this template use File | Settings | File Templates.
  */
 
-class GCSyncFifo(a: String, b: String, var data: Option[Any], uid: Int) extends GCConnector(List(a,b), uid) {
+class GCSyncFifo(a: String, b: String, var data: Option[Any]) extends GCConnector(List(a,b)) {
 
   if (useCC3) throw new Exception("CC3 not implemented")
 

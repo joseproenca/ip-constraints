@@ -139,6 +139,7 @@ class Buffer {
    * if a value is defined and different in both, ignore it (to be recalculated).
    */
   def safeImport(other:Buffer) {
+    //println("importing other buffer "+other)
     for ((f,r) <- other.calculatedF)
       if (calculatedF contains f) {
         if (calculatedF.get(f) != r) calculatedF -= f

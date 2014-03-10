@@ -13,7 +13,7 @@ import reopp.common.{Solution, CBuilder, Constraints, Connector}
  * To change this template use File | Settings | File Templates.
  */
 object Channel {
-  def apply[S<:Solution, C<:Constraints[S,C]]
+  def apply[S<:Solution[S], C<:Constraints[S,C]]
       (conn : Int => Connector[S,C])
       (implicit noSol:EmptySol[S], b:CBuilder[S,C]): Actor[S,C] =
     new Actor[S,C]() {

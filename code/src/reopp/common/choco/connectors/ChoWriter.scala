@@ -2,6 +2,7 @@ package reopp.common.choco.connectors
 
 import reopp.common.choco._
 import reopp.common.{OptionSol, Utils}
+import reopp.common.Utils._
 
 
 /**
@@ -19,14 +20,14 @@ class ChoWriter(x:String,uid:Int,var size:Int) extends ChoConnector(List(x),uid)
 
   //  val flowConstr = ChoConstraints(Var(ConstrBuilder.flowVar(x,uid)))
 //  val nfConstr = ChoConstraints(FalseC)
-  val nfConstr = ChoConstraints(Neg(Var(Utils.flowVar(x,uid))))
+  val nfConstr = ChoConstraints(Neg(Var(flowVar(x,uid))))
 
   def getConstraints = if (size>0) ChoConstraints(TrueC) else nfConstr
 
 
   override def update(s: OptionSol[ChoSolution]) {
     if (s.isDefined)
-    if (s.get hasFlowOn Utils.flowVar(x,uid)) {
+    if (s.get hasFlowOn flowVar(x,uid)) {
       size -= 1
 //      println("Writer: FLOW! new size: "+size)
       notifyflow()

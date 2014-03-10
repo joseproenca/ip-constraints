@@ -44,7 +44,7 @@ object ChoSchedules extends App {
         new ChoSync("e","disp",i).getConstraints ++
         new ChoSync("f","off",i).getConstraints ++
         new ChoSync("g","on",i).getConstraints ++
-        ChoConstraints(Var(flowVar("x",i)))
+        ChoConstraints(Var(mkFlowVar("x")))
 
     if (on) res ++
       new ChoSyncFifo("m","c",Some(0),i).getConstraints ++
@@ -60,11 +60,11 @@ object ChoSchedules extends App {
     for (i <- uids) {
       res ++= genSched(i,on)
       // manual replicator from (startVar.startUid) to (x,i)
-      val av = Var(flowVar(startVar,startUid))
-      val bv = Var(flowVar("x",i))
+      val av = Var(mkFlowVar(startVar))//,startUid))
+      val bv = Var(mkFlowVar("x"))
       res ++= ChoConstraints(List(
         av <-> bv,
-        VarEq(dataVar("x",i), dataVar(startVar,startUid))
+        VarEq(mkDataVar("x"), mkDataVar(startVar))//,startUid))
       ))
     }
     res
