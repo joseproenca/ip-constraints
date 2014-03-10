@@ -1,5 +1,5 @@
-Interactive Partial Constraints
-===============================
+Partial Interactive Coordination Constraints
+============================================
 
 This project encodes in [Scala](http://www.scala-lang.org) a constraint-based engine for running connectors based on [Reo](http://reo.project.cwi.nl).
 
