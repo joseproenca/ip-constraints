@@ -15,7 +15,7 @@
         <jar destfile="reopp_scp_dyn.jar">
             <manifest>
                 <attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
-                <attribute name="Rsrc-Main-Class" value="reopp.common.benchmarks.ScalaRunner"/>
+                <attribute name="Rsrc-Main-Class" value="reopp.common.benchmarks.SCP14JavaRunner"/>
                 <attribute name="Class-Path" value="."/>
                 <attribute name="Rsrc-Class-Path" value="./ com.microsoft.z3.jar choco-solver-2.1.5.jar org.sat4j.core.jar scalatest_2.10-1.9.1.jar scalaz3_2.10-2.0-J1.7.jar junit.jar org.hamcrest.core_1.3.0.v201303031735.jar scala-library.jar scala-actors.jar scala-reflect.jar akka-actors.jar typesafe-config.jar"/>
             </manifest>
