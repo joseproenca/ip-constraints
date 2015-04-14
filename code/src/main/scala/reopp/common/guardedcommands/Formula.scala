@@ -1,6 +1,6 @@
 package reopp.common.guardedcommands
 
-import _root_.z3.scala.Z3Context
+import _root_.z3.scala.{Z3Config, Z3Context}
 import reopp.common.guardedcommands.chocobuilder.{ChocoBuilderInt, ChocoBuilderSAT}
 import chocodyn.{ChocoDyn, DynSolution}
 import chocox.{ChocoX, CXSolution}
@@ -50,9 +50,9 @@ abstract class Formula extends Constraints[GCSolution,Formula] {
    * @return possible data solution
    */
 //  def solve = lazyDataSolve  // predicate abstraction + choco (using guesses)
-//  def solve = solveChocoX    // choco - 1st attempt (predicates that keep track of all functions)
+//  def solve = solveChocoX    // choco - 1st attempt (predicates that keep track of all functions) - deprecated
   def solve(tried:Option[NoneSol]) = solveChocoDyn(tried)  // choco - 2nd attempt (dynamic mapping between ints (in choco) and the value they represent)
-//  def solve = solveXZ3       // z3    - same as chocoDyn. Tricks used to be able to recover solution and to avoid incomplete theories (not possible to say "if A is instantiated...")
+//  def solve(tried:Option[NoneSol]) = solveXZ3       // z3    - same as chocoDyn. Tricks used to be able to recover solution and to avoid incomplete theories (not possible to say "if A is instantiated...")
 
   
   def withID(uid:Int) : Formula = {
@@ -435,7 +435,7 @@ abstract class Formula extends Constraints[GCSolution,Formula] {
    * Assumes determined and closed connectors.
    * @return Data solution or 'None' if there is no solution (maybe because the assumption does not hold.)
    */
-  def quickDataSolve : OptionSol[GCSolution] = {
+  def quickDataSolveSAT4J : OptionSol[GCSolution] = {
     val t0 = System.currentTimeMillis()
     solveDomain()
 
@@ -466,11 +466,20 @@ abstract class Formula extends Constraints[GCSolution,Formula] {
   /**
    * Same as `Formula.quickDataSolve()`, but using Z3 instead of SAT4J for SAT solving.
    *
-   * @see # quickDataSolve
+   * @see # quickDataSolveSAT4J
+   * @return Data solution
+   */
+  def quickDataSolveZ3(): OptionSol[GCSolution] =
+    quickDataSolveZ3(new Z3Context(new Z3Config("MODEL" -> true)))
+
+  /**
+   * Same as `Formula.quickDataSolve()`, but using Z3 instead of SAT4J for SAT solving.
+   *
+   * @see # quickDataSolveSAT4J
    * @param z3 context required by Z3
    * @return Data solution
    */
-  def quickDataSolve(z3: Z3Context): OptionSol[GCSolution] = {
+  def quickDataSolveZ3(z3: Z3Context): OptionSol[GCSolution] = {
     val t0 = System.currentTimeMillis()
     solveDomain()
 //    close  // OPTMISED in gc2boolz3, based on this.bfv
@@ -503,7 +512,7 @@ abstract class Formula extends Constraints[GCSolution,Formula] {
    *  Optimised choco: Lazy constraints and smart variable ordering.
    * @return Data solution
    */
-  def lazyDataSolve : OptionSol[GCSolution] = {
+  def solveChocoPredAbstVarOrdered : OptionSol[GCSolution] = {
 //    buf = Some(new Buffer)
     val closed = close()
     closed.solveDomain()
@@ -556,6 +565,7 @@ abstract class Formula extends Constraints[GCSolution,Formula] {
 
   /**
    * Solve solutions using Choco and external predicates/functions, based on book-keeping of hash values.
+   * Deprecated - used solveChocoDyn instead.
    * @return Solution for the data constraints.
    */
   @deprecated
@@ -565,6 +575,11 @@ abstract class Formula extends Constraints[GCSolution,Formula] {
     ChocoX.solve(closed)
   }
 
+  /**
+   * Solve solutions using Choco with external predicates/functions, using numbers as data
+   * that serve as ID in a dynamic table of data.
+   * @return Solution for the data constraints.
+   */
   def solveChocoDyn(): OptionSol[DynSolution] = solveChocoDyn(None)
 
   
@@ -580,6 +595,7 @@ abstract class Formula extends Constraints[GCSolution,Formula] {
 
   /**
    * Experimental - solve solutions using Z3 and external predicates/functions, using a custom theory, based on a dynamic map from ints to data values.
+   * In the current version: rollback is not being applied, but overall it seems to be working.
    * @return Solution for the data constraints.
    */
   def solveXZ3: OptionSol[GCSolution] = {

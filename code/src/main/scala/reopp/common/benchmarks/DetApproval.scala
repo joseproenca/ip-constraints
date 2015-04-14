@@ -94,13 +94,13 @@ object DetApproval extends App {
 
   if (quicksat) {
     val time = System.currentTimeMillis()
-    val res = problem.quickDataSolve
+    val res = problem.quickDataSolveSAT4J
     val spent = System.currentTimeMillis() - time
     print(spent)
   }
   else if (lazyy) {
     val time = System.currentTimeMillis()
-    val res = problem.lazyDataSolve
+    val res = problem.solveChocoPredAbstVarOrdered
     val spent = System.currentTimeMillis() - time
     print(spent)
   }
@@ -109,7 +109,7 @@ object DetApproval extends App {
 
     //// QUICK-SAT ////
     var time = System.currentTimeMillis()
-    var res: OptionSol[Solution[_]] = problem.quickDataSolve
+    var res: OptionSol[Solution[_]] = problem.quickDataSolveSAT4J
     var spent = System.currentTimeMillis() - time
     if (res.isDefined) println("quick-sat - solved in "+spent+" ms:\n"+res.get)
     else println("quick-sat - no solution (in "+spent+" ms)")
@@ -117,7 +117,7 @@ object DetApproval extends App {
 
     //// LAZY-SAT ////
     time = System.currentTimeMillis()
-    res = problem.lazyDataSolve
+    res = problem.solveChocoPredAbstVarOrdered
     spent = System.currentTimeMillis() - time
     if (res.isDefined) println("lazy-sat - solved in "+spent+" ms:\n"+res.get)
     else println("lazy-sat - no solution (in "+spent+" ms)")

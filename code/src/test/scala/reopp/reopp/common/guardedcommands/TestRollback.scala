@@ -124,7 +124,7 @@ class TestRollback extends FunSpec {
       sdrain("list","res")
     //      reader("res")
 
-    val sol2 = conn.getConstraints.lazyDataSolve
+    val sol2 = conn.getConstraints.solveChocoPredAbstVarOrdered
     conn.update(sol2)
 
 //    println("cancelled: " +counter_cancel)
@@ -183,7 +183,7 @@ class TestRollback extends FunSpec {
 //    println("#######\n"+sol3)
     conn.update(sol3)
 
-    //    println("cancelled: " +counter_cancel)
+//        println("cancelled: " +counter_cancel)
 
     it ("sat should cancel once") {assert(counter_cancel == 1)}
     it ("sat should cancel first request") {fstRequest == request_cancel}

@@ -39,10 +39,10 @@ object XZ3 {
     val z3 = new Z3Context(new Z3Config("MODEL" -> true))
     val theory = buildTheory(z3) // each theory has state, including buffering of intermediate values. Cannot be reused.
     val z3ast = gc2xz3(gcs,theory)
-    println("------------------")
-    for (z <- z3ast) println(z)
-    for (z <- theory.extraAssigns) println(z)
-    println("------------------")
+//    println("------------------")
+//    for (z <- z3ast) println(z)
+//    for (z <- theory.extraAssigns) println(z)
+//    println("------------------")
     solvexz3(z3ast,theory)
   }
 

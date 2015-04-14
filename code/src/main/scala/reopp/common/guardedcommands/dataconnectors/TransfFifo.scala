@@ -24,11 +24,11 @@ class TransfFifo(in: String, out: String, var data: Option[Any])
 
   override def update(s: OptionSol[GCSolution]) = s match  {
     case SomeSol(sol) =>
-      if ((sol hasFlowOn mkVar(in)) && !(sol hasFlowOn mkVar(out))) {
+      if ((sol hasFlowOnPort mkVar(in)) && !(sol hasFlowOnPort mkVar(out))) {
         // data goes in
         data = Some(sol(out.data))
       }
-      else if ((sol hasFlowOn mkVar(out)) && !(sol hasFlowOn mkVar(out))) {
+      else if ((sol hasFlowOnPort mkVar(out)) && !(sol hasFlowOnPort mkVar(out))) {
         // data goes out
         data = None
       }

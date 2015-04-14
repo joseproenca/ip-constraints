@@ -59,15 +59,15 @@ class TestFunctIteration extends FunSpec {
     else println("no sol")
 
 
-    val res1b = c1.quickDataSolve
+    val res1b = c1.quickDataSolveSAT4J
     if (res1b.isDefined) println("quickly solved:\n"+res1b.get)
     else println("no sol")
 
-    val res2b = c2.quickDataSolve
+    val res2b = c2.quickDataSolveSAT4J
     if (res2b.isDefined) println("quickly solved:\n"+res2b.get)
     else println("no sol")
 
-    val res3b = c3.quickDataSolve
+    val res3b = c3.quickDataSolveSAT4J
     if (res3b.isDefined) println("quickly solved:\n"+res3b.get)
     else println("no sol")
 

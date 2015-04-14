@@ -113,20 +113,20 @@ object AllApprovalData extends App {
 
   else if (quicksat) {
     val time = System.currentTimeMillis()
-    val res = problem.quickDataSolve
+    val res = problem.quickDataSolveSAT4J
     val spent = System.currentTimeMillis() - time
     print(spent)
   }
   else if (z3sat) {
     val z3 = new Z3Context(new Z3Config("MODEL" -> true))
     val time = System.currentTimeMillis()
-    val res = problem.quickDataSolve(z3)
+    val res = problem.quickDataSolveZ3(z3)
     val spent = System.currentTimeMillis() - time
     print(spent)
   }
   else if (lazyy) {
     val time = System.currentTimeMillis()
-    val res = problem.lazyDataSolve
+    val res = problem.solveChocoPredAbstVarOrdered
     val spent = System.currentTimeMillis() - time
     print(spent)
   }
@@ -142,7 +142,7 @@ object AllApprovalData extends App {
 
     //// QUICK-SAT ////
     time = System.currentTimeMillis()
-    res = problem.quickDataSolve
+    res = problem.quickDataSolveSAT4J
     spent = System.currentTimeMillis() - time
     //    if (res.isDefined) println("quick-sat - solved in "+spent+" ms:\n"+res.get.pretty)
     //    else println("quick-sat - no solution (in "+spent+" ms)")
@@ -185,7 +185,7 @@ object AllApprovalData extends App {
     //// QUICK-SAT-Z3 ////
     val zz3 = new Z3Context(new Z3Config("MODEL" -> true))
     time = System.currentTimeMillis()
-    res = problem.quickDataSolve(zz3)
+    res = problem.quickDataSolveZ3(zz3)
     spent = System.currentTimeMillis() - time
 //    if (res.isDefined) println("quick-z3  - solved in "+spent+" ms:\n"+res.get.pretty)
 //    else println("quick-z3  - no solution (in "+spent+" ms)")
@@ -198,7 +198,7 @@ object AllApprovalData extends App {
 
       // LAZY-SAT ////
     time = System.currentTimeMillis()
-    res = problem.lazyDataSolve
+    res = problem.solveChocoPredAbstVarOrdered
     spent = System.currentTimeMillis() - time
 //    if (res.isDefined) println("lazy-sat - solved in "+spent+" ms:\n"+res)
 //    else println("lazy-sat - no solution (in "+spent+" ms)")

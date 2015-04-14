@@ -15,7 +15,7 @@ class GCSolution(val boolSol: Solution[_], var varMap: Map[String, Any]) extends
 //  var buf: Option[Buffer] = None
   override def getBuffer = boolSol.getBuffer //buf
 
-  def hasFlowOn(end: Var): Boolean = hasFlowOn(end.name)
+  def hasFlowOnPort(end: Var): Boolean = hasFlowOn(end.name)
   
   def hasFlowOn(end: String) =
     boolSol hasFlowOn end
