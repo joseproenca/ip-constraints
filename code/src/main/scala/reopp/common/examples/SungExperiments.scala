@@ -22,10 +22,9 @@ object SungExperiments extends App {
   /**
    * Uses a semaphore (not yet shared) to block execution while waiting for an update.
    */
-  class InputPortImpl(port: String) extends GCConnector(List(port)) {
+  class InputPortImpl(port: String, sem: Semaphore) extends GCConnector(List(port)) {
 
     private var data: Option[Any] = None
-    private val semaphore = new Semaphore(1)
 
     def getConstraints = data match {
       case None    => !port
@@ -35,13 +34,13 @@ object SungExperiments extends App {
     override def update(s: OptionSol[GCSolution]) {
       if (s.isDefined && (s.get hasFlowOnPort port)) {
         data = None
-        semaphore.release()
+        sem.release()
       }
     }
 
     def put(d:Any): Unit = {
       data = Some(d)
-      semaphore.acquire()
+      sem.acquire()
     }
   }
 
@@ -59,7 +58,7 @@ object SungExperiments extends App {
 
   ////// sequence of syncs ///////
 
-  val myInputPort = new InputPortImpl("1")
+  val myInputPort = new InputPortImpl("1", new Semaphore(1))
 
   def syncs(k: Int): GCConnector = {
     var res: GCConnector = myInputPort
@@ -72,6 +71,7 @@ object SungExperiments extends App {
   val conn = syncs(NUMSYNC)
   val const = conn.getConstraints
 
+  println("---- syncs ----")
   time(const.solveXZ3)
   time(const.quickDataSolveSAT4J)
   time(const.quickDataSolveZ3)
@@ -97,7 +97,7 @@ object SungExperiments extends App {
 
   ////// sequence of transformers ///////
 
-  val myInputPort2 = new InputPortImpl("1")
+  val myInputPort2 = new InputPortImpl("1", new Semaphore(1))
   myInputPort2.put(0)
 
   val succ = Function("succ") {
@@ -143,7 +143,7 @@ object SungExperiments extends App {
 
   ////// sequence of filters - only the last fails ///////
 
-  val myInputPort3 = new InputPortImpl("1")
+  val myInputPort3 = new InputPortImpl("1", new Semaphore(1))
   myInputPort3.put(0)
 
   def is(v:Int) = Predicate("is-"+v) { // ATTENTION: name must be unique for each v! (except for chocoDyn)

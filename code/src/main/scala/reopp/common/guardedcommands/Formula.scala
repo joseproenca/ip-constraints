@@ -31,8 +31,8 @@ abstract class Formula extends Constraints[GCSolution,Formula] {
 
   val commands: Set[GuardedCom] //= Set[GuardedCom]()
   //  var eqvars = Set[(String,String)]()
-  private val da = DomainAbst()
-  private var solvedDomain = false
+  private lazy val da = getDA // DomainAbst()
+//  private var solvedDomain = false
   //  var someVars: Option[MutMap[String,Int]] = None
 
   protected val closed = false
@@ -62,26 +62,28 @@ abstract class Formula extends Constraints[GCSolution,Formula] {
 	  }
   } 
   
-  /**
-   * Collect the domain of every guarded command in field 'da'.
-   * Used by 'collectVars'.
-   */
-  private def solveDomain() {
-    if (!solvedDomain) {
-      for (c <- commands) c.solveDomain(da)
-//      println(da.pp)
-//      println(da.guessOrder)
-      solvedDomain = true
-    }
-  }
+//  /**
+//   * Collect the domain of every guarded command in field 'da'.
+//   * Used by 'collectVars'.
+//   */
+//  private def solveDomain() {
+//    if (!solvedDomain) {
+//      for (c <- commands) c.solveDomain(da)
+////      println(da.pp)
+////      println(da.guessOrder)
+//      solvedDomain = true
+//    }
+//  }
 
   /**
    * Collect the domain invariants of every guarded command.
    * @return the domain invariants
    */
   def getDA: DomainAbst = {
-    solveDomain()
-    da
+//    solveDomain()
+    val acc = DomainAbst()
+    for (c <- commands) c.solveDomain(acc)
+    acc
   }
 
 
@@ -116,7 +118,7 @@ abstract class Formula extends Constraints[GCSolution,Formula] {
   def collectVars: MutMap[String, Int] = {
 //    if (someVars.isDefined) return someVars.get
 
-    solveDomain()
+//    solveDomain()
 
     val vars2 = MutMap[String,Int](""->1)
     for (c <- commands) c.afv2(da,vars2)
@@ -436,15 +438,15 @@ abstract class Formula extends Constraints[GCSolution,Formula] {
    * @return Data solution or 'None' if there is no solution (maybe because the assumption does not hold.)
    */
   def quickDataSolveSAT4J : OptionSol[GCSolution] = {
-    val t0 = System.currentTimeMillis()
-    solveDomain()
+//    val t0 = System.currentTimeMillis()
+//    solveDomain()
 
-    val t1 = System.currentTimeMillis()
+//    val t1 = System.currentTimeMillis()
     val cnf = toCNF
-    val t2 = System.currentTimeMillis()
+//    val t2 = System.currentTimeMillis()
     // optimised closing (for flow variables) in solveBool for CNF's
     val optSolBool = solveBool(cnf._1,cnf._2)
-    val t3 = System.currentTimeMillis()
+//    val t3 = System.currentTimeMillis()
 //    println("[QSAT Domain-toCNF-Solve] "+(t1-t0)+" - "+(t2-t1)+" - "+(t3-t2))
     if (!optSolBool.isDefined) {
       println("Fail boolean satisfaction...")
@@ -469,7 +471,7 @@ abstract class Formula extends Constraints[GCSolution,Formula] {
    * @see # quickDataSolveSAT4J
    * @return Data solution
    */
-  def quickDataSolveZ3(): OptionSol[GCSolution] =
+  def quickDataSolveZ3: OptionSol[GCSolution] =
     quickDataSolveZ3(new Z3Context(new Z3Config("MODEL" -> true)))
 
   /**
@@ -480,15 +482,15 @@ abstract class Formula extends Constraints[GCSolution,Formula] {
    * @return Data solution
    */
   def quickDataSolveZ3(z3: Z3Context): OptionSol[GCSolution] = {
-    val t0 = System.currentTimeMillis()
-    solveDomain()
+//    val t0 = System.currentTimeMillis()
+//    solveDomain()
 //    close  // OPTMISED in gc2boolz3, based on this.bfv
 
-    val t1 = System.currentTimeMillis()
+//    val t1 = System.currentTimeMillis()
     val z3term = Z3.gc2boolz3(this,z3)
 //    println("z3 term: "+z3term.toString())
     val optSolBool = Z3.solvez3(z3term,z3)
-    val t3 = System.currentTimeMillis()
+//    val t3 = System.currentTimeMillis()
 //    println("[QZ3  Domain-toBoolZ3+Solve] "+(t1-t0)+" - "+(t3-t1))
     if (!optSolBool.isDefined)
       return NoneSol()
@@ -515,7 +517,7 @@ abstract class Formula extends Constraints[GCSolution,Formula] {
   def solveChocoPredAbstVarOrdered : OptionSol[GCSolution] = {
 //    buf = Some(new Buffer)
     val closed = close()
-    closed.solveDomain()
+//    closed.solveDomain()
 
     val builders = ChocoBuilderSAT.gc2BoolConstrBuilders(closed,closed.da)
 //    println("boolean constraints: \n"+builders.mkString("\n"))
@@ -571,7 +573,7 @@ abstract class Formula extends Constraints[GCSolution,Formula] {
   @deprecated
   def solveChocoX: OptionSol[CXSolution] = {
 //    ChocoX.solve(getConstraints)
-    val closed = close
+    val closed = close()
     ChocoX.solve(closed)
   }
 
@@ -580,7 +582,7 @@ abstract class Formula extends Constraints[GCSolution,Formula] {
    * that serve as ID in a dynamic table of data.
    * @return Solution for the data constraints.
    */
-  def solveChocoDyn(): OptionSol[DynSolution] = solveChocoDyn(None)
+  def solveChocoDyn: OptionSol[DynSolution] = solveChocoDyn(None)
 
   
   /**
@@ -589,7 +591,7 @@ abstract class Formula extends Constraints[GCSolution,Formula] {
    */
   def solveChocoDyn(tried:Option[NoneSol]): OptionSol[DynSolution] = {
     //    ChocoX.solve(getConstraints)
-    val closed = close
+    val closed = close()
     ChocoDyn.solve(closed,tried)
   }
 
@@ -599,7 +601,7 @@ abstract class Formula extends Constraints[GCSolution,Formula] {
    * @return Solution for the data constraints.
    */
   def solveXZ3: OptionSol[GCSolution] = {
-    val closed = close
+    val closed = close()
     XZ3.solvexz3(closed)
   }
 
@@ -614,7 +616,7 @@ abstract class Formula extends Constraints[GCSolution,Formula] {
   def solveChoco : OptionSol[ChoSolution] = {
     // not closing constraints
     // NOW closing
-    val closed = close
+    val closed = close()
     ChocoBuilderInt.solveChoco(closed)
   }
 
@@ -635,9 +637,9 @@ abstract class Formula extends Constraints[GCSolution,Formula] {
    * @return Data solution
    */
   def solveChocoSat : OptionSol[GCSolution] = {
-    solveDomain()
+//    solveDomain()
     // solveDomain; toCNF; solveBool?; [partialEval; quotient; dataAssign(done?); solveData(done?); incrementAndSolve?]
-    val time = System.currentTimeMillis()
+//    val time = System.currentTimeMillis()
     val builders = ChocoBuilderSAT.gc2BoolConstrBuilders(this,da)
 //    println("#> solving abst using choco SAT cnf - ") //+da.pp)
 //    println("builder: "+builders.mkString("\n"))
